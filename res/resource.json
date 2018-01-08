@@ -1,0 +1,34 @@
+{
+    "appTitle": "Croqujs",
+    "fontSets": [
+        "Inconsolata, \"Hiragino Kaku Gothic ProN\", Meiryo, \"Yu Gothic\", YuGothic, monospace",
+        "Verdana, \"Hiragino Kaku Gothic ProN\", Meiryo, \"Yu Gothic\", YuGothic, sans-serif",
+        "Georgia, \"Hiragino Mincho ProN\", \"Yu Mincho\", YuMincho, serif"
+    ],
+    "lineHeights": ["135%", "150%", "165%", "180%", "195%"],
+    "defaultExt": ".js",
+    "divH": 8,
+    "jsHintOpt": {
+        "bitwise": true,
+        "curly": true,
+        "eqeqeq": true,
+        "latedef": false,
+        "noarg": true,
+        "plusplus": true,
+        "undef": false,
+        "strict": false,
+		"esversion": 6,
+
+        "expr": false,
+
+        "browser": true
+    },
+	"jsBeautifyOpt": {
+	    "preserve_newlines": true,
+	    "jslint_happy": false,
+	    "brace_style": "end-expand",
+	    "keep_array_indentation": false,
+	    "space_before_conditional": true,
+	    "unescape_strings": true
+	}
+}

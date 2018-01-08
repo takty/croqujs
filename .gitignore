@@ -1,0 +1,4 @@
+/node_modules/
+/dist/*
+/package/*
+npm-debug.log

@@ -1,0 +1,17 @@
+Pronounced as /krō-ˈkē/
+
+by Takuto Yanagida @ Space-Time Inc.
+v2018-01-08
+
+Powered by:
+    - Electron v1.3.15
+    - CodeMirror v5.33.0
+    - jQuery v3.2.1
+    - jQuery UI v1.12.0
+    - SweetAlert2 v7.3.4
+    - Font Awesome v4.7.0
+    - Inconsolata-dz v001.010
+    - Acorn v5.3
+    - Tern v0.21.0
+    - JSHint v2.9.3
+    - js-beautify v1.7.5

@@ -1,0 +1,87 @@
+/*
+ * Laccolla Theme for SweetAlert2
+ * 2016-09-30
+ */
+
+.swal2-modal {
+	font-family: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.swal2-modal .swal2-content {
+	font-size: 16px !important;
+	cursor: default;
+}
+
+.swal2-overlay {
+    background: rgba(0, 0, 0, 0.5);
+	outline: none;
+	transition: 0.25s;
+}
+
+.swal2-modal input {
+	font-size: 16px !important;
+}
+
+
+.swal2-modal .swal2-icon.swal2-info {
+	border-color: rgba(96, 179, 229, 0.2);
+	color: #60b3e5;
+}
+.swal2-modal .swal2-icon.swal2-error {
+	border-color: rgba(230, 30, 88, 0.2);
+}
+.swal2-modal .swal2-icon.swal2-error .line {
+	background-color: #e61e58;
+}
+.swal2-modal .swal2-icon.swal2-warning {
+	border-color: rgba(245, 162, 0, 0.2);
+    color: #f5a200;
+}
+@keyframes pulse-warning {
+	0% {border-color: #f5a200;}
+	100% {border-color: rgba(245, 162, 0, 0.2);}
+}
+.swal2-modal .swal2-icon.swal2-success {
+	border-color: #7eba2e;
+}
+.swal2-modal .swal2-icon.swal2-success .placeholder {
+	border-color: rgba(126, 186, 46, 0.2);
+}
+.swal2-modal .swal2-icon.swal2-success .line {
+	background-color: #7eba2e;
+}
+
+
+.swal2-modal button.styled {
+	font-size: 16px;
+	min-width: 6em;
+	min-height: 2.5em;
+	margin-left: 0.5em;
+	margin-right: 0.5em;
+	padding: 0px 16px;
+	transition: 0.25s;
+}
+
+.swal2-modal button.swal2-confirm.styled {
+	background-color: #f5a200 !important;  /* L-Orange */
+}
+
+.swal2-modal button.swal2-confirm.styled:hover {
+	background-color: #f18400 !important;
+}
+
+.swal2-modal button.swal2-cancel.styled {
+	background-color: #b5b5b6 !important;  /* L-Gray */
+}
+
+.swal2-modal button.swal2-cancel.styled:hover {
+	background-color: #898989 !important;  /* L-Dark Gray */
+}
+
+.swal2-modal button:focus {
+	box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 8px !important;
+	outline: none;
+}
