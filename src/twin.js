@@ -163,6 +163,7 @@ class Twin {
 	}
 
 	onFieldOutputOccurred(msgs) {
+		console.log('onFieldOutputOccurred');
 		if (this._ignoreFieldOutputMessage) return;
 		if (MAX_CONSOLE_OUTPUT_SIZE < msgs.length) {
 			this._fieldOutputCache = msgs.slice(msgs.length - MAX_CONSOLE_OUTPUT_SIZE);
@@ -566,7 +567,7 @@ class Twin {
 	}
 
 	_createFieldWindow() {
-		const opt = Object.assign({'show': false}, this._fieldWinBounds || {});
+		const opt = Object.assign({show: false}, this._fieldWinBounds || {});
 		this._fieldWin = new BrowserWindow(opt);
 		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => {this._fieldWin = null;});

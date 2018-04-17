@@ -35,7 +35,19 @@
 		executeProgram(codeStr, filePath, imports) {
 			this._removeFrame();
 			this._createSource(codeStr, imports, this._urlToFileName);
-			this._createFrame(this._url + '#' + this._id);
+			// this._createFrame(this._url + '#' + this._id);
+			this._createFrame('localhost#' + this._id);
+			
+			this._frame.addEventListener('did-finish-load', () => {
+				// this._frame.send('imports', imports);
+				// this._frame.send('id', this._id);
+				// this._frame.send('receiveSrc', this._tagStr);
+				this._frame.executeJavaScript('document.head.innerHTML = \'' + this._tagStr + '\';');
+				for (let i = 0; i < imports.length; i += 1) {
+					this._frame.executeJavaScript(imports[i].source);
+				}
+				this._frame.executeJavaScript(this._codeStr);
+			});
 		}
 
 		terminateProgram() {
@@ -44,8 +56,10 @@
 
 		_createFrame(url) {
 			this._frame = document.createElement('webview');
-			this._frame.setAttribute('src', url);
+			// this._frame.setAttribute('src', url);
+			this._frame.setAttribute('src', 'localhost');
 			this._frame.setAttribute('preload', 'doping.js');
+			this._frame.setAttribute('disablewebsecurity', 'true');
 
 			this._container.appendChild(this._frame);
 			this._frame.addEventListener('ipc-message', (e) => {this._onIpcMessage(e);});
@@ -74,7 +88,11 @@
 			const tagStr = urls.map((e) => {return '<script src="' + e + '"></script>';}).join('');
 			this._libStrLength = tagStr.length;
 			const blob = new Blob([HTML_HEAD1, tagStr, HTML_HEAD2, codeStr, HTML_FOOT], {type: 'text/html'});
-			this._url = window.URL.createObjectURL(blob);
+			this._url = URL.createObjectURL(blob);
+			// this._src = [HTML_HEAD1, tagStr, HTML_HEAD2, codeStr, HTML_FOOT].join('\n');
+			this._src = [HTML_HEAD1, tagStr, HTML_HEAD2, HTML_FOOT].join('\n');
+			this._codeStr = [codeStr].join('\n');
+			this._tagStr = [tagStr].join('\n');
 		}
 
 
@@ -103,6 +121,7 @@
 
 
 		_onIpcMessage(e) {
+			console.log(e.channel);
 			if (e.channel === 'error') {
 				const [info] = e.args;
 				info.userCodeUrl = this._url;

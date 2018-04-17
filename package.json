@@ -9,7 +9,8 @@
     "build-mac": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64 --electron-version=1.3.13  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd 'dist/Croqujs-darwin-x64' && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
     "build-win": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon --asar --prune --out=package --overwrite=true --platform=win32 --arch=x64  --electron-version=1.3.13 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd dist/Croqujs-win32-x64 && del LICENSE* version && cd ../../",
     "build-win32": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon --asar --prune --out=package --overwrite=true --platform=win32 --arch=ia32 --electron-version=1.3.13 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd dist/Croqujs-win32-ia32 && del LICENSE* version && cd ../../",
-    "dev": "cpx ./src/**/* ./dist --watch",
+    "dev": "cpx ./src/**/* ./dist",
+    "dev-start": "npm run dev && npm start",
     "copy": "npm-run-all copy:* && cpx ./src/**/* ./dist",
     "copy:tern": "mkdirp ./dist/renderer_study/lib/tern && cpx ./node_modules/tern/lib/* ./dist/renderer_study/lib/tern && cpx ./node_modules/tern/defs/* ./dist/renderer_study/lib/tern",
     "copy:sweetalert2": "mkdirp ./dist/renderer_study/lib/sweetalert2 && cpx ./node_modules/sweetalert2/dist/sweetalert2.min.* ./dist/renderer_study/lib/sweetalert2",
@@ -32,7 +33,7 @@
   "dependencies": {
     "acorn": "^5.5.3",
     "codemirror": "^5.36.0",
-    "electron": "1.4",
+    "electron": "1.8",
     "font-awesome": "^4.7.0",
     "jquery": "^3.3.1",
     "js-beautify": "^1.7.5",
