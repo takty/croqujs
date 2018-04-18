@@ -1,4 +1,6 @@
 /node_modules/
-/dist/*
+/dist/
 /package/*
+/.temp/
 npm-debug.log
+config.json

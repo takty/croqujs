@@ -1,21 +1,28 @@
-/*
+/**
+ *
  * Exporter
- * 2016-08-19
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-18
+ *
  */
+
 
 'use strict';
 
-const fs = require('fs'), path = require('path');
+const fs   = require('fs');
+const path = require('path');
 
-const HTML_HEAD1 = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
-const HTML_HEAD2 = '</head><body><script>';
-const HTML_FOOT = '</script></body>';
+const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset = "utf-8"><title>%TITLE%</title>';
+const HTML_HEAD2  = '</head><body><script>';
+const HTML_FOOT   = '</script></body>';
 const EXP_LIB_DIR = 'exp_lib';
-const EXP_EOL = '\r\n';
+const EXP_EOL     = '\r\n';
 
 class Exporter {
 
 	constructor() {
+		this._userCodeOffset = 0;
 	}
 
 	readLibrarySources(codeStr, filePath) {
@@ -97,7 +104,12 @@ class Exporter {
 			});
 		}
 		const head = HTML_HEAD1.replace('%TITLE%', title);
-		fs.writeFileSync(path.join(dirPath, 'index.html'), [head, libs.join(''), HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(EXP_EOL));
+		const expPath = path.join(dirPath, 'index.html');
+		const libTagStr = libs.join('');
+		this._userCodeOffset = HTML_HEAD1.length + libTagStr.length + HTML_HEAD2.length;
+
+		fs.writeFileSync(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
+		return expPath;
 	}
 
 	_extractImportPaths(lines) {
@@ -168,8 +180,7 @@ class Exporter {
 				try {
 					fs.writeFileSync(to, cont);
 					return true;
-				} catch (e1) {
-				}
+				} catch (e1) {}
 			}
 			return false;
 		}
@@ -187,8 +198,7 @@ class Exporter {
 				try {
 					fs.mkdirSync(nd);
 					return true;
-				} catch(e1) {
-				}
+				} catch(e1) {}
 			}
 		}
 		return false;

@@ -58,7 +58,7 @@ class Main {
 			fontSetIdx: 0,
 			lineHeightIdx: 2,
 			fontSize: 16,
-			isLineNumberByFunction: false,
+			isLineNumberByFunctionEnabled: false,
 			languageIdx: 1/*ja*/,
 			autoBackup: true,
 		});
@@ -160,13 +160,21 @@ class Main {
 	// -------------------------------------------------------------------------
 
 
+	_getTempPath() {
+		let dir = path.join(__dirname, '../');
+		if (path.extname(dir) === '.asar') {
+			dir = path.dirname(dir);
+		}
+		return path.join(dir, '.temp');
+	}
+
 	_createNewWindow() {
 		if (this._lastFocusedTwin && !this._lastFocusedTwin._isEnabled) return;
 		this._twinCount += 1;
 		if (this._twins.length === 0) {
-			new Twin(this._twinCount, this, this._res, this._conf, this._createNav());
+			new Twin(this._twinCount, this, this._res, this._conf, this._createNav(), this._getTempPath());
 		} else {
-			new Twin(this._twinCount, this, this._res, this._conf, this._createNav(), this._lastFocusedTwin);
+			new Twin(this._twinCount, this, this._res, this._conf, this._createNav(), this._getTempPath(), this._lastFocusedTwin);
 		}
 	}
 
@@ -278,7 +286,7 @@ class Main {
 			{label: rm.zoomOut,   accelerator: 'CmdOrCtrl+-', click: this._changeFontSizeDelta.bind(this, -2)},
 			{label: rm.zoomReset, accelerator: 'CmdOrCtrl+0', click: this._createConfigSetter('fontSize', 16)},
 			{type: 'separator'},
-			{type: 'checkbox', label: rm.showLineNumberByFunction, click: this._createConfigMenuSetter('lineNumberByFunctionEnabled'), checked: this._conf.get('lineNumberByFunctionEnabled')},
+			{type: 'checkbox', label: rm.showLineNumberByFunction, click: this._createConfigMenuSetter('isLineNumberByFunctionEnabled'), checked: this._conf.get('isLineNumberByFunctionEnabled')},
 			{label: rm.toggleOutputPane, accelerator: 'CmdOrCtrl+L', click: this._createStudyCaller('toggleOutputPane')},
 			{label: '', accelerator: 'F12', click: this._createTwinCaller('toggleDevTools'), visible: false},
 			{label: '', accelerator: 'CmdOrCtrl+Shift+F12', click: this._createTwinCaller('toggleFieldDevTools'), visible: false},

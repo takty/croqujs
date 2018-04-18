@@ -17,12 +17,13 @@ const MAX_CONSOLE_OUTPUT_SIZE = 100;
 
 class Twin {
 
-	constructor(id, main, res, conf, nav, prevTwin) {
+	constructor(id, main, res, conf, nav, tempPath, prevTwin) {
 		this._id = id;
 		this._main = main;
 		this._res = res;
 		this._conf = conf;
 		this._nav = nav;
+		this._tempPath = tempPath;
 
 		this._fieldWin = null;
 		this._fieldWinBounds = null;
@@ -34,6 +35,8 @@ class Twin {
 		this._historySize = {undo: 0, redo: 0};
 		this._backup = new Backup();
 		this._isEnabled = true;
+
+		this._exporter = new Exporter();
 
 		ipcMain.on('fromRenderer_' + this._id, (ev, msg, ...args) => {this[msg](...args);});
 		ipcMain.on('fromRendererSync_' + this._id, (ev, msg, ...args) => {this[msg](ev, ...args);});
@@ -176,10 +179,14 @@ class Twin {
 		if (info.import) {
 			this.callStudyMethod('addErrorMessage', this._res.msg.cannotImport.replace('%s', info.msg), info);
 		} else {
-			const file = (info.url !== info.userCodeUrl) ? `(${info.urlFileName}) ` : '';
+			const isUserCode = (info.url === this._url);
+			if (isUserCode && info.line === 1) info.col -= this._exporter._userCodeOffset;
+			const fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
+			const file = isUserCode ? '' : `(${fileName}) `;
+			// const file = isUserCode ? '' : `(${info.url}) `;
 			const msg = `${file}%lineno% [${info.col}] - ${this._main.translateError(info.msg)}`;
 			// When an error occurred in a library file, the 2nd param must be 'undefined'!
-			this.callStudyMethod('addErrorMessage', msg, (info.url === info.userCodeUrl) ? info : undefined, info.line);
+			this.callStudyMethod('addErrorMessage', msg, isUserCode ? info : undefined, info.line);
 		}
 	}
 
@@ -294,9 +301,9 @@ class Twin {
 			} else if (fps.length > 1) {
 				this._doOpen(this._droppedFilePath);
 			}
-	    } catch (e) {
-	    	if (e.code !== 'ENOENT' && e.code !== 'EPERM') throw e;
-	    }
+		} catch (e) {
+			if (e.code !== 'ENOENT' && e.code !== 'EPERM') throw e;
+		}
 	}
 
 	saveAs() {
@@ -305,9 +312,9 @@ class Twin {
 		let writable = true;
 		try {
 			writable = ((fs.statSync(fp).mode & 0x0080) !== 0);  // check write flag
-	    } catch (e) {
-	      	if (e.code !== 'ENOENT') throw e;
-	    }
+		} catch (e) {
+			if (e.code !== 'ENOENT') throw e;
+		}
 		if (writable) {
 			this._saveFile(fp);
 		} else {
@@ -415,7 +422,7 @@ class Twin {
 		const expDir = path.join(path.dirname(this._filePath), name + '.lib.js');
 
 		try {
-			new Exporter().exportAsLibrary(text, expDir, name.toUpperCase());
+			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase());
 			this._ensureWindowTop(this._studyWin);
 			this.callStudyMethod('showAlert', this._res.msg.exportedAsLibrary, 'success');
 		} catch (e) {
@@ -438,7 +445,7 @@ class Twin {
 	_doExportAsWebPage(text) {
 		const expDir = this._makeExportPath(this._filePath);
 		try {
-			new Exporter().exportAsWebPage(text, this._filePath, expDir);
+			this._exporter.exportAsWebPage(text, this._filePath, expDir);
 			this._ensureWindowTop(this._studyWin);
 			this.callStudyMethod('showAlert', this._res.msg.exportedAsWebPage, 'success');
 		} catch (e) {
@@ -557,13 +564,26 @@ class Twin {
 	}
 
 	_execute(codeStr, windowShouldBeTop) {
-		const ret = new Exporter().readLibrarySources(codeStr, this._filePath);
+		const ret = this._exporter.readLibrarySources(codeStr, this._filePath);
 		if (!Array.isArray(ret)) {
 			this.onFieldErrorOccurred({msg: ret, import: true});
 			return;
 		}
 		this._ignoreFieldOutputMessage = false;
-		this._callFieldMethod('executeProgram', codeStr, this._filePath, ret);
+
+
+
+		const expDir = this._tempPath;
+		try {
+			this._rmdirSync(expDir);
+			fs.mkdirSync(expDir);
+			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir);
+			this._url = 'file:///' + expPath.replace(/\\/g, '/');
+			this._baseUrl = 'file:///' + path.dirname(expPath).replace(/\\/g, '/') + '/';
+			this._callFieldMethod('openProgram', this._url);
+		} catch (e) {
+			this._outputError(e, expDir);
+		}
 	}
 
 	_createFieldWindow() {

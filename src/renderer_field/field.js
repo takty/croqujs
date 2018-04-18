@@ -1,16 +1,17 @@
-/*
- * Field
- * 2016-08-18
+/**
+ *
+ * Field (JS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-18
+ *
  */
+
 
 {
 	'use strict';
 
 	const {ipcRenderer} = require('electron');
-
-	const HTML_HEAD1 = '<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">';
-	const HTML_HEAD2 = '</head><body><script>';
-	const HTML_FOOT  = '</script></body>';
 
 	class Field {
 
@@ -21,33 +22,15 @@
 
 			window.ondragover = window.ondrop = (e) => {e.preventDefault(); return false;};
 			this._container = document.querySelector(containerSel);
-			this._urlToFileName = {};
-		}
-
-		_twinMessage(msg, ...args) {
-			ipcRenderer.send('fromRenderer_' + this._id, msg, ...args);
 		}
 
 
 		// -------------------------------------------------------------------------
 
 
-		executeProgram(codeStr, filePath, imports) {
+		openProgram(url) {
 			this._removeFrame();
-			this._createSource(codeStr, imports, this._urlToFileName);
-			// this._createFrame(this._url + '#' + this._id);
-			this._createFrame('localhost#' + this._id);
-			
-			this._frame.addEventListener('did-finish-load', () => {
-				// this._frame.send('imports', imports);
-				// this._frame.send('id', this._id);
-				// this._frame.send('receiveSrc', this._tagStr);
-				this._frame.executeJavaScript('document.head.innerHTML = \'' + this._tagStr + '\';');
-				for (let i = 0; i < imports.length; i += 1) {
-					this._frame.executeJavaScript(imports[i].source);
-				}
-				this._frame.executeJavaScript(this._codeStr);
-			});
+			this._createFrame(url + '#' + this._id);
 		}
 
 		terminateProgram() {
@@ -56,10 +39,8 @@
 
 		_createFrame(url) {
 			this._frame = document.createElement('webview');
-			// this._frame.setAttribute('src', url);
-			this._frame.setAttribute('src', 'localhost');
-			this._frame.setAttribute('preload', 'doping.js');
-			this._frame.setAttribute('disablewebsecurity', 'true');
+			this._frame.setAttribute('src', url);
+			this._frame.setAttribute('preload', 'injection.js');
 
 			this._container.appendChild(this._frame);
 			this._frame.addEventListener('ipc-message', (e) => {this._onIpcMessage(e);});
@@ -73,38 +54,16 @@
 			this._frame = null;
 		}
 
-		_createSource(codeStr, imports, urlToFileName) {
-			const urls = imports.map((ld) => {
-				if (ld.source) {
-					const url = window.URL.createObjectURL(new Blob([ld.source], {type: 'application/javascript'}));
-					urlToFileName[url] = ld.desc;
-					return url;
-				} else {
-					const i = ld.desc.lastIndexOf('/');
-					urlToFileName[ld.desc] = (i !== -1) ? ld.desc.substring(i) : ld.desc;
-					return ld.desc;
-				}
-			});
-			const tagStr = urls.map((e) => {return '<script src="' + e + '"></script>';}).join('');
-			this._libStrLength = tagStr.length;
-			const blob = new Blob([HTML_HEAD1, tagStr, HTML_HEAD2, codeStr, HTML_FOOT], {type: 'text/html'});
-			this._url = URL.createObjectURL(blob);
-			// this._src = [HTML_HEAD1, tagStr, HTML_HEAD2, codeStr, HTML_FOOT].join('\n');
-			this._src = [HTML_HEAD1, tagStr, HTML_HEAD2, HTML_FOOT].join('\n');
-			this._codeStr = [codeStr].join('\n');
-			this._tagStr = [tagStr].join('\n');
-		}
-
 
 		// -------------------------------------------------------------------------
 
 
 		onWindowFullscreenEntered() {
-			this._frame.executeJavaScript(`document.body.style.overflow = 'hidden'; document.body.scrollTop = 0;`, false);
+			this._frame.executeJavaScript("document.body.style.overflow='hidden';document.body.scrollTop=0;", false);
 		}
 
 		onWindowFullscreenLeft() {
-			this._frame.executeJavaScript(`document.body.style.overflow = 'visible';`, false);
+			this._frame.executeJavaScript("document.body.style.overflow='visible';", false);
 		}
 
 		toggleDevTools() {
@@ -121,14 +80,13 @@
 
 
 		_onIpcMessage(e) {
-			console.log(e.channel);
 			if (e.channel === 'error') {
-				const [info] = e.args;
-				info.userCodeUrl = this._url;
-				info.urlFileName = this._urlToFileName[info.url];
-				if (info.line === 1) info.col -= (HTML_HEAD1.length + this._libStrLength + HTML_HEAD2.length);
-				this._twinMessage('onFieldErrorOccurred', info);
+				this._twinMessage('onFieldErrorOccurred', e.args[0]);
 			}
+		}
+
+		_twinMessage(msg, ...args) {
+			ipcRenderer.send('fromRenderer_' + this._id, msg, ...args);
 		}
 
 	}

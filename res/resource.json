@@ -18,9 +18,7 @@
         "undef": false,
         "strict": false,
 		"esversion": 6,
-
         "expr": false,
-
         "browser": true
     },
 	"jsBeautifyOpt": {

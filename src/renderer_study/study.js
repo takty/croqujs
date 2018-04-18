@@ -169,7 +169,7 @@ class Study {
 		this._editor.rulerEnabled(conf.fontSetIdx === 0);
 		this._editor.lineHeight(this._res.lineHeights[conf.lineHeightIdx]);
 		this._editor.fontSize(parseInt(conf.fontSize, 10), false);
-		this._editor.lineNumberByFunctionEnabled(conf.lineNumberByFunctionEnabled);
+		this._editor.lineNumberByFunctionEnabled(conf.isLineNumberByFunctionEnabled);
 
 		const pane = document.querySelector('.sub');
 		pane.style.fontSize = parseInt(conf.fontSize, 10) + 'px';
