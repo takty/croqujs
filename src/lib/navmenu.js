@@ -1,13 +1,19 @@
-/*
- * Nav
- * 2016-08-10
+/**
+ *
+ * NavMenu (JS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-28
+ *
  */
+
 
 'use strict';
 
-const {Menu} = require('electron');
+const { Menu } = require('electron');
 
-class Nav {
+
+class NavMenu {
 
 	constructor(template) {
 		this._menu = Menu.buildFromTemplate(template);
@@ -17,8 +23,7 @@ class Nav {
 
 	_initializeIdToMenuItemMap() {
 		const scan = (items) => {
-			for (let i = 0; i < items.length; i += 1) {
-				const mi = items[i];
+			for (let mi of items) {
 				if (mi.id !== undefined) {
 					this._idToMenuItem.set(mi.id, mi);
 				}
@@ -40,4 +45,4 @@ class Nav {
 
 }
 
-module.exports = Nav;
+module.exports = NavMenu;

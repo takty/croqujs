@@ -1,6 +1,19 @@
+/**
+ *
+ * Analyzer (JS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-28
+ *
+ */
+
+
+'use strict';
+
 importScripts('lib/acorn/acorn.js');
 importScripts('lib/acorn/acorn_loose.js');
 importScripts('lib/acorn/walk.js');
+
 
 self.addEventListener('message', function(e) {
 	const lines = [];
@@ -10,11 +23,11 @@ self.addEventListener('message', function(e) {
 		const ast = acorn.parse(e.data, {locations: true});
 		acorn.walk.recursive(ast, {}, {
 			VariableDeclaration: (node, state, c) => {  // var f = function () {...};
-				node.declarations.forEach((d) => {
+				for (let d of node.declarations) {
 					if (d.init !== null && (d.init.type === FE || d.init.type === AFE)) {
 						lines.push(d.loc.start.line);
 					}
-				});
+				}
 			},
 			FunctionDeclaration: (node, state, c) => {  // function f () {...}
 				lines.push(node.loc.start.line);

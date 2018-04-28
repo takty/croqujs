@@ -1,9 +1,15 @@
-/*
- * WinState
- * 2016-09-17
+/**
+ *
+ * WinState (JS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-27
+ *
  */
 
+
 'use strict';
+
 
 class WinState {
 
@@ -20,8 +26,8 @@ class WinState {
 		this._win = win;
 		this._isMac = (require('os').platform() === 'darwin');
 		this._quitWindow = quitWindow;
-		this._reader = () => {return config.get(key) || null;};
-		this._writer = (state) => {config.set(key, state);};
+		this._reader = () => { return config.get(key) || null; };
+		this._writer = (state) => { config.set(key, state); };
 
 		this._state = {};
 		this._curMode = 'normal';
@@ -42,7 +48,7 @@ class WinState {
 		const t = JSON.parse(this._reader() || 'null');
 
 		if (t && suppressRestore !== true) {
-			this._state = {mode: t.mode, x: t.x, y: t.y, width: t.width, height: t.height};
+			this._state = { mode: t.mode, x: t.x, y: t.y, width: t.width, height: t.height };
 			this._curMode = this._state.mode;
 			if (this._curMode === 'maximized') {
 				this._win.maximize();
@@ -63,9 +69,9 @@ class WinState {
 			const bs = this._win.getBounds();
 			if (bs.width === 0 || bs.height === 0) return;
 
-			this._state.x = bs.x;
-			this._state.y = bs.y;
-			this._state.width = bs.width;
+			this._state.x      = bs.x;
+			this._state.y      = bs.y;
+			this._state.width  = bs.width;
 			this._state.height = bs.height;
 		} catch (e) {
 			// in minor case, 'win' is sometimes forced to be closed when processing 'dumpState'.
@@ -77,7 +83,7 @@ class WinState {
 		if (this._state.width !== 0 && this._state.height !== 0) {
 			this._win.setSize(this._state.width, this._state.height);
 		}
-  		const {width, height} = this._screen.getPrimaryDisplay().workAreaSize;
+		const { width, height } = this._screen.getPrimaryDisplay().workAreaSize;
 		const minY = this._isMac ? 22 : 0;
 		const x = Math.max(0, Math.min(this._state.x, width));
 		const y = Math.max(minY, Math.min(this._state.y, height));

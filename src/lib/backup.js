@@ -1,11 +1,19 @@
-/*
- * Backup
- * 2016-08-09
+/**
+ *
+ * Backup (JS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-27
+ *
  */
+
 
 'use strict';
 
-const fs = require('fs'), path = require('path'), crypto = require('crypto');
+const FS     = require('fs');
+const PATH   = require('path');
+const CRYPTO = require('crypto');
+
 
 class Backup {
 
@@ -19,19 +27,19 @@ class Backup {
 
 	backup(text) {
 		if (!this._filePath) return false;
-		const hash = crypto.createHash('sha256');
+		const hash = CRYPTO.createHash('sha256');
 		hash.update(text);
 		const digest = hash.digest('hex');
 		if (digest === this._digest) return false;
 		this._digest = digest;
 
-		const ext = path.extname(this._filePath);
-		const name = path.basename(this._filePath, ext);
+		const ext  = PATH.extname(this._filePath);
+		const name = PATH.basename(this._filePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(this._filePath);
-			const to = path.join(backupDir, name + this._createTimeStampStr() + ext);
-			fs.writeFile(to, text.replace(/\n/g, '\r\n'));
+			const to = PATH.join(backupDir, name + this._createTimeStampStr() + ext);
+			FS.writeFile(to, text.replace(/\n/g, '\r\n'));
 		} catch (e) {
 			return false;
 		}
@@ -39,15 +47,15 @@ class Backup {
 	}
 
 	backupExistingFile(existingFilePath) {
-		if (!fs.existsSync(existingFilePath)) return false;
+		if (!FS.existsSync(existingFilePath)) return false;
 
-		const ext = path.extname(existingFilePath);
-		const name = path.basename(existingFilePath, ext);
+		const ext  = PATH.extname(existingFilePath);
+		const name = PATH.basename(existingFilePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(existingFilePath);
-			const to = path.join(backupDir, name + this._createTimeStampStr() + ext);
-			fs.writeFileSync(to, fs.readFileSync(existingFilePath, 'utf-8'));
+			const to = PATH.join(backupDir, name + this._createTimeStampStr() + ext);
+			FS.writeFileSync(to, FS.readFileSync(existingFilePath, 'utf-8'));
 		} catch (e) {
 			return false;
 		}
@@ -56,15 +64,15 @@ class Backup {
 
 	_createTimeStampStr() {
 		const d = new Date();
-		const zp = (n) => {return n < 10 ? ('0' + n) : ('' + n);};
+		const zp = (n) => { return n < 10 ? ('0' + n) : ('' + n); };
 		return d.getFullYear() + zp(d.getMonth() + 1) + zp(d.getDate()) + zp(d.getHours()) + zp(d.getMinutes()) + zp(d.getSeconds()) + d.getMilliseconds();
 	}
 
 	_ensureBackupDir(fp) {
-		const name = path.basename(fp, path.extname(fp));
-		const dir = path.join(path.dirname(fp), name + '.backup');
+		const name = PATH.basename(fp, PATH.extname(fp));
+		const dir = PATH.join(PATH.dirname(fp), name + '.backup');
 		try {
-			fs.mkdirSync(dir);  // if the dir exists, an exception is thrown.
+			FS.mkdirSync(dir);  // if the dir exists, an exception is thrown.
 		} catch (e) {
 			// do nothing
 		}

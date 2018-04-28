@@ -1,29 +1,36 @@
-/*
- * Twin
- * 2016-09-17
+/**
+ *
+ * Twin (JS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-28
+ *
  */
+
 
 'use strict';
 
 const electron = require('electron')
 const {ipcMain, BrowserWindow, dialog, clipboard, nativeImage} = electron;
-const fs = require('fs'), path = require('path');
+const FS   = require('fs');
+const PATH = require('path');
 
+const Backup   = require('./lib/backup.js');
 const WinState = require('./lib/winstate.js');
-const Backup = require('./lib/backup.js');
 const Exporter = require('./exporter.js');
 
 const MAX_CONSOLE_OUTPUT_SIZE = 100;
 
+
 class Twin {
 
-	constructor(id, main, res, conf, nav, tempPath, prevTwin) {
-		this._id = id;
+	constructor(main, res, conf, nav, prevTwin) {
+		Twin._count += 1;
+		this._id = Twin._count;
 		this._main = main;
 		this._res = res;
 		this._conf = conf;
 		this._nav = nav;
-		this._tempPath = tempPath;
 
 		this._fieldWin = null;
 		this._fieldWinBounds = null;
@@ -38,11 +45,31 @@ class Twin {
 
 		this._exporter = new Exporter();
 
-		ipcMain.on('fromRenderer_' + this._id, (ev, msg, ...args) => {this[msg](...args);});
-		ipcMain.on('fromRendererSync_' + this._id, (ev, msg, ...args) => {this[msg](ev, ...args);});
+		ipcMain.on('fromRenderer_' + this._id, (ev, msg, ...args) => {
+			if (this[msg]) {
+				this[msg](...args);
+			} else {
+				this._main[msg](this, ...args);
+			}
+		});
+		ipcMain.on('fromRendererSync_' + this._id, (ev, msg, ...args) => {
+			if (this[msg]) {
+				this[msg](ev, ...args);
+			} else {
+				this._main[msg](this, ...args);
+			}
+		});
 
 		this._createStudyWindow(prevTwin);
 		this._main.onTwinCreated(this);
+	}
+
+	_getTempPath() {
+		let dir = PATH.join(__dirname, '../');
+		if (PATH.extname(dir) === '.asar') {
+			dir = PATH.dirname(dir);
+		}
+		return PATH.join(dir, '.temp');
 	}
 
 
@@ -99,14 +126,6 @@ class Twin {
 		}
 	}
 
-	state() {  // Called By This and Main
-		return {
-			isFileOpened: this._filePath != null,
-			canUndo: this._historySize.undo > 0,
-			canRedo: this._historySize.redo > 0,
-		}
-	}
-
 	callEditorMethod(method, ...args) {  // Called By This and Main
 		this._studyWin.webContents.send('callEditorMethod', method, ...args);
 	}
@@ -126,10 +145,6 @@ class Twin {
 
 	onStudyEnabled(flag) {
 		this._isEnabled = flag;
-	}
-
-	onStudyFontSizeChanged(fontSize) {
-		this._main.onTwinFontSizeChanged(this, fontSize);
 	}
 
 	onStudyModified(historySize) {
@@ -166,7 +181,6 @@ class Twin {
 	}
 
 	onFieldOutputOccurred(msgs) {
-		console.log('onFieldOutputOccurred');
 		if (this._ignoreFieldOutputMessage) return;
 		if (MAX_CONSOLE_OUTPUT_SIZE < msgs.length) {
 			this._fieldOutputCache = msgs.slice(msgs.length - MAX_CONSOLE_OUTPUT_SIZE);
@@ -195,15 +209,19 @@ class Twin {
 
 
 	_updateUiState() {
-		this._main.updateTwinSpecificMenuItems(this);
-		const ts = this.state();
-		this.callStudyMethod('reflectTwinState', ts);
+		const state = {
+			isFileOpened: this._filePath != null,
+			canUndo: this._historySize.undo > 0,
+			canRedo: this._historySize.redo > 0,
+		};
+		this._main.updateTwinSpecificMenuItems(state, this._nav);
+		this.callStudyMethod('reflectTwinState', state);
 	}
 
 	_updateWindowTitle() {
 		const prefix = (this._isModified ? '* ' : '') + (this._isReadOnly ? `(${this._res.readOnly}) ` : '');
-		const fn = (this._filePath === null) ? this._res.untitled : path.basename(this._filePath);
-		const fp = (this._filePath === null) ? '' : (' — ' + path.dirname(this._filePath) + '');
+		const fn = (this._filePath === null) ? this._res.untitled : PATH.basename(this._filePath);
+		const fp = (this._filePath === null) ? '' : (' — ' + PATH.dirname(this._filePath) + '');
 		const title = prefix + fn + fp + ' — ' + this._res.appTitle;
 		if (this._studyWin.getTitle() !== title) this._studyWin.setTitle(title);
 	}
@@ -251,7 +269,7 @@ class Twin {
 	}
 
 	_openFile(filePath) {
-		fs.readFile(filePath, 'utf-8', (error, contents) => {
+		FS.readFile(filePath, 'utf-8', (error, contents) => {
 			if (contents == null) {
 				this._outputError('', filePath);
 				return;
@@ -261,17 +279,17 @@ class Twin {
 	}
 
 	_initializeDocument(text = '', filePath = null) {
-		const readOnly = filePath ? ((fs.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
+		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
 
 		this.callStudyMethod('clearCurrentState');
 		this.callEditorMethod('enabled', false);
 		this.callEditorMethod('value', text);
 		this.callEditorMethod('readOnly', readOnly);
 
-		this._filePath = filePath;
-		this._isReadOnly = readOnly;
-		this._isModified = false;
-		this._historySize = {undo: 0, redo: 0};
+		this._filePath    = filePath;
+		this._isReadOnly  = readOnly;
+		this._isModified  = false;
+		this._historySize = { undo: 0, redo: 0 };
 		this._backup.setFilePath(filePath);
 
 		this._updateUiState();
@@ -283,15 +301,15 @@ class Twin {
 	_doFileDropped() {
 		let isDir = false;
 		try {
-			isDir = fs.statSync(this._droppedFilePath).isDirectory();
+			isDir = FS.statSync(this._droppedFilePath).isDirectory();
 			if (!isDir) {
 				this._openFile(this._droppedFilePath);
 				return;
 			}
-			const fns = fs.readdirSync(this._droppedFilePath);
-			const fps = fns.map(e => path.join(this._droppedFilePath, e)).filter((fp) => {
+			const fns = FS.readdirSync(this._droppedFilePath);
+			const fps = fns.map(e => PATH.join(this._droppedFilePath, e)).filter((fp) => {
 				try {
-				    return fs.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
+				    return FS.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
 				} catch (e) {
 					return false;
 				}
@@ -311,7 +329,7 @@ class Twin {
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
-			writable = ((fs.statSync(fp).mode & 0x0080) !== 0);  // check write flag
+			writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
 		} catch (e) {
 			if (e.code !== 'ENOENT') throw e;
 		}
@@ -342,7 +360,7 @@ class Twin {
 
 	_doSaveFile(text) {
 		try {
-			fs.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
+			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 			this._isModified = false;
 			this._updateUiState();
 			this._updateWindowTitle();
@@ -356,7 +374,7 @@ class Twin {
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
-			writable = ((fs.statSync(fp).mode & 0x0080) !== 0);  // check write flag
+			writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
 	    } catch (e) {
 	      	if (e.code !== 'ENOENT') throw e;
 	    }
@@ -373,7 +391,7 @@ class Twin {
 
 	_doSaveFileVersion(text) {
 		try {
-			fs.writeFileSync(this._filePathVersion, text.replace(/\n/g, '\r\n'));
+			FS.writeFileSync(this._filePathVersion, text.replace(/\n/g, '\r\n'));
 		} catch (e) {
 			this._outputError(e, this._filePathVersion);
 		}
@@ -406,7 +424,7 @@ class Twin {
 
 	exportAsLibrary() {
 		if (this._filePath === null) return;
-		const name = path.basename(this._filePath, path.extname(this._filePath));
+		const name = PATH.basename(this._filePath, PATH.extname(this._filePath));
 		this._ensureWindowTop(this._studyWin);
 		this.callStudyMethod('showPrompt', this._res.msg.enterLibraryName, 'input', '_doExportAsLibrary', this._res.msg.libraryName, name);
 	}
@@ -419,7 +437,7 @@ class Twin {
 	__doExportAsLibrary(text) {
 		const val = this._libraryNameTemp;
 		const name = val.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
-		const expDir = path.join(path.dirname(this._filePath), name + '.lib.js');
+		const expDir = PATH.join(PATH.dirname(this._filePath), name + '.lib.js');
 
 		try {
 			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase());
@@ -435,7 +453,7 @@ class Twin {
 		const expDir = this._makeExportPath(this._filePath);
 		try {
 			this._rmdirSync(expDir);
-			fs.mkdirSync(expDir);
+			FS.mkdirSync(expDir);
 			this.callStudyMethod('sendBackText', '_doExportAsWebPage');
 		} catch (e) {
 			this._outputError(e, expDir);
@@ -454,22 +472,22 @@ class Twin {
 	}
 
 	_makeExportPath(fp) {
-		const ext = path.extname(fp);
-		const name = path.basename(fp, ext);
-		return path.join(path.dirname(fp), name + '.export');
+		const ext = PATH.extname(fp);
+		const name = PATH.basename(fp, ext);
+		return PATH.join(PATH.dirname(fp), name + '.export');
 	}
 
 	_rmdirSync(dirPath) {
-		if (!fs.existsSync(dirPath)) return;
-		fs.readdirSync(dirPath).forEach((fp) => {
-			fp = path.join(dirPath, fp);
-			if (fs.lstatSync(fp).isDirectory()) {
+		if (!FS.existsSync(dirPath)) return;
+		for (let fp of FS.readdirSync(dirPath)) {
+			fp = PATH.join(dirPath, fp);
+			if (FS.lstatSync(fp).isDirectory()) {
 				this._rmdirSync(fp);
 			} else {
-				fs.unlinkSync(fp);
+				FS.unlinkSync(fp);
 			}
-		});
-		fs.rmdirSync(dirPath);
+		}
+		FS.rmdirSync(dirPath);
 	}
 
 
@@ -571,15 +589,13 @@ class Twin {
 		}
 		this._ignoreFieldOutputMessage = false;
 
-
-
-		const expDir = this._tempPath;
+		const expDir = this._getTempPath();
 		try {
 			this._rmdirSync(expDir);
-			fs.mkdirSync(expDir);
+			FS.mkdirSync(expDir);
 			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir);
 			this._url = 'file:///' + expPath.replace(/\\/g, '/');
-			this._baseUrl = 'file:///' + path.dirname(expPath).replace(/\\/g, '/') + '/';
+			this._baseUrl = 'file:///' + PATH.dirname(expPath).replace(/\\/g, '/') + '/';
 			this._callFieldMethod('openProgram', this._url);
 		} catch (e) {
 			this._outputError(e, expDir);
@@ -616,5 +632,7 @@ class Twin {
 	}
 
 }
+
+Twin._count = 0;
 
 module.exports = Twin;

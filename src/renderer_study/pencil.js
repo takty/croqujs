@@ -1,9 +1,15 @@
-/*
+/**
+ *
  * Pencil: Editor Component Wrapper for CodeMirror
- * 2016-09-30
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-28
+ *
  */
 
+
 'use strict';
+
 
 class Editor {
 

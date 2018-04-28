@@ -1,9 +1,15 @@
-/*
+/**
+ *
  * ErrorTranslator
- * 2016-09-17
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-18
+ *
  */
 
+
 'use strict';
+
 
 class ErrorTranslator {
 

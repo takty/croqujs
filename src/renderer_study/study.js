@@ -1,7 +1,12 @@
-/*
- * Study
- * 2016-09-18
+/**
+ *
+ * Study (JS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-28
+ *
  */
+
 
 'use strict';
 
@@ -9,6 +14,7 @@ const electron = require('electron');
 const {ipcRenderer} = electron;
 
 const MAX_CONSOLE_OUTPUT_SIZE = 100;
+
 
 class Study {
 
@@ -266,8 +272,7 @@ class Study {
 		const pane = this._outputPane;
 		const inner = this._cloneOutputPaneLines(MAX_CONSOLE_OUTPUT_SIZE - msgs.length);
 
-		for (let i = 0, I = msgs.length; i < I; i += 1) {
-			const m = msgs[i];
+		for (let m of msgs) {
 			let elm = document.createElement('div');
 			elm.className = m.type;
 			const count = (m.count > 1) ? ('<span class="count">' + m.count + '</span>') : '';
@@ -419,9 +424,7 @@ class Study {
 		this._editor.enabled(false);
 		swal({
 			title: '', html: text, type: type, animation: 'slide-from-top', allowOutsideClick: false,
-		}).then((result) => {
-			this._editor.enabled(true);
-		}, (dismiss) => {
+		}).then((res) => {
 			this._editor.enabled(true);
 		});
 	}
@@ -430,11 +433,9 @@ class Study {
 		this._editor.enabled(false);
 		swal({
 			title: '', html: text, type: type, showCancelButton: true, confirmButtonText: 'OK', cancelButtonText: this._res.btn.cancel, animation: 'slide-from-top', allowOutsideClick: false,
-		}).then((result) => {
+		}).then((res) => {
 			this._editor.enabled(true);
-			if (messageForMain) this._twinMessage(messageForMain);
-		}, (dismiss) => {
-			this._editor.enabled(true);
+			if (res.value && messageForMain) this._twinMessage(messageForMain);
 		});
 	}
 
@@ -442,11 +443,9 @@ class Study {
 		this._editor.enabled(false);
 		swal({
 			title: '', html: text, input: 'text', showCancelButton: true, confirmButtonText: 'OK', cancelButtonText: this._res.btn.cancel, inputPlaceholder: placeholder, inputValue: defaultValue, animation: 'slide-from-top', allowOutsideClick: false,
-		}).then((val) => {
+		}).then((res) => {
 			this._editor.enabled(true);
-			if (val && messageForMain) this._twinMessage(messageForMain, val);
-		}, (dismiss) => {
-			this._editor.enabled(true);
+			if (res.value && messageForMain) this._twinMessage(messageForMain, res.value);
 		});
 	}
 

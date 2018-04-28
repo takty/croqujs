@@ -1,8 +1,13 @@
-/*
- * Laccolla Theme for SweetAlert2
- * 2016-09-30
+/**
+ *
+ * SweetAlert2 (CSS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-04-27
+ *
  */
 
+ 
 .swal2-modal {
 	font-family: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
 	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
@@ -55,8 +60,8 @@
 }
 
 
-.swal2-modal button.styled {
-	font-size: 16px;
+.swal2-popup .swal2-styled {
+	/* font-size: 16px; */
 	min-width: 6em;
 	min-height: 2.5em;
 	margin-left: 0.5em;
@@ -65,23 +70,23 @@
 	transition: 0.25s;
 }
 
-.swal2-modal button.swal2-confirm.styled {
+.swal2-popup .swal2-styled.swal2-confirm {
 	background-color: #f5a200 !important;  /* L-Orange */
 }
 
-.swal2-modal button.swal2-confirm.styled:hover {
+.swal2-popup .swal2-styled.swal2-confirm:hover {
 	background-color: #f18400 !important;
 }
 
-.swal2-modal button.swal2-cancel.styled {
+.swal2-popup .swal2-styled.swal2-cancel {
 	background-color: #b5b5b6 !important;  /* L-Gray */
 }
 
-.swal2-modal button.swal2-cancel.styled:hover {
+.swal2-popup .swal2-styled.swal2-cancel:hover {
 	background-color: #898989 !important;  /* L-Dark Gray */
 }
 
-.swal2-modal button:focus {
-	box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 8px !important;
+.swal2-popup .swal2-styled:focus {
+	box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.25) !important;
 	outline: none;
 }
