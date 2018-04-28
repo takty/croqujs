@@ -64,14 +64,6 @@ class Twin {
 		this._main.onTwinCreated(this);
 	}
 
-	_getTempPath() {
-		let dir = PATH.join(__dirname, '../');
-		if (PATH.extname(dir) === '.asar') {
-			dir = PATH.dirname(dir);
-		}
-		return PATH.join(dir, '.temp');
-	}
-
 
 	// -------------------------------------------------------------------------
 
@@ -599,6 +591,14 @@ class Twin {
 		} catch (e) {
 			this._outputError(e, expDir);
 		}
+	}
+
+	_getTempPath() {
+		let dir = PATH.join(__dirname, '../');
+		if (PATH.extname(dir) === '.asar') {
+			dir = PATH.dirname(dir);
+		}
+		return PATH.join(dir, '.temp');
 	}
 
 	_createFieldWindow() {
