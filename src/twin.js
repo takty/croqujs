@@ -197,7 +197,6 @@ class Twin {
 			if (isUserCode && info.line === 1) info.col -= this._exporter._userCodeOffset;
 			const fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
 			const file = isUserCode ? '' : `(${fileName}) `;
-			// const file = isUserCode ? '' : `(${info.url}) `;
 			const msg = `${file}%lineno% [${info.col}] - ${this._main.translateError(info.msg)}`;
 			// When an error occurred in a library file, the 2nd param must be 'undefined'!
 			this.callStudyMethod('addErrorMessage', msg, isUserCode ? info : undefined, info.line);
@@ -605,6 +604,7 @@ class Twin {
 	_createFieldWindow() {
 		const opt = Object.assign({show: false}, this._fieldWinBounds || {});
 		this._fieldWin = new BrowserWindow(opt);
+		this._fieldWin.setTitle(this._res.appTitle);
 		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => {this._fieldWin = null;});
 		this._fieldWin.on('enter-full-screen', () => {this._callFieldMethod('onWindowFullscreenEntered');});
