@@ -6,9 +6,10 @@
   "scripts": {
     "start": "./node_modules/.bin/electron .",
     "build": "npm run build-mac && npm run build-win && npm run build-win32",
-    "build-mac": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64 --electron-version=1.8.6  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd 'package/Croqujs-darwin-x64' && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
-    "build-win": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon --asar --prune --out=package --overwrite=true --platform=win32 --arch=x64  --electron-version=1.8.6 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-x64 && del LICENSE* version && cd ../../",
-    "build-win32": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon --asar --prune --out=package --overwrite=true --platform=win32 --arch=ia32 --electron-version=1.8.6 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-ia32 && del LICENSE* version && cd ../../",
+    "build-mac":   "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd 'package/Croqujs-darwin-x64' && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
+    "build-win":   "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-x64    && del LICENSE* version && cd ../../",
+    "build-win32": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=ia32 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-ia32   && del LICENSE* version && cd ../../",
+    "build-appx": "electron-windows-store --input-directory \"package\\Croqujs-win32-ia32\" --output-directory \"package\\Croqujs\" --flatten true --package-version 4.0.0.0 --package-name Croqujs",
     "dev": "cpx ./src/**/* ./dist",
     "dev-start": "npm run dev && npm start",
     "copy": "npm-run-all copy:* && cpx ./src/**/* ./dist",
@@ -43,6 +44,7 @@
     "cpx": "^1.5.0",
     "electron": "^1.8.6",
     "electron-packager": "^12.0.1",
+    "electron-windows-store": "^0.12.0",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.2"
   }
