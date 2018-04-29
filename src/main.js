@@ -13,8 +13,9 @@
 const VERSION = '2018-04-28';
 
 const { app, BrowserWindow, Menu, ipcMain, dialog, clipboard } = require('electron');
-const FS   = require('fs');
-const PATH = require('path');
+const FS      = require('fs');
+const PATH    = require('path');
+const PROCESS = require('process');
 
 const Shortcut   = require('./lib/appshortcut.js');
 const Config     = require('./lib/config.js');
@@ -23,7 +24,7 @@ const NavMenu    = require('./lib/navmenu.js');
 const Twin       = require('./twin.js');
 const ErrorTrans = require('./errortrans.js');
 
-const IS_MAC = (process.platform === 'darwin');
+const IS_MAC = (PROCESS.platform === 'darwin');
 
 
 class Main {
