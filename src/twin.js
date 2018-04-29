@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-28
+ * @version 2018-04-29
  *
  */
 
@@ -14,6 +14,7 @@ const electron = require('electron')
 const {ipcMain, BrowserWindow, dialog, clipboard, nativeImage} = electron;
 const FS   = require('fs');
 const PATH = require('path');
+const OS   = require('os');
 
 const Backup   = require('./lib/backup.js');
 const WinState = require('./lib/winstate.js');
@@ -44,6 +45,7 @@ class Twin {
 		this._isEnabled = true;
 
 		this._exporter = new Exporter();
+		this._tempDirs = [];
 
 		ipcMain.on('fromRenderer_' + this._id, (ev, msg, ...args) => {
 			if (this[msg]) {
@@ -342,7 +344,6 @@ class Twin {
 
 	_saveFile(fp) {
 		if (fp.indexOf('.') === -1) fp += this._res.defaultExt;
-		if (this._conf.get('autoBackup')) this._backup.backupExistingFile(fp);
 
 		this._filePath = fp;
 		this._backup.setFilePath(fp);
@@ -350,6 +351,7 @@ class Twin {
 	}
 
 	_doSaveFile(text) {
+		if (this._conf.get('autoBackup')) this._backup.backupExistingFile(text, this._filePath);
 		try {
 			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 			this._isModified = false;
@@ -366,12 +368,11 @@ class Twin {
 		let writable = true;
 		try {
 			writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
-	    } catch (e) {
-	      	if (e.code !== 'ENOENT') throw e;
-	    }
+		} catch (e) {
+			if (e.code !== 'ENOENT') throw e;
+		}
 		if (writable) {
 			if (fp.indexOf('.') === -1) fp += this._res.defaultExt;
-			if (this._conf.get('autoBackup')) this._backup.backupExistingFile(fp);
 			this._filePathVersion = fp;
 			this.callStudyMethod('sendBackText', '_doSaveFileVersion');
 		} else {
@@ -381,6 +382,7 @@ class Twin {
 	}
 
 	_doSaveFileVersion(text) {
+		if (this._conf.get('autoBackup')) this._backup.backupExistingFile(text, this._filePathVersion);
 		try {
 			FS.writeFileSync(this._filePathVersion, text.replace(/\n/g, '\r\n'));
 		} catch (e) {
@@ -405,12 +407,14 @@ class Twin {
 	}
 
 	__doClose(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backup(text);
+		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
 
 		this._main.onTwinDestruct(this);
 		this._studyWin.destroy();
 		this._studyWin = null;
 		if (this._fieldWin) this._fieldWin.close();
+
+		this._clearTempPath();
 	}
 
 	exportAsLibrary() {
@@ -522,7 +526,7 @@ class Twin {
 	}
 
 	_doRun(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backup(text);
+		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
 
 		if (!this._fieldWin) {
 			this._createFieldWindow();
@@ -540,7 +544,7 @@ class Twin {
 	}
 
 	_doRunWithoutWindow(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backup(text);
+		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
 
 		if (!this._fieldWin) {
 			this._createFieldWindow();
@@ -553,7 +557,7 @@ class Twin {
 	}
 
 	_doRunInFullScreen(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backup(text);
+		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
 
 		if (!this._fieldWin) {
 			this._createFieldWindow();
@@ -580,6 +584,7 @@ class Twin {
 		}
 		this._ignoreFieldOutputMessage = false;
 
+		this._clearTempPath();
 		const expDir = this._getTempPath();
 		try {
 			this._rmdirSync(expDir);
@@ -594,11 +599,16 @@ class Twin {
 	}
 
 	_getTempPath() {
-		let dir = PATH.join(__dirname, '../');
-		if (PATH.extname(dir) === '.asar') {
-			dir = PATH.dirname(dir);
-		}
-		return PATH.join(dir, '.temp');
+		const tmpdir = OS.tmpdir();
+		const name = 'croqujs-' + Date.now();
+		const path = PATH.join(tmpdir, name);
+		this._tempDirs.push(path);
+		return path;
+	}
+
+	_clearTempPath() {
+		for (let td of this._tempDirs) this._rmdirSync(td);
+		this._tempDirs = [];
 	}
 
 	_createFieldWindow() {
