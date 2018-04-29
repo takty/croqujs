@@ -17,16 +17,16 @@
         "plusplus": true,
         "undef": false,
         "strict": false,
-		"esversion": 6,
+        "esversion": 6,
         "expr": false,
         "browser": true
     },
-	"jsBeautifyOpt": {
-	    "preserve_newlines": true,
-	    "jslint_happy": false,
-	    "brace_style": "end-expand",
-	    "keep_array_indentation": false,
-	    "space_before_conditional": true,
-	    "unescape_strings": true
-	}
+    "jsBeautifyOpt": {
+        "preserve_newlines": true,
+        "jslint_happy": false,
+        "brace_style": "end-expand",
+        "keep_array_indentation": false,
+        "space_before_conditional": true,
+        "unescape_strings": true
+    }
 }
