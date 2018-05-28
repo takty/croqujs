@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-28
+ * @version 2018-05-28
  *
  */
 
@@ -18,6 +18,8 @@ const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset = "utf-8"><title>%
 const HTML_HEAD2  = '</head><body><script>';
 const HTML_FOOT   = '</script></body>';
 const EXP_LIB_DIR = 'exp_lib';
+const INJECTION_PATH = 'renderer_field';
+const INJECTION_FN   = 'injection.js';
 const EXP_EOL     = '\r\n';
 
 
@@ -79,12 +81,16 @@ class Exporter {
 		FS.writeFileSync(filePath, [header, srcStr, footer].join(EXP_EOL));
 	}
 
-	exportAsWebPage(codeText, filePath, dirPath) {
+	exportAsWebPage(codeText, filePath, dirPath, injection = false) {
 		const lines = codeText.split('\n');
 		const res = this._extractImportPaths(lines), libs = [];
 		const pushTag = (src) => {libs.push('<script src="' + src + '"></script>');};
 		let title = 'Croqujs';
 
+		if (injection) {
+			this._copyFile(PATH.join(__dirname, INJECTION_PATH, INJECTION_FN), PATH.join(dirPath, INJECTION_FN));
+			pushTag(INJECTION_FN);
+		}
 		if (filePath) {
 			const bp = PATH.dirname(filePath);
 			for (let p of res) {

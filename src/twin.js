@@ -3,14 +3,14 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-29
+ * @version 2018-05-28
  *
  */
 
 
 'use strict';
 
-const electron = require('electron')
+const electron = require('electron');
 const {ipcMain, BrowserWindow, dialog, clipboard, nativeImage} = electron;
 const FS   = require('fs');
 const PATH = require('path');
@@ -130,7 +130,7 @@ class Twin {
 
 	_callFieldMethod(method, ...args) {
 		if (!this._fieldWin) return;
-		this._fieldWin.webContents.send('callFieldMethod', method, ...args);
+		this._studyWin.webContents.send('callFieldMethod', method, ...args);
 	}
 
 
@@ -499,7 +499,7 @@ class Twin {
 
 	stop() {
 		if (!this._fieldWin) return;
-		this._callFieldMethod('terminateProgram');
+		this._callFieldMethod('closeProgram');
 		this._fieldWin.close();
 	}
 
@@ -536,7 +536,7 @@ class Twin {
 			});
 			this._fieldWin.once('show', () => {this._ensureWindowTop(this._studyWin);});
 		} else {
-			this._callFieldMethod('terminateProgram');
+			this._callFieldMethod('closeProgram');
 			if (!this._fieldWin.isVisible()) this._fieldWin.show();
 			this._ensureWindowsFocused(this._studyWin, this._fieldWin);
 			this._execute(text);
@@ -550,7 +550,7 @@ class Twin {
 			this._createFieldWindow();
 			this._fieldWin.once('ready-to-show', () => {this._execute(text);});
 		} else {
-			this._callFieldMethod('terminateProgram');
+			this._callFieldMethod('closeProgram');
 			this._fieldWin.hide();
 			this._execute(text);
 		}
@@ -568,7 +568,7 @@ class Twin {
 			});
 			this._fieldWin.once('show', () => {this._ensureWindowTop(this._fieldWin);});
 		} else {
-			this._callFieldMethod('terminateProgram');
+			this._callFieldMethod('closeProgram');
 			this._fieldWin.setFullScreen(true);
 			if (!this._fieldWin.isVisible()) this._fieldWin.show();
 			this._ensureWindowTop(this._fieldWin);
@@ -589,10 +589,10 @@ class Twin {
 		try {
 			this._rmdirSync(expDir);
 			FS.mkdirSync(expDir);
-			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir);
+			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
 			this._url = 'file:///' + expPath.replace(/\\/g, '/');
 			this._baseUrl = 'file:///' + PATH.dirname(expPath).replace(/\\/g, '/') + '/';
-			this._callFieldMethod('openProgram', this._url);
+			this._callFieldMethod('openProgram', this._url + '#' + this._id);
 		} catch (e) {
 			this._outputError(e, expDir);
 		}

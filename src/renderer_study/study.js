@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-28
+ * @version 2018-05-28
  *
  */
 
@@ -20,7 +20,7 @@ class Study {
 
 	constructor(editorSel, tbarSel) {
 		this._id = window.location.hash;
-		if(this._id) this._id = Number(this._id.replace('#', ''));
+		if(this._id) this._id = this._id.replace('#', '');
 		ipcRenderer.on('callStudyMethod', (ev, method, ...args) => {this[method](...args);});
 		ipcRenderer.on('callEditorMethod', (ev, method, ...args) => {this._editor[method](...args);});
 
@@ -45,6 +45,26 @@ class Study {
 
 		setTimeout(() => {this._editor.refresh();}, 0);  // For making the gutter width correct
 		this._initOutputPoller();
+
+		window.addEventListener('storage', (e) => {
+			// if (!e.key) return;
+			// const ps = e.key.split('_');
+			// const msg = ps[0], id = ps[1];
+			// console.log(msg, id, this._id);
+			// if (id !== this._id) return;
+			if ('study_' + this._id !== e.key) return;
+			window.localStorage.clear();
+			const ma = JSON.parse(e.newValue);
+			if (ma.message === 'error') {
+				this._twinMessage('onFieldErrorOccurred', ma.params);
+			} else if (ma.message === 'output') {
+				this._twinMessage('onFieldOutputOccurred', ma.params);
+			}
+		});
+		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => {
+			// this._editor[method](...args);
+			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
+		});
 	}
 
 	_initEditor(editorSel) {
