@@ -23,7 +23,7 @@
 				if ('field_' + this._id !== e.key) return;
 				window.localStorage.clear();
 				const ma = JSON.parse(e.newValue);
-				if (ma.message === 'callFieldMethod') {
+				if (ma.message === 'callFieldMethod' && this[ma.params.method]) {
 					this[ma.params.method](...ma.params.args);
 				}
 			});
