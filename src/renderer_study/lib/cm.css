@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-27
+ * @version 2018-05-29
  *
  */
 
@@ -69,7 +69,7 @@
 .CodeMirror-gutter-wrapper {
 	height: 100%;
 }
-.CodeMirror-gutters {  // includes right border
+.CodeMirror-gutters {  /* includes right border */
 	background-color: #f8f8f8;
 	border-right: 10px solid #fbd290;  /* L-Orange 50% */
 	border-left: 0px;
@@ -95,7 +95,7 @@
 	color: #220;
 }
 :not(.CodeMirror-activeline-gutter) > .CodeMirror-linenumber {
-	coloe: #898989;
+	color: #898989;
 }
 
 
