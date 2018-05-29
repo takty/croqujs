@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-28
+ * @version 2018-05-29
  *
  */
 
@@ -105,7 +105,7 @@ class Twin {
 
 	tile() {  // Called By Main
 		const d = electron.screen.getPrimaryDisplay();
-		const w = d.workAreaSize.width / 2, h = d.workAreaSize.height;
+		const w = 0 | (d.workAreaSize.width / 2), h = d.workAreaSize.height;
 		if (this._studyWin.isMaximized()) {
 			this._studyWin.unmaximize();
 		}
