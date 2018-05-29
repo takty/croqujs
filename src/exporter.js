@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-28
+ * @version 2018-05-29
  *
  */
 
@@ -14,12 +14,11 @@ const FS   = require('fs');
 const PATH = require('path');
 
 
-const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset = "utf-8"><title>%TITLE%</title>';
+const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
 const HTML_HEAD2  = '</head><body><script>';
 const HTML_FOOT   = '</script></body>';
 const EXP_LIB_DIR = 'exp_lib';
-const INJECTION_PATH = 'renderer_field';
-const INJECTION_FN   = 'injection.js';
+const INJECTION   = 'injection.js';
 const EXP_EOL     = '\r\n';
 
 
@@ -88,8 +87,8 @@ class Exporter {
 		let title = 'Croqujs';
 
 		if (injection) {
-			this._copyFile(PATH.join(__dirname, INJECTION_PATH, INJECTION_FN), PATH.join(dirPath, INJECTION_FN));
-			pushTag(INJECTION_FN);
+			this._copyFile(PATH.join(__dirname, INJECTION), PATH.join(dirPath, INJECTION));
+			pushTag(INJECTION);
 		}
 		if (filePath) {
 			const bp = PATH.dirname(filePath);

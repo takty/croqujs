@@ -3,7 +3,7 @@
  * Field (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-28
+ * @version 2018-05-29
  *
  */
 
@@ -32,10 +32,8 @@
 		openProgram(url) {
 			this.closeProgram();
 
-			// this._frame = document.createElement('webview');
 			this._frame = document.createElement('iframe');
 			this._frame.setAttribute('src', url);
-			// this._frame.setAttribute('preload', 'injection.js');
 			this._container.appendChild(this._frame);
 		}
 
@@ -57,15 +55,6 @@
 			window.localStorage.setItem('injection_' + this._id, JSON.stringify({ message: 'window-fullscreen-left' }));
 		}
 	
-		// toggleDevTools() {
-		// 	if (!this._frame) return;
-		// 	if (this._frame.isDevToolsOpened()) {
-		// 		this._frame.closeDevTools();
-		// 	} else {
-		// 		this._frame.openDevTools();
-		// 	}
-		// }
-
 	}
 
 	global.Field = Field;
