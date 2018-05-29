@@ -47,11 +47,6 @@ class Study {
 		this._initOutputPoller();
 
 		window.addEventListener('storage', (e) => {
-			// if (!e.key) return;
-			// const ps = e.key.split('_');
-			// const msg = ps[0], id = ps[1];
-			// console.log(msg, id, this._id);
-			// if (id !== this._id) return;
 			if ('study_' + this._id !== e.key) return;
 			window.localStorage.clear();
 			const ma = JSON.parse(e.newValue);
@@ -62,7 +57,6 @@ class Study {
 			}
 		});
 		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => {
-			// this._editor[method](...args);
 			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
 		});
 	}
