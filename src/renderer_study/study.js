@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-28
+ * @version 2018-05-30
  *
  */
 
@@ -21,8 +21,8 @@ class Study {
 	constructor(editorSel, tbarSel) {
 		this._id = window.location.hash;
 		if(this._id) this._id = this._id.replace('#', '');
-		ipcRenderer.on('callStudyMethod', (ev, method, ...args) => {this[method](...args);});
-		ipcRenderer.on('callEditorMethod', (ev, method, ...args) => {this._editor[method](...args);});
+		ipcRenderer.on('callStudyMethod',  (ev, method, ...args) => { this[method](...args); });
+		ipcRenderer.on('callEditorMethod', (ev, method, ...args) => { this._editor[method](...args); });
 
 		window.ondragover = window.ondrop = (e) => {e.preventDefault(); return false;};
 
@@ -76,71 +76,80 @@ class Study {
 	}
 
 	_initToolBar(tbarSel) {
+		this._toolBarElm = document.querySelector(tbarSel);
+		this._toolBarElm.addEventListener('mousedown', (ev) => { ev.preventDefault(); });
+		this._toolBarElm.addEventListener('mouseup',   (ev) => { ev.preventDefault(); });
+
 		const addBtn = (id, fun, hint) => {
 			const btn = document.querySelector('#' + id);
-			btn.addEventListener('click', fun);
 			btn.title = hint;
-			this._ignoreMouseUpAndDown(btn);
+			btn.addEventListener('mousedown', (ev) => { ev.preventDefault(); });
+			btn.addEventListener('mouseup',   (ev) => { ev.preventDefault(); fun(); });
 		};
-		addBtn('save', () => {this._twinMessage('save');}, this._res.tooltip.save);
+		addBtn('save',            () => {this._twinMessage('save');},            this._res.tooltip.save);
 		addBtn('exportAsLibrary', () => {this._twinMessage('exportAsLibrary');}, this._res.tooltip.exportAsLibrary);
-		addBtn('undo', this._editor.undo.bind(this._editor), this._res.tooltip.undo);
-		addBtn('copy', this._editor.copy.bind(this._editor), this._res.tooltip.copy);
+		addBtn('tile',            () => {this._twinMessage('tile');},            this._res.tooltip.tileWinH);
+		addBtn('run',             () => {this._twinMessage('run');},             this._res.tooltip.run);
+		addBtn('undo',  this._editor.undo.bind(this._editor),  this._res.tooltip.undo);
+		addBtn('copy',  this._editor.copy.bind(this._editor),  this._res.tooltip.copy);
 		addBtn('paste', this._editor.paste.bind(this._editor), this._res.tooltip.paste);
-		addBtn('tile', () => {this._twinMessage('tile');}, this._res.tooltip.tileWinH);
-		addBtn('run', () => {this._twinMessage('run');}, this._res.tooltip.run);
-
-		this._ignoreMouseUpAndDown(document.querySelector(tbarSel));
-		this._toolBarElm = document.querySelector(tbarSel);
-	}
-
-	_ignoreMouseUpAndDown(elm) {
-		elm.addEventListener('mousedown', (ev) => {ev.preventDefault();});
-		elm.addEventListener('mouseup', (ev) => {ev.preventDefault();});
 	}
 
 	_initWindowResizing(ed, tbarSel, editorSel) {
-		let subHeight = 100, resizing = false;
-		const divH = this._res.divH;
-		const jqTbar = $(tbarSel), jqEditor = $(editorSel), jqMain = $('.main'), jqBody = $('body'), jqDiv = $('.ui-resizable-handle');
-		const setElementPos = (subH) => {
-			const tbH = (jqTbar.css('display') === 'none' ? 0 : jqTbar.height());
-			const h =jqBody.height(), edH = h - (tbH + divH + subH);
-			jqEditor.height(edH);
-			jqMain.height(tbH + edH);
-			$('.sub').height(h - (tbH + edH + divH));
+		const body   = document.querySelector('body');
+		const main   = document.querySelector('.main');
+		const tbar   = document.querySelector(tbarSel);
+		const editor = document.querySelector(editorSel);
+		const div    = document.querySelector('#handle');
+		const sub    = document.querySelector('.sub');
+
+		const tbarH  = tbar.offsetHeight;
+		const divH   = this._res.divH;
+
+		let mouseDown = false, resizing = false;
+		let subH = 100, py;
+
+		const setSubPaneHeight = (subH) => {
+			const h   = body.offsetHeight;
+			const edH = h - (tbarH + divH + subH);
+			editor.style.height = edH + 'px';
+			main.style.height   = (tbarH + edH) + 'px';
+			sub.style.height    = subH + 'px';
 			ed.refresh();
 		};
-		jqMain.resizable({
-			autoHide: false, handles: 's', minHeight: 100,
-			resize: (e, ui) => {
-				const tbH = (jqTbar.css('display') === 'none' ? 0 : jqTbar.height());
-				let h = jqBody.height(), mH = ui.element.height(), rem = h - mH;
-				if (rem < divH) {
-					mH = h - divH;
-					rem = divH;
-					ui.element.height(mH);
-				}
-				subHeight = rem - divH;
-				jqEditor.height(mH - tbH);
-				$('.sub').height(subHeight);
-				resizing = true;
-				ed.refresh();
-			},
-			stop: (e, ui) => {
-				setElementPos($('.sub').get(0).offsetHeight);
-				resizing = false;
-				ed.refresh();
-			}
+		const onMouseMoveDiv = (e) => {
+			if (!mouseDown) return;
+			const h = body.offsetHeight;
+			const mainH = e.pageY - py;
+
+			let subH = h - (mainH + divH);
+			if (mainH - tbarH < 100) subH = h - (tbarH + 100 + divH);
+			if (subH < 32) subH = 0;
+			setSubPaneHeight(subH);
+			resizing = true;
+			e.preventDefault();
+		};
+		const onMouseUpDiv = (e) => {
+			if (!mouseDown) return;
+			mouseDown = false;
+			if (sub.offsetHeight > 32) subH = sub.offsetHeight;
+			e.preventDefault();
+		};
+		div.addEventListener('mousedown', (e) => {
+			py = e.pageY - div.offsetTop;
+			mouseDown = true;
+			resizing = false;
 		});
-		$('.ui-resizable-s').on('mouseup', () => {
-			if (resizing) return;
-			setElementPos(($('.sub').get(0).offsetHeight === 0) ? subHeight : 0);
-		});
-		window.addEventListener('resize', () => {
-			setElementPos($('.sub').get(0).offsetHeight);
-		});
-		setElementPos($('.sub').get(0).offsetHeight);
+		div.addEventListener('mousemove', onMouseMoveDiv);
+		div.addEventListener('mouseup', onMouseUpDiv);
+		div.addEventListener('click', () => { if (!resizing) setSubPaneHeight(sub.offsetHeight === 0 ? subH : 0); });
+
+		document.body.addEventListener('mousemove', onMouseMoveDiv);
+		document.body.addEventListener('mouseup', onMouseUpDiv);
+		document.body.addEventListener('mouseenter', (e) => { if (mouseDown && !e.buttons) mouseDown = false; });
+
+		window.addEventListener('resize', () => { setSubPaneHeight(sub.offsetHeight); });
+		setSubPaneHeight(sub.offsetHeight);
 	}
 
 	_initOutputPoller() {
@@ -263,8 +272,8 @@ class Study {
 		const pane = this._outputPane;
 		if ((flag && pane.offsetHeight === 0) || (!flag && pane.offsetHeight > 0)) {
 			const ev = document.createEvent('HTMLEvents');
-			ev.initEvent('mouseup', true, false);
-			const r = document.querySelector('.ui-resizable-s');
+			ev.initEvent('click', true, false);
+			const r = document.querySelector('#handle');
 			r.dispatchEvent(ev);
 		}
 		if (flag) setTimeout(() => {pane.scrollTop = pane.scrollHeight}, 100);

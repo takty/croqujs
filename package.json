@@ -17,8 +17,7 @@
     "copy:js-beautify": "mkdirp ./dist/renderer_study/lib/js-beautify && cpx ./node_modules/js-beautify/js/lib/beautify.js ./dist/renderer_study/lib/js-beautify",
     "copy:font-awesome": "mkdirp ./dist/renderer_study/lib/font-awesome/fonts && mkdirp ./dist/renderer_study/lib/font-awesome/css && cpx ./node_modules/font-awesome/css/font-awesome.min.css ./dist/renderer_study/lib/font-awesome/css && cpx ./node_modules/font-awesome/fonts/fontawesome-webfont.woff2 ./dist/renderer_study/lib/font-awesome/fonts",
     "copy:acorn": "mkdirp ./dist/renderer_study/lib/acorn && mkdirp ./dist/lib/acorn && cpx ./node_modules/acorn/dist/*.js ./dist/renderer_study/lib/acorn && cpx ./node_modules/acorn/dist/*.js ./dist/lib/acorn",
-    "copy:codemirror": "mkdirp ./dist/renderer_study/lib/codemirror/mode/javascript && mkdirp ./dist/renderer_study/lib/codemirror/lib && mkdirp ./dist/renderer_study/lib/codemirror/addon && cpx ./node_modules/codemirror/lib/* ./dist/renderer_study/lib/codemirror/lib && cpx ./node_modules/codemirror/addon/**/* ./dist/renderer_study/lib/codemirror/addon && cpx ./node_modules/codemirror/mode/javascript/* ./dist/renderer_study/lib/codemirror/mode/javascript",
-    "copy:jquery": "mkdirp ./dist/renderer_study/lib/jquery && cpx ./node_modules/jquery/dist/*.min.js ./dist/renderer_study/lib/jquery"
+    "copy:codemirror": "mkdirp ./dist/renderer_study/lib/codemirror/mode/javascript && mkdirp ./dist/renderer_study/lib/codemirror/lib && mkdirp ./dist/renderer_study/lib/codemirror/addon && cpx ./node_modules/codemirror/lib/* ./dist/renderer_study/lib/codemirror/lib && cpx ./node_modules/codemirror/addon/**/* ./dist/renderer_study/lib/codemirror/addon && cpx ./node_modules/codemirror/mode/javascript/* ./dist/renderer_study/lib/codemirror/mode/javascript"
   },
   "repository": {
     "type": "git",
@@ -34,7 +33,6 @@
     "acorn": "^5.5.3",
     "codemirror": "^5.37.0",
     "font-awesome": "^4.7.0",
-    "jquery": "^3.3.1",
     "js-beautify": "^1.7.5",
     "sweetalert2": "^7.19.3",
     "tern": "^0.21.0"

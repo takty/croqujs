@@ -1,6 +1,6 @@
 /*
  * Study Window Style
- * 2016-09-18
+ * 2018-05-30
  */
 
 @charset "UTF-8";
@@ -26,18 +26,15 @@ html, body {
 	height: 100%;
 }
 
-.ui-resizable-s {
+#handle {
 	cursor: row-resize;
 	height: 8px;
-	bottom: -8px;
-	left: 0;
-	right: 0;
 	background-color: #d7d7d7;
 	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
 	transition: 0.25s;
 }
 
-.ui-resizable-s:hover {
+#handle:hover {
 	background-color: #898989;  /* L-Gray */
 }
 
@@ -51,7 +48,6 @@ html, body {
 
 .sub {
 	overflow: scroll;
-	margin: 8px 0 0 0;
 	height: 0;
 	font-family: Inconsolata, "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, monospace;
 }
