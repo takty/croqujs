@@ -3,16 +3,17 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-28
+ * @version 2018-05-30
  *
  */
 
 
 'use strict';
 
-const VERSION = '2018-04-28';
+const VERSION = '2018-05-30';
 
 const { app, BrowserWindow, Menu, ipcMain, dialog, clipboard } = require('electron');
+
 const FS      = require('fs');
 const PATH    = require('path');
 const PROCESS = require('process');
