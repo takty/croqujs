@@ -11,6 +11,19 @@
 'use strict';
 
 
+function createDelayFunction(fn, delay) {
+	let st = null;
+	const ret = function () {
+		if (st) clearTimeout(st);
+		st = setTimeout(fn, delay);
+	};
+	ret.cancel = function () {
+		if (st) clearTimeout(st);
+		st = null;
+	}
+	return ret;
+}
+
 class Editor {
 
 	constructor(owner, domElm, opt) {
@@ -31,7 +44,8 @@ class Editor {
 		this.initWheelZoom();
 		this.initGutterSelection();
 		this.initAutoComplete();
-		this.initLineNumberByFunction();
+		// this.initLineNumberByFunction();
+		this.initCodeAnalyzer();
 
 		this.rulerEnabled(true);
 		this.lineNumberByFunctionEnabled(false);
@@ -118,13 +132,38 @@ class Editor {
 		this._comp.on('blur', () => {isCtrl = false;});
 	}
 
-	initLineNumberByFunction() {
-		let stUFPI = null;
-		this._comp.on('change', () => {
-			if (!this._isLineNumberByFunctionEnabled) return;
-			if (stUFPI) clearTimeout(stUFPI);
-			stUFPI = setTimeout(() => {this._updateFunctionPositionInfo(this._comp.getValue());}, 10);
-		});
+	// initLineNumberByFunction() {
+	// 	let stUFPI = null;
+	// 	this._comp.on('change', () => {
+	// 		if (!this._isLineNumberByFunctionEnabled) return;
+	// 		if (stUFPI) clearTimeout(stUFPI);
+	// 		stUFPI = setTimeout(() => {this._updateFunctionPositionInfo(this._comp.getValue());}, 10);
+	// 	});
+	// }
+
+	initCodeAnalyzer() {
+		const cmls = document.getElementsByClassName('CodeMirror-lines')[0];
+		const can = document.createElement('canvas');
+		cmls.insertBefore(can, cmls.firstElementChild);
+		can.style.minWidth = '100%';
+		can.style.minHeight = '100%';
+		can.style.position = 'absolute';
+
+		const w = new Worker('codeanalyzer.js');
+		w.addEventListener('message', (e) => {
+			this._onCodeAnalyzed(e.data);
+		}, false);
+		const onChange = createDelayFunction(() => {
+			w.postMessage(this._comp.getValue());
+		}, 100);
+		this._comp.on('change', onChange);
+	}
+
+	_onCodeAnalyzed(data) {
+		// console.log(data.function);
+		if (this._isLineNumberByFunctionEnabled) {
+			this._updateLineNoByFuncGutter(data.function);
+		}
 	}
 
 	initGutterSelection() {
@@ -457,7 +496,7 @@ class Editor {
 		this._isLineNumberByFunctionEnabled = flag;
 
 		if (flag) {
-			this._updateFunctionPositionInfo(this._comp.getValue());
+			// this._updateFunctionPositionInfo(this._comp.getValue());
 		} else {
 			this._comp.clearGutter('CodeMirror-function-linenumbers');
 			this._comp.setOption('lineNumbers', true);
@@ -467,13 +506,13 @@ class Editor {
 		}
 	}
 
-	_updateFunctionPositionInfo(codeStr) {
-		const w = new Worker('analyzer.js');
-		w.addEventListener('message', (e) => {
-			this._updateLineNoByFuncGutter(e.data);
-		}, false);
-		w.postMessage(codeStr);
-	}
+	// _updateFunctionPositionInfo(codeStr) {
+	// 	const w = new Worker('analyzer.js');
+	// 	w.addEventListener('message', (e) => {
+	// 		this._updateLineNoByFuncGutter(e.data);
+	// 	}, false);
+	// 	w.postMessage(codeStr);
+	// }
 
 	_updateLineNoByFuncGutter(lines) {
 		const lineCount = this._comp.getDoc().lineCount();
@@ -481,11 +520,12 @@ class Editor {
 		this._lineNoByFunc = [];
 		let fnIdx = 0, off = 0;
 		for (let i = 0; i < lineCount; i += 1) {
-			if (i === lines[fnIdx]) {
-				off = lines[fnIdx];
+			if (i === lines[fnIdx][0]) {
+				off = lines[fnIdx][0];
 				fnIdx += 1;
 			}
 			this._lineNoByFunc.push([fnIdx, (1 + i - off)]);
+			if (lines.length <= fnIdx) break;
 		}
 		if (lineCount === 0) this._lineNoByFunc.push([0, 1]);
 		const width = this._calcWidth(this._comp, lineCount);
