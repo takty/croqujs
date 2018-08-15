@@ -13,10 +13,10 @@
 
 function createDelayFunction(fn, delay) {
 	let st = null;
-	const ret = function () {
+	function ret() {
 		if (st) clearTimeout(st);
 		st = setTimeout(fn, delay);
-	};
+	}
 	ret.cancel = function () {
 		if (st) clearTimeout(st);
 		st = null;
@@ -141,8 +141,11 @@ class Editor {
 	// 	});
 	// }
 
+	// -------------------------------------------------------------------------
+
 	initCodeAnalyzer() {
-		const cmls = document.getElementsByClassName('CodeMirror-lines')[0];
+		// const cmls = document.getElementsByClassName('CodeMirror-lines')[0];
+		const cmls = document.getElementsByClassName('CodeMirror-sizer')[0];
 		const can = document.createElement('canvas');
 		cmls.insertBefore(can, cmls.firstElementChild);
 		can.style.minWidth = '100%';
@@ -151,20 +154,92 @@ class Editor {
 
 		const w = new Worker('codeanalyzer.js');
 		w.addEventListener('message', (e) => {
-			this._onCodeAnalyzed(e.data);
+			this._onCodeAnalyzed(e.data, can, can.getContext('2d'));
 		}, false);
 		const onChange = createDelayFunction(() => {
 			w.postMessage(this._comp.getValue());
-		}, 100);
-		this._comp.on('change', onChange);
+			can.width = can.parentElement.clientWidth;
+			can.height = can.parentElement.clientHeight;
+		}, 200);
+		this._comp.on('change', function () {
+			can.getContext('2d').clearRect(0, 0, can.width, can.height);
+			onChange();
+		});
 	}
 
-	_onCodeAnalyzed(data) {
+	_onCodeAnalyzed(data, can, ctx) {
 		// console.log(data.function);
 		if (this._isLineNumberByFunctionEnabled) {
 			this._updateLineNoByFuncGutter(data.function);
 		}
+		for (let i = 0; i < data.fnPos.length; i += 1) {
+			ctx.fillStyle = 'rgba(255, 127, 0, 0.1)';
+			this._drawSyntaxRange(ctx, data.fnPos[i]);
+		}
+		// console.log(data.ifPos);
+		for (let i = 0; i < data.ifPos.length; i += 1) {
+			ctx.fillStyle = 'rgba(0, 127, 0, 0.1)';
+			this._drawSyntaxRange(ctx, data.ifPos[i]);
+		}
+		for (let i = 0; i < data.forPos.length; i += 1) {
+			ctx.fillStyle = 'rgba(0, 127, 255, 0.1)';
+			this._drawSyntaxRange(ctx, data.forPos[i]);
+		}
 	}
+
+	_drawSyntaxRange(ctx, pos) {
+		const start = pos[0];
+		const end = pos[1];
+		const scc = this._comp.charCoords({line: start.line - 1, ch: start.column}, 'local');
+		const ecc = this._comp.charCoords({line: end.line - 1, ch: end.column}, 'local');
+
+		const lh = this._comp.defaultTextHeight();
+		// const iw = parseInt(this._calcWidth(this._comp, '\t'));
+		const tcc = this._comp.charCoords({line: start.line - 1, ch: start.column + 3}, 'local');
+		const iw = tcc.right - scc.left - 4;
+		const w = ctx.canvas.width / 2;
+
+		// ctx.fillRect(scc.left, scc.top, iw, ecc.top - scc.top + lh - 1);
+		this._fillLeftRoundedRect(ctx, scc.left, scc.top + 3, iw, ecc.top - scc.top + lh - 6, lh / 1.5);
+		this._fillRightRoundedRect(ctx, scc.left + iw, scc.top + 3, w, lh - 3, lh / 1.5);
+		this._fillRightRoundedRect(ctx, scc.left + iw, ecc.top, w, lh - 3, lh / 1.5);
+
+		const elsecc = this._comp.charCoords({line: start.line - 1, ch: start.column + 4}, 'local');
+		const elsew = elsecc.right - scc.left - 4;
+
+		for (let i = 2; i < pos.length; i += 1) {
+			const icc = this._comp.charCoords({ line: pos[i].line - 1, ch: pos[i].column }, 'local');
+			this._fillRightRoundedRect(ctx, scc.left + iw, icc.top + 3, elsew, lh - 6, lh / 1.5);
+		}
+	}
+
+	_fillLeftRoundedRect(ctx, x, y, width, height, radius) {
+		if (height < radius * 2) radius = height / 2;
+		ctx.beginPath();
+		ctx.moveTo(x + radius, y);
+		ctx.lineTo(x + width, y);
+		ctx.lineTo(x + width, y + height);
+		ctx.lineTo(x + radius, y + height);
+		ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+		ctx.lineTo(x, y + radius);
+		ctx.quadraticCurveTo(x, y, x + radius, y);
+		ctx.fill();
+	}
+
+	_fillRightRoundedRect(ctx, x, y, width, height, radius) {
+		if (height < radius * 2) radius = height / 2;
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+		ctx.lineTo(x + width - radius, y);
+		ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+		ctx.lineTo(x + width, y + height - radius);
+		ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+		ctx.lineTo(x, y + height);
+		ctx.lineTo(x, y);
+		ctx.fill();
+	}
+
+	// -------------------------------------------------------------------------
 
 	initGutterSelection() {
 		const guts = document.querySelector('.CodeMirror-gutters');
