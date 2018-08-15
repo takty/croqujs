@@ -3,26 +3,13 @@
  * Pencil: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-28
+ * @version 2018-08-15
  *
  */
 
 
 'use strict';
 
-
-function createDelayFunction(fn, delay) {
-	let st = null;
-	function ret() {
-		if (st) clearTimeout(st);
-		st = setTimeout(fn, delay);
-	}
-	ret.cancel = function () {
-		if (st) clearTimeout(st);
-		st = null;
-	}
-	return ret;
-}
 
 class Editor {
 
@@ -151,24 +138,28 @@ class Editor {
 		can.style.minWidth = '100%';
 		can.style.minHeight = '100%';
 		can.style.position = 'absolute';
+		this._canvas = can;
 
-		const w = new Worker('codeanalyzer.js');
-		w.addEventListener('message', (e) => {
-			this._onCodeAnalyzed(e.data, can, can.getContext('2d'));
-		}, false);
-		const onChange = createDelayFunction(() => {
-			w.postMessage(this._comp.getValue());
-			can.width = can.parentElement.clientWidth;
-			can.height = can.parentElement.clientHeight;
-		}, 200);
+		// const w = new Worker('codeanalyzer.js');
+		// w.addEventListener('message', (e) => {
+		// 	this._onCodeAnalyzed(e.data);
+		// }, false);
+		// const onChange = createDelayFunction(() => {
+		// 	w.postMessage(this._comp.getValue());
+		// 	can.width = can.parentElement.clientWidth;
+		// 	can.height = can.parentElement.clientHeight;
+		// }, 100);
 		this._comp.on('change', function () {
 			can.getContext('2d').clearRect(0, 0, can.width, can.height);
-			onChange();
+			can.width = can.parentElement.clientWidth;
+			can.height = can.parentElement.clientHeight;
+			// onChange();
 		});
 	}
 
-	_onCodeAnalyzed(data, can, ctx) {
-		// console.log(data.function);
+	_onCodeAnalyzed(data) {
+		console.dir(data);
+		const ctx = this._canvas.getContext('2d');
 		if (this._isLineNumberByFunctionEnabled) {
 			this._updateLineNoByFuncGutter(data.function);
 		}
@@ -176,7 +167,6 @@ class Editor {
 			ctx.fillStyle = 'rgba(255, 127, 0, 0.1)';
 			this._drawSyntaxRange(ctx, data.fnPos[i]);
 		}
-		// console.log(data.ifPos);
 		for (let i = 0; i < data.ifPos.length; i += 1) {
 			ctx.fillStyle = 'rgba(0, 127, 0, 0.1)';
 			this._drawSyntaxRange(ctx, data.ifPos[i]);

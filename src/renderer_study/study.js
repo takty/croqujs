@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-30
+ * @version 2018-08-15
  *
  */
 
@@ -14,6 +14,19 @@ const electron = require('electron');
 const {ipcRenderer} = electron;
 
 const MAX_CONSOLE_OUTPUT_SIZE = 100;
+
+function createDelayFunction(fn, delay) {
+	let st = null;
+	function ret() {
+		if (st) clearTimeout(st);
+		st = setTimeout(fn, delay);
+	}
+	ret.cancel = function () {
+		if (st) clearTimeout(st);
+		st = null;
+	}
+	return ret;
+}
 
 
 class Study {
@@ -63,11 +76,23 @@ class Study {
 
 	_initEditor(editorSel) {
 		this._editor = new Editor(this, document.querySelector(editorSel), this._res.codeMirrorOpt);
-
 		const ec = this._editor.getComponent();
+
+
+		const w = new Worker('codeanalyzer.js');
+		w.addEventListener('message', (e) => {
+			this._codeStructure = e.data;
+			this._editor._onCodeAnalyzed(this._codeStructure);
+		}, false);
+		const onChange = createDelayFunction(() => {
+			w.postMessage(ec.getValue());
+		}, 100);
+
+
 		ec.on('change', () => {
 			this._clearErrorMarker();
 			if (this._editor.enabled()) this._twinMessage('onStudyModified', this._editor._comp.getDoc().historySize());
+			onChange();
 		});
 		ec.on('drop', (em, ev) => {
 			ev.preventDefault();
