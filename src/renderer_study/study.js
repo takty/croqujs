@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-15
+ * @version 2018-08-17
  *
  */
 
@@ -33,11 +33,11 @@ class Study {
 
 	constructor(editorSel, tbarSel) {
 		this._id = window.location.hash;
-		if(this._id) this._id = this._id.replace('#', '');
+		if (this._id) this._id = this._id.replace('#', '');
 		ipcRenderer.on('callStudyMethod',  (ev, method, ...args) => { this[method](...args); });
 		ipcRenderer.on('callEditorMethod', (ev, method, ...args) => { this._editor[method](...args); });
 
-		window.ondragover = window.ondrop = (e) => {e.preventDefault(); return false;};
+		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
 
 		this._res = ipcRenderer.sendSync('getResource');
 		this._errorMarker = null;
@@ -56,7 +56,7 @@ class Study {
 		this._initWindowResizing(this._editor, tbarSel, editorSel);
 		this.configUpdated(ipcRenderer.sendSync('getConfig'));
 
-		setTimeout(() => {this._editor.refresh();}, 0);  // For making the gutter width correct
+		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 		this._initOutputPoller();
 
 		window.addEventListener('storage', (e) => {
@@ -78,21 +78,21 @@ class Study {
 		this._editor = new Editor(this, document.querySelector(editorSel), this._res.codeMirrorOpt);
 		const ec = this._editor.getComponent();
 
-
-		const w = new Worker('codeanalyzer.js');
+		const w = new Worker('analyzer.js');
 		w.addEventListener('message', (e) => {
 			this._codeStructure = e.data;
-			this._editor._onCodeAnalyzed(this._codeStructure);
+			this._editor.setCodeStructureData(this._codeStructure);
 		}, false);
-		const onChange = createDelayFunction(() => {
+		const analize = createDelayFunction(() => {
 			w.postMessage(ec.getValue());
-		}, 100);
-
+		}, 400);
 
 		ec.on('change', () => {
 			this._clearErrorMarker();
-			if (this._editor.enabled()) this._twinMessage('onStudyModified', this._editor._comp.getDoc().historySize());
-			onChange();
+			if (this._editor.enabled()) {
+				this._twinMessage('onStudyModified', this._editor._comp.getDoc().historySize());
+			}
+			analize();
 		});
 		ec.on('drop', (em, ev) => {
 			ev.preventDefault();

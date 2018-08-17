@@ -3,7 +3,7 @@
  * Pencil: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-15
+ * @version 2018-08-17
  *
  */
 
@@ -18,6 +18,7 @@ class Editor {
 		this._isEnabled = true;
 		this._isReadOnly = false;
 		this._isLineNumberByFunctionEnabled = false;
+		this._codeStructure = {};
 
 		CodeMirror.keyMap.pcDefault['Shift-Ctrl-R'] = false;  // Directly Change the Key Map!
 		this._comp = new CodeMirror(domElm, this.codeMirrorOptions(this._owner._res.jsHintOpt));
@@ -31,14 +32,14 @@ class Editor {
 		this.initWheelZoom();
 		this.initGutterSelection();
 		this.initAutoComplete();
-		// this.initLineNumberByFunction();
-		this.initCodeAnalyzer();
+		this.initCodeStructureView();
 
 		this.rulerEnabled(true);
 		this.lineNumberByFunctionEnabled(false);
 
-		this._comp.on('copy', () => {this._owner.onPencilClipboardChanged();});
-		this._comp.on('cut', () => {this._owner.onPencilClipboardChanged();});
+		this._comp.on('copy',    () => { this._owner.onPencilClipboardChanged(); });
+		this._comp.on('cut',     () => { this._owner.onPencilClipboardChanged(); });
+		this._comp.on('refresh', () => { this._updateCodeStructureView(); });
 	}
 
 	codeMirrorOptions(jsHintOpt) {
@@ -119,82 +120,73 @@ class Editor {
 		this._comp.on('blur', () => {isCtrl = false;});
 	}
 
-	// initLineNumberByFunction() {
-	// 	let stUFPI = null;
-	// 	this._comp.on('change', () => {
-	// 		if (!this._isLineNumberByFunctionEnabled) return;
-	// 		if (stUFPI) clearTimeout(stUFPI);
-	// 		stUFPI = setTimeout(() => {this._updateFunctionPositionInfo(this._comp.getValue());}, 10);
-	// 	});
-	// }
-
 	// -------------------------------------------------------------------------
 
-	initCodeAnalyzer() {
-		// const cmls = document.getElementsByClassName('CodeMirror-lines')[0];
-		const cmls = document.getElementsByClassName('CodeMirror-sizer')[0];
-		const can = document.createElement('canvas');
-		cmls.insertBefore(can, cmls.firstElementChild);
-		can.style.minWidth = '100%';
-		can.style.minHeight = '100%';
-		can.style.position = 'absolute';
-		this._canvas = can;
+	initCodeStructureView() {
+		this._canvas = document.createElement('canvas');
+		this._canvas.style.position = 'absolute';
 
-		// const w = new Worker('codeanalyzer.js');
-		// w.addEventListener('message', (e) => {
-		// 	this._onCodeAnalyzed(e.data);
-		// }, false);
-		// const onChange = createDelayFunction(() => {
-		// 	w.postMessage(this._comp.getValue());
-		// 	can.width = can.parentElement.clientWidth;
-		// 	can.height = can.parentElement.clientHeight;
-		// }, 100);
-		this._comp.on('change', function () {
-			can.getContext('2d').clearRect(0, 0, can.width, can.height);
-			can.width = can.parentElement.clientWidth;
-			can.height = can.parentElement.clientHeight;
-			// onChange();
-		});
+		const parent = document.getElementsByClassName('CodeMirror-sizer')[0];
+		parent.insertBefore(this._canvas, parent.firstElementChild);
+
+		this._setCanvasSize();
+		this._comp.on('change', () => { this._setCanvasSize(); });
 	}
 
-	_onCodeAnalyzed(data) {
-		console.dir(data);
+	_setCanvasSize() {
+		const c = this._canvas;
+		const w = c.parentElement.clientWidth;
+		const h = c.parentElement.clientHeight;
+		c.style.minWidth  = w + 'px';
+		c.style.minHeight = h + 'px';
+		c.style.width     = w + 'px';
+		c.style.height    = h + 'px';
+		c.width  = w;
+		c.height = h;
+		c.getContext('2d').clearRect(0, 0, w, h);
+	}
+
+	_updateCodeStructureView() {
+		const cs = this._codeStructure;
 		const ctx = this._canvas.getContext('2d');
-		if (this._isLineNumberByFunctionEnabled) {
-			this._updateLineNoByFuncGutter(data.function);
-		}
-		for (let i = 0; i < data.fnPos.length; i += 1) {
+
+		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+		if (cs.fnPos) {
 			ctx.fillStyle = 'rgba(255, 127, 0, 0.1)';
-			this._drawSyntaxRange(ctx, data.fnPos[i]);
+			for (let i = 0; i < cs.fnPos.length; i += 1) {
+				this._drawSyntaxRange(ctx, cs.fnPos[i]);
+			}
 		}
-		for (let i = 0; i < data.ifPos.length; i += 1) {
+		if (cs.ifPos) {
 			ctx.fillStyle = 'rgba(0, 127, 0, 0.1)';
-			this._drawSyntaxRange(ctx, data.ifPos[i]);
+			for (let i = 0; i < cs.ifPos.length; i += 1) {
+				this._drawSyntaxRange(ctx, cs.ifPos[i]);
+			}
 		}
-		for (let i = 0; i < data.forPos.length; i += 1) {
+		if (cs.forPos) {
 			ctx.fillStyle = 'rgba(0, 127, 255, 0.1)';
-			this._drawSyntaxRange(ctx, data.forPos[i]);
+			for (let i = 0; i < cs.forPos.length; i += 1) {
+				this._drawSyntaxRange(ctx, cs.forPos[i]);
+			}
 		}
 	}
 
 	_drawSyntaxRange(ctx, pos) {
-		const start = pos[0];
-		const end = pos[1];
-		const scc = this._comp.charCoords({line: start.line - 1, ch: start.column}, 'local');
+		const bgn = pos[0], end = pos[1];
+		const scc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column}, 'local');
 		const ecc = this._comp.charCoords({line: end.line - 1, ch: end.column}, 'local');
 
 		const lh = this._comp.defaultTextHeight();
-		// const iw = parseInt(this._calcWidth(this._comp, '\t'));
-		const tcc = this._comp.charCoords({line: start.line - 1, ch: start.column + 3}, 'local');
+		const tcc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column + 3}, 'local');
 		const iw = tcc.right - scc.left - 4;
 		const w = ctx.canvas.width / 2;
 
-		// ctx.fillRect(scc.left, scc.top, iw, ecc.top - scc.top + lh - 1);
 		this._fillLeftRoundedRect(ctx, scc.left, scc.top + 3, iw, ecc.top - scc.top + lh - 6, lh / 1.5);
 		this._fillRightRoundedRect(ctx, scc.left + iw, scc.top + 3, w, lh - 3, lh / 1.5);
 		this._fillRightRoundedRect(ctx, scc.left + iw, ecc.top, w, lh - 3, lh / 1.5);
 
-		const elsecc = this._comp.charCoords({line: start.line - 1, ch: start.column + 4}, 'local');
+		const elsecc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column + 4}, 'local');
 		const elsew = elsecc.right - scc.left - 4;
 
 		for (let i = 2; i < pos.length; i += 1) {
@@ -367,7 +359,8 @@ class Editor {
 
 	refresh() {
 		this._comp.refresh();
-		this.lineNumberByFunctionEnabled(this._isLineNumberByFunctionEnabled);
+		this._setCanvasSize();
+		this._updateLineNumberGutter();
 	}
 
 	enabled(flag) {
@@ -394,6 +387,12 @@ class Editor {
 
 	selection() {
 		return this._comp.getSelection();
+	}
+
+	setCodeStructureData(data) {
+		this._codeStructure = data;
+		this._updateLineNumberGutter();
+		this._updateCodeStructureView();
 	}
 
 	rulerEnabled(flag) {
@@ -559,9 +558,12 @@ class Editor {
 
 	lineNumberByFunctionEnabled(flag) {
 		this._isLineNumberByFunctionEnabled = flag;
+		this._updateLineNumberGutter();
+	}
 
-		if (flag) {
-			// this._updateFunctionPositionInfo(this._comp.getValue());
+	_updateLineNumberGutter() {
+		if (this._isLineNumberByFunctionEnabled) {
+			this._updateLineNoByFuncGutter();
 		} else {
 			this._comp.clearGutter('CodeMirror-function-linenumbers');
 			this._comp.setOption('lineNumbers', true);
@@ -571,27 +573,21 @@ class Editor {
 		}
 	}
 
-	// _updateFunctionPositionInfo(codeStr) {
-	// 	const w = new Worker('analyzer.js');
-	// 	w.addEventListener('message', (e) => {
-	// 		this._updateLineNoByFuncGutter(e.data);
-	// 	}, false);
-	// 	w.postMessage(codeStr);
-	// }
-
-	_updateLineNoByFuncGutter(lines) {
+	_updateLineNoByFuncGutter() {
+		const lines = this._codeStructure.function;
+		if (!lines) return;
 		const lineCount = this._comp.getDoc().lineCount();
 
 		this._lineNoByFunc = [];
 		let fnIdx = 0, off = 0;
 		for (let i = 0; i < lineCount; i += 1) {
-			if (i === lines[fnIdx][0]) {
+			if (lines[fnIdx] !== undefined && i === lines[fnIdx][0]) {
 				off = lines[fnIdx][0];
 				fnIdx += 1;
 			}
 			this._lineNoByFunc.push([fnIdx, (1 + i - off)]);
-			if (lines.length <= fnIdx) break;
 		}
+
 		if (lineCount === 0) this._lineNoByFunc.push([0, 1]);
 		const width = this._calcWidth(this._comp, lineCount);
 
