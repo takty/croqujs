@@ -4,6 +4,7 @@
   "description": "The Playground for JavaScript",
   "main": "dist/main.js",
   "scripts": {
+    "gulp": "gulp",
     "start": "./node_modules/.bin/electron .",
     "build": "npm run build-mac && npm run build-win && npm run build-win32",
     "build-mac": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd 'package/Croqujs-darwin-x64' && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
@@ -40,7 +41,13 @@
   },
   "devDependencies": {
     "cpx": "^1.5.0",
-    "electron-packager": "^12.1.0",
+    "electron-packager": "^12.1.1",
+    "gulp": "^4.0.0",
+    "gulp-autoprefixer": "^5.0.0",
+    "gulp-load-plugins": "^1.5.0",
+    "gulp-plumber": "^1.2.0",
+    "gulp-rename": "^1.4.0",
+    "gulp-sass": "^4.0.1",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.3"
   }

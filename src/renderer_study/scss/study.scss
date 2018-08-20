@@ -5,6 +5,9 @@
 
 @charset "UTF-8";
 
+@import "cm.scss";
+@import "sa2.scss";
+
 @font-face {
 	font-family: "Inconsolata";
 	src: url("res/Inconsolata-dz.woff") format('woff');
