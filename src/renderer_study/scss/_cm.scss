@@ -78,14 +78,14 @@
 }
 .CodeMirror-gutter {
 	padding-left: 4px;
-	cursor: url(../res/cursor.svg) 16 16, cell;
+	cursor: url(cursor.svg) 16 16, cell;
 }
 .CodeMirror-gutter-elt {
 	height: 100%;
-	cursor: url(../res/cursor.svg) 16 16, cell;
+	cursor: url(cursor.svg) 16 16, cell;
 }
 .CodeMirror-linenumber {
-	cursor: url(../res/cursor.svg) 16 16, cell;
+	cursor: url(cursor.svg) 16 16, cell;
 }
 .CodeMirror-lint-markers {
 	 border-left: 4px solid #f8f8f8;
@@ -109,7 +109,7 @@
 	white-space: nowrap;
 
 	color: #898989;
-	cursor: url(../res/cursor.svg) 16 16, cell;
+	cursor: url(cursor.svg) 16 16, cell;
 
 	font-style: italic;
 }
@@ -120,7 +120,7 @@
 	white-space: nowrap;
 
 	color: #220;
-	cursor: url(../res/cursor.svg) 16 16, cell;
+	cursor: url(cursor.svg) 16 16, cell;
 }
 .CodeMirror-activeline-gutter .CodeMirror-function-linenumber {
 	font-weight: bold;

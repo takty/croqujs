@@ -49,6 +49,16 @@ gulp.task('sass', () => {
 		.pipe(gulp.dest('dist'));
 });
 
+gulp.task('sass-misc', () => {
+	return gulp.src(['src/**/scss/*', '!src/**/scss/*.scss'])
+		.pipe($.plumber())
+		.pipe($.rename((p) => {
+			p.dirname = p.dirname.replace(path.sep + 'scss' + path.sep, path.sep + 'css' + path.sep);
+			p.dirname = p.dirname.replace(path.sep + 'scss', path.sep + 'css');
+		}))
+		.pipe(gulp.dest('dist'));
+});
+
 // gulp.task('watch', () => {
 // 	gulp.watch('src/js/**/*.js', gulp.series('js'));
 // 	gulp.watch('src/sass/**/*.scss', gulp.series('sass'));
@@ -57,7 +67,7 @@ gulp.task('sass', () => {
 // gulp.task('build', gulp.parallel('js', 'sass'));
 
 // gulp.task('default', gulp.series('build', 'watch'));
-gulp.task('default', gulp.series('sass'));
+gulp.task('default', gulp.series('sass', 'sass-misc'));
 
 
 // -----------------------------------------------------------------------------
