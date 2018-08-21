@@ -1,16 +1,25 @@
 /*
+ *
  * Study Window Style
- * 2018-05-30
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2018-08-21
+ *
  */
 
-@charset "UTF-8";
 
-@import "cm.scss";
-@import "sa2.scss";
+@import 'cm';
+@import 'sa';
+
+$L-Red      : #e61e58;
+$L-Turquoise: #4db28d;
+$L-LightGray: #e8e8e8;
+$L-Gray     : #b5b5b6;
+$L-DarkGray : #898989;
 
 @font-face {
-	font-family: "Inconsolata";
-	src: url("Inconsolata-dz.woff") format('woff');
+	font-family: 'Inconsolata';
+	src: url('Inconsolata-dz.woff') format('woff');
 }
 
 html, body {
@@ -22,7 +31,7 @@ html, body {
 }
 
 
-/* Main splitter */
+// Main Splitter ---------------------------------------------------------------
 
 
 .splitter {
@@ -33,12 +42,10 @@ html, body {
 	cursor: row-resize;
 	height: 8px;
 	background-color: #d7d7d7;
-	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
+	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.25);
 	transition: 0.25s;
-}
 
-#handle:hover {
-	background-color: #898989;  /* L-Gray */
+	&:hover { background-color: $L-DarkGray; }
 }
 
 #editor {
@@ -46,46 +53,46 @@ html, body {
 }
 
 
-/* Output Pane */
+// Output Pane -----------------------------------------------------------------
 
 
 .sub {
 	overflow: scroll;
 	height: 0;
-	font-family: Inconsolata, "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, monospace;
+	font-family: Inconsolata, 'Hiragino Kaku Gothic ProN', Meiryo, 'Yu Gothic', YuGothic, monospace;
+	
+	> div > div {  /* Output Pane -> innner -> items */
+		margin: 4px;
+		word-wrap: break-word;
+		line-height: 1.35;
+	}
+
+	div.std {
+		color: #110;
+
+		.count {
+			background-color: $L-Turquoise;
+			border-radius: 2px;
+			color: #fff;
+			margin-right: 4px;
+			font-size: 0.8em;
+			padding: 2px 3px;
+		}
+	}
+	
+	div.err {
+		color: $L-Red;
+
+		div {
+			color: $L-Gray;
+			font-size: 0.8em;
+			margin-top: 0;
+		}
+	}
 }
 
-.sub > div > div {  /* Output Pane -> innner -> items */
-	margin: 4px;
-	word-wrap: break-word;
-	line-height: 1.35;
-}
 
-.sub div.std {
-	color: #110;
-}
-
-.sub div.std .count {
-	background-color: #4db28d;  /* L-Turquoise */
-	border-radius: 2px;
-	color: white;
-	margin-right: 4px;
-	font-size: 0.8em;
-	padding: 2px 3px;
-}
-
-.sub div.err {
-	color: #e61e58;  /* L-Red */
-}
-
-.sub div.err div {
-	color: #b5b5b6;  /* L-Gray */
-	font-size: 0.8em;
-	margin-top: 0em;
-}
-
-
-/* Tool Bar */
+// Tool Bar --------------------------------------------------------------------
 
 
 #toolbar {
@@ -101,10 +108,10 @@ html, body {
 }
 
 .toolbar-shadow {
-	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
+	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.25);
 }
 
-#toolbar > #toolbar-overwrap {
+#toolbar-overwrap {
 	display: none;
 	position: absolute;
 	justify-content: center;
@@ -115,82 +122,55 @@ html, body {
 	left: 0;
 	z-index: 9999;
 	background-color: #f8f8f8;
-	color: #898989;  /* L-Dark Gray */
-	font-family: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
+	color: $L-DarkGray;
+	font-family: 'Lucida Grande', 'Hiragino Kaku Gothic ProN', Meiryo, 'Yu Gothic', YuGothic, sans-serif !important;
 }
 
-#toolbar > div {
-	box-sizing: border-box;
-	border-style: none;
-	cursor: default;
+#toolbar {
+	> div {
+		box-sizing: border-box;
+		cursor: default;
 
-	width: 46px;
-	height: 46px;
-	margin: 0px 12px 2px 12px;
-	padding: 0px;
-}
+		width: 46px;
+		height: 46px;
+		margin: 0 12px 2px 12px;
+		padding: 0;
 
-#toolbar > div.filler {
-	border-style: none;
-	cursor: default;
+		&.filler { flex: 1 1 auto; }
 
-	height: 46px;
-	margin: 0px 12px 2px 12px;
-	padding: 0px;
-	flex: 1 1 auto;
-}
+		i {
+			color: $L-Gray;
+			transition: 0.25s;
+		}
+		&:hover,
+		&:active {
+			i { color: $L-DarkGray; }
+		}
+		&:hover {
+			margin: 0 12px 2px 12px;
+			text-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.25);
+		}
+		&:active { margin: 2px 12px 0 12px; }
 
-#toolbar > div > div {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	width: 46px;
-	height: 46px;
-	margin: 0px;
-	padding: 0px;
-}
+		> div {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 46px;
+			height: 46px;
+			margin: 0;
+			padding: 0;
+		}
+	}
+	
+	> div.unabled {
+		i { color: $L-LightGray; }
 
-#toolbar > div:hover {
-	margin: 0px 12px 2px 12px;
-	text-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
-}
-
-#toolbar > div:active {
-	margin: 2px 12px 0px 12px;
-}
-
-#toolbar > div i {
-	color: #d7d7d7;
-	transition: 0.25s;
-}
-
-#toolbar > div:hover i {
-	color: #898989;  /* L-Dark Gray */
-}
-
-#toolbar > div:active i {
-	color: #898989;  /* L-Dark Gray */
-}
-
-/* Unabled Toolbar Button */
-
-#toolbar > div.unabled:hover {
-	margin: 0px 12px 2px 12px;
-	text-shadow: none;
-}
-
-#toolbar > div.unabled:active {
-	margin: 0px 12px 2px 12px;
-}
-
-#toolbar > div.unabled i {
-	color: #e8e8e8;  /* L-Light Gray */
-}
-
-#toolbar > div.unabled:hover i {
-	color: #e8e8e8;  /* L-Light Gray */
-}
-
-#toolbar > div.unabled:active i {
-	color: #e8e8e8;  /* L-Light Gray */
+		&:hover,
+		&:active {
+			margin: 0 12px 2px 12px;
+			text-shadow: none;
+			i { color: $L-LightGray; }
+		}
+	}
 }
