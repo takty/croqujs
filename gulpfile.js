@@ -1,9 +1,53 @@
 'use strict';
 
+const fs = require('fs-extra');
 const path = require('path');
 const gulp = require('gulp');
 const $ = require('gulp-load-plugins')({pattern:['gulp-*']});
 
+gulp.task('copy-tern', (done) => {
+	fs.copySync('./node_modules/tern/lib', './dist/renderer_study/lib/tern');
+	fs.copySync('./node_modules/tern/defs', './dist/renderer_study/lib/tern');
+	done();
+});
+
+gulp.task('copy-sweetalert2', (done) => {
+	fs.copySync('./node_modules/sweetalert2/dist/sweetalert2.min.*', './dist/renderer_study/lib/sweetalert2');
+	done();
+});
+
+gulp.task('copy-js-beautify', (done) => {
+	fs.copySync('./node_modules/js-beautify/js/lib/beautify.js', './dist/renderer_study/lib/js-beautify');
+	done();
+});
+
+gulp.task('copy-font-awesome', (done) => {
+	fs.copySync('./node_modules/font-awesome/css/font-awesome.min.css', './dist/renderer_study/lib/font-awesome/css');
+	fs.copySync('./node_modules/font-awesome/fonts/fontawesome-webfont.woff2', './dist/renderer_study/lib/font-awesome/fonts');
+	done();
+});
+
+gulp.task('copy-acorn', (done) => {
+	fs.copySync('./node_modules/acorn/dist', './dist/renderer_study/lib/acorn');
+	fs.copySync('./node_modules/acorn/dist', './dist/lib/acorn');
+	done();
+});
+
+gulp.task('copy-codemirror', (done) => {
+	fs.copySync('./node_modules/codemirror/lib', './dist/renderer_study/lib/codemirror/lib');
+	fs.copySync('./node_modules/codemirror/addon', './dist/renderer_study/lib/codemirror/addon');
+	fs.copySync('./node_modules/codemirror/mode/javascript', './dist/renderer_study/lib/codemirror/mode/javascript');
+	done();
+});
+
+gulp.task('copy', gulp.parallel(
+	'copy-tern',
+	'copy-sweetalert2',
+	'copy-js-beautify',
+	'copy-font-awesome',
+	'copy-acorn',
+	'copy-codemirror'
+));
 
 // gulp.task('js-with-option', () => {
 // 	return gulp.src('src/js/**/*.js')
