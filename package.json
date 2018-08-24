@@ -1,6 +1,6 @@
 {
   "name": "croqujs",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "The Playground for JavaScript",
   "main": "dist/main.js",
   "scripts": {
@@ -28,7 +28,8 @@
     "electron": "^2.0.7",
     "font-awesome": "^4.7.0",
     "js-beautify": "^1.7.5",
-    "jshint-ja-edu": "https://github.com/takty/jshint-ja-edu.git",
+    "jshint": "^2.9.6",
+    "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
     "sweetalert2": "^7.26.11",
     "tern": "^0.21.0"
   },

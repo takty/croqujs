@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-17
+ * @version 2018-08-24
  *
  */
 
@@ -230,7 +230,7 @@ class Study {
 
 		if (!this._jsHintLoaded) {
 			const se = document.createElement('script');
-			se.src = (conf.languageIdx === 0) ? './lib/jshint.js' : './lib/jshint.ja.js';
+			se.src = './lib/jshint/' + ((conf.languageIdx === 0) ? 'jshint.js' : 'jshint-ja-edu.js');
 			document.getElementsByTagName('head')[0].appendChild(se);
 			this._jsHintLoaded = true;
 		}

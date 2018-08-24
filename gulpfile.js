@@ -45,6 +45,12 @@ gulp.task('copy-js-beautify', (done) => {
 	done();
 });
 
+gulp.task('copy-jshint', (done) => {
+	copySync('./node_modules/jshint/dist/jshint.js', PATH_STUDY_LIB + 'jshint/jshint.js');
+	copySync('./node_modules/jshint-ja-edu/dist/jshint.js', PATH_STUDY_LIB + 'jshint/jshint-ja-edu.js');
+	done();
+});
+
 gulp.task('copy-sweetalert2', (done) => {
 	copySync('./node_modules/sweetalert2/dist/sweetalert2.min.*', PATH_STUDY_LIB + 'sweetalert2/');
 	done();
@@ -61,6 +67,7 @@ gulp.task('copy-lib', gulp.parallel(
 	'copy-codemirror',
 	'copy-font-awesome',
 	'copy-js-beautify',
+	'copy-jshint',
 	'copy-sweetalert2',
 	'copy-tern',
 ));
