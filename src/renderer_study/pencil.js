@@ -3,7 +3,7 @@
  * Pencil: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-17
+ * @version 2018-08-24
  *
  */
 
@@ -176,10 +176,11 @@ class Editor {
 		const bgn = pos[0], end = pos[1];
 		const scc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column}, 'local');
 		const ecc = this._comp.charCoords({line: end.line - 1, ch: end.column}, 'local');
+		scc.left += 4;
 
 		const lh = this._comp.defaultTextHeight();
 		const tcc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column + 3}, 'local');
-		const iw = tcc.right - scc.left - 4;
+		const iw = tcc.right - scc.left - 3;
 		const w = ctx.canvas.width / 2;
 
 		this._fillLeftRoundedRect(ctx, scc.left, scc.top + 3, iw, ecc.top - scc.top + lh - 6, lh / 1.5);
