@@ -4,21 +4,13 @@
   "description": "The Playground for JavaScript",
   "main": "dist/main.js",
   "scripts": {
-    "gulp": "gulp",
     "start": "./node_modules/.bin/electron .",
-    "build": "npm run build-mac && npm run build-win && npm run build-win32",
-    "build-mac": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd 'package/Croqujs-darwin-x64' && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
-    "build-win": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-x64    && del LICENSE* version && cd ../../",
-    "build-win32": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=ia32 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-ia32   && del LICENSE* version && cd ../../",
-    "dev": "cpx ./src/**/* ./dist",
+    "dev": "gulp",
     "dev-start": "npm run dev && npm start",
-    "copy": "npm-run-all copy:* && cpx ./src/**/* ./dist",
-    "copy:tern": "mkdirp ./dist/renderer_study/lib/tern && cpx ./node_modules/tern/lib/* ./dist/renderer_study/lib/tern && cpx ./node_modules/tern/defs/* ./dist/renderer_study/lib/tern",
-    "copy:sweetalert2": "mkdirp ./dist/renderer_study/lib/sweetalert2 && cpx ./node_modules/sweetalert2/dist/sweetalert2.min.* ./dist/renderer_study/lib/sweetalert2",
-    "copy:js-beautify": "mkdirp ./dist/renderer_study/lib/js-beautify && cpx ./node_modules/js-beautify/js/lib/beautify.js ./dist/renderer_study/lib/js-beautify",
-    "copy:font-awesome": "mkdirp ./dist/renderer_study/lib/font-awesome/fonts && mkdirp ./dist/renderer_study/lib/font-awesome/css && cpx ./node_modules/font-awesome/css/font-awesome.min.css ./dist/renderer_study/lib/font-awesome/css && cpx ./node_modules/font-awesome/fonts/fontawesome-webfont.woff2 ./dist/renderer_study/lib/font-awesome/fonts",
-    "copy:acorn": "mkdirp ./dist/renderer_study/lib/acorn && mkdirp ./dist/lib/acorn && cpx ./node_modules/acorn/dist/*.js ./dist/renderer_study/lib/acorn && cpx ./node_modules/acorn/dist/*.js ./dist/lib/acorn",
-    "copy:codemirror": "mkdirp ./dist/renderer_study/lib/codemirror/mode/javascript && mkdirp ./dist/renderer_study/lib/codemirror/lib && mkdirp ./dist/renderer_study/lib/codemirror/addon && cpx ./node_modules/codemirror/lib/* ./dist/renderer_study/lib/codemirror/lib && cpx ./node_modules/codemirror/addon/**/* ./dist/renderer_study/lib/codemirror/addon && cpx ./node_modules/codemirror/mode/javascript/* ./dist/renderer_study/lib/codemirror/mode/javascript"
+    "build": "npm run build-mac && npm run build-win && npm run build-win32",
+    "build-mac": "electron-packager   ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-darwin-x64 && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
+    "build-win": "electron-packager   ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-x64  && del LICENSE* version && cd ../../",
+    "build-win32": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=ia32 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-ia32 && del LICENSE* version && cd ../../"
   },
   "repository": {
     "type": "git",
@@ -41,16 +33,14 @@
     "tern": "^0.21.0"
   },
   "devDependencies": {
-    "cpx": "^1.5.0",
     "electron-packager": "^12.1.1",
     "fs-extra": "^7.0.0",
+    "glob": "^7.1.2",
     "gulp": "^4.0.0",
     "gulp-autoprefixer": "^5.0.0",
     "gulp-load-plugins": "^1.5.0",
     "gulp-plumber": "^1.2.0",
     "gulp-rename": "^1.4.0",
-    "gulp-sass": "^4.0.1",
-    "mkdirp": "^0.5.1",
-    "npm-run-all": "^4.1.3"
+    "gulp-sass": "^4.0.1"
   }
 }
