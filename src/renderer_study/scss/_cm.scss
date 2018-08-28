@@ -63,6 +63,8 @@
 	word-break: break-all;
 }
 
+.CodeMirror.wordwrap pre > * { text-indent: 0px; }
+
 
 /* Gutter */
 

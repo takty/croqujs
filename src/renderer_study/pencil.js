@@ -40,6 +40,14 @@ class Editor {
 		this._comp.on('copy',    () => { this._owner.onPencilClipboardChanged(); });
 		this._comp.on('cut',     () => { this._owner.onPencilClipboardChanged(); });
 		this._comp.on('refresh', () => { this._updateCodeStructureView(); });
+
+		this._comp.on('renderLine', (cm, line, elt) => {
+			if (!cm.getOption('lineWrapping')) return;
+			const charWidth = this._comp.defaultCharWidth(), basePadding = 2;
+			const off = CodeMirror.countColumn(line.text, null, cm.getOption('tabSize')) * charWidth;
+			elt.style.textIndent = '-' + off + 'px';
+			elt.style.paddingLeft = (basePadding + off) + 'px';
+		});
 	}
 
 	codeMirrorOptions(jsHintOpt) {
@@ -532,6 +540,11 @@ class Editor {
 	lineWrapping(flag) {
 		if (flag === undefined) return this._comp.getOption('lineWrapping');
 		this._comp.setOption('lineWrapping', flag);
+		const cms = document.getElementsByClassName('CodeMirror');
+		for (let cm of cms) {
+			if (flag) cm.classList.add('wordwrap');
+			else cm.classList.remove('wordwrap');
+		}
 	}
 
 	fontFamily(attr) {
