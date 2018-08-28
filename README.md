@@ -1,13 +1,11 @@
 # Croqujs
 
 ```console
+npm install gulp-cli -g
+npm install gulp -D
 npm install
 ```
 
 ```console
-npm run copy
-```
-
-```console
-npm start
+npm run dev-start
 ```
