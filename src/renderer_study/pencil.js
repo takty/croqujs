@@ -3,7 +3,7 @@
  * Pencil: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-24
+ * @version 2018-08-28
  *
  */
 
@@ -152,22 +152,22 @@ class Editor {
 
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-		if (cs.fnPos) {
+		if (cs.fnLocs) {
 			ctx.fillStyle = 'rgba(255, 127, 0, 0.1)';
-			for (let i = 0; i < cs.fnPos.length; i += 1) {
-				this._drawSyntaxRange(ctx, cs.fnPos[i]);
+			for (let i = 0; i < cs.fnLocs.length; i += 1) {
+				this._drawSyntaxRange(ctx, cs.fnLocs[i]);
 			}
 		}
-		if (cs.ifPos) {
+		if (cs.ifLocs) {
 			ctx.fillStyle = 'rgba(0, 127, 0, 0.1)';
-			for (let i = 0; i < cs.ifPos.length; i += 1) {
-				this._drawSyntaxRange(ctx, cs.ifPos[i]);
+			for (let i = 0; i < cs.ifLocs.length; i += 1) {
+				this._drawSyntaxRange(ctx, cs.ifLocs[i]);
 			}
 		}
-		if (cs.forPos) {
+		if (cs.forLocs) {
 			ctx.fillStyle = 'rgba(0, 127, 255, 0.1)';
-			for (let i = 0; i < cs.forPos.length; i += 1) {
-				this._drawSyntaxRange(ctx, cs.forPos[i]);
+			for (let i = 0; i < cs.forLocs.length; i += 1) {
+				this._drawSyntaxRange(ctx, cs.forLocs[i]);
 			}
 		}
 	}
@@ -185,7 +185,9 @@ class Editor {
 
 		this._fillLeftRoundedRect(ctx, scc.left, scc.top + 3, iw, ecc.top - scc.top + lh - 6, lh / 1.5);
 		this._fillRightRoundedRect(ctx, scc.left + iw, scc.top + 3, w, lh - 3, lh / 1.5);
-		this._fillRightRoundedRect(ctx, scc.left + iw, ecc.top, w, lh - 3, lh / 1.5);
+		if (bgn.line !== end.line) {
+			this._fillRightRoundedRect(ctx, scc.left + iw, ecc.top, w, lh - 3, lh / 1.5);
+		}
 
 		const elsecc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column + 4}, 'local');
 		const elsew = elsecc.right - scc.left - 4;
@@ -575,17 +577,21 @@ class Editor {
 	}
 
 	_updateLineNoByFuncGutter() {
-		const lines = this._codeStructure.function;
-		if (!lines) return;
+		const lines = this._codeStructure.fnLocs;
+		if (!lines || lines.length === 0) return;
 		const lineCount = this._comp.getDoc().lineCount();
 
 		this._lineNoByFunc = [];
 		let fnIdx = 0, off = 0;
 		for (let i = 0; i < lineCount; i += 1) {
-			if (lines[fnIdx] !== undefined && i === lines[fnIdx][0]) {
-				off = lines[fnIdx][0];
+			if (lines[fnIdx] !== undefined && i === lines[fnIdx][0].line - 1) {
+				off = lines[fnIdx][0].line - 1;
 				fnIdx += 1;
 			}
+			// if (lines[fnIdx] !== undefined && i === lines[fnIdx][0]) {
+			// 	off = lines[fnIdx][0];
+			// 	fnIdx += 1;
+			// }
 			this._lineNoByFunc.push([fnIdx, (1 + i - off)]);
 		}
 
