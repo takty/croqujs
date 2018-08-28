@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-29
+ * @version 2018-08-28
  *
  */
 
@@ -47,30 +47,8 @@ class Exporter {
 		return libs;
 	}
 
-	exportAsLibrary(codeText, filePath, nameSpace) {
-		const acorn = require('./lib/acorn/acorn.js');
-		acorn.walk = require('./lib/acorn/walk.js');
-
-		const fns = [], ast = acorn.parse(codeText, {locations: true});
-		const FE = 'FunctionExpression', AFE = 'ArrowFunctionExpression', CE = 'ClassExpression';
-
-		acorn.walk.recursive(ast, {}, {
-			ClassDeclaration: (node, state, c) => {
-				fns.push(node.id.name);
-			},
-			VariableDeclaration: (node, state, c) => {  // var f = function () {...};
-				for (let d of node.declarations) {
-					if (d.init !== null && (d.init.type === FE || d.init.type === AFE || d.init.type === CE)) fns.push(d.id.name);
-				}
-			},
-			FunctionDeclaration: (node, state, c) => {  // function f () {...}
-				fns.push(node.id.name);
-			},
-			AssignmentExpression: (node, state, c) => {  // f = function () {...};
-				const left = node.left, right = node.right;
-				if (left.type === 'Identifier' && (right.type === FE || right.type === AFE || right.type === CE)) fns.push(left.name);
-			}
-		});
+	exportAsLibrary(codeText, filePath, nameSpace, codeStructure) {
+		const fns = codeStructure.fnNames;
 		const fnsStr = fns.map(e => (e + ': ' + e)).join(', ');
 
 		const header = 'var ' + nameSpace + ' = (function () {';

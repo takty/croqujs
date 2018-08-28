@@ -23,7 +23,6 @@ const PATH_STUDY_LIB = './dist/renderer_study/lib/';
 
 gulp.task('copy-acorn', (done) => {
 	copySync('./node_modules/acorn/dist', PATH_STUDY_LIB + 'acorn');
-	copySync('./node_modules/acorn/dist', './dist/lib/acorn');
 	done();
 });
 

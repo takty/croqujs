@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-24
+ * @version 2018-08-28
  *
  */
 
@@ -278,6 +278,11 @@ class Study {
 
 	sendBackText(messageForMain) {  // Called By Twin
 		this._twinMessage(messageForMain, this._editor.value());
+	}
+
+	sendBackTextWithCodeStructure(messageForMain) {  // Called By Twin
+		const cs = JSON.stringify(this._codeStructure);
+		this._twinMessage(messageForMain, this._editor.value(), cs);
 	}
 
 	clearCurrentState() {  // Called By Twin
