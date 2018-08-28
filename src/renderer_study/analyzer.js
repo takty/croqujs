@@ -42,10 +42,14 @@ self.addEventListener('message', function(e) {
 			ClassDeclaration: (node, state, c) => {
 				fnNames.push(node.id.name);
 			},
-			VariableDeclaration: (node, state, c) => {  // var f = function () {...};
+			VariableDeclaration: (node, state, c) => {  // const f = function () {...};
 				for (let d of node.declarations) {
 					if (d.init !== null && (d.init.type === FE || d.init.type === AFE)) {
-						fnLocs.push([d.loc.start, d.loc.end]);
+						if (node.loc.start.line === d.loc.start.line) {
+							fnLocs.push([node.loc.start, d.loc.end]);  // for considering the column of 'const'
+						} else {
+							fnLocs.push([d.loc.start, d.loc.end]);
+						}
 					}
 					if (d.init !== null && (d.init.type === FE || d.init.type === AFE || d.init.type === CE)) {
 						fnNames.push(d.id.name);
