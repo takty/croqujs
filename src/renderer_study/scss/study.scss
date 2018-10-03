@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-21
+ * @version 2018-10-03
  *
  */
 
@@ -127,7 +127,7 @@ html, body {
 }
 
 #toolbar {
-	> div {
+	> div:not(#toolbar-overwrap) {
 		box-sizing: border-box;
 		cursor: default;
 
