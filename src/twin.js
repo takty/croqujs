@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-28
+ * @version 2018-10-03
  *
  */
 
@@ -154,6 +154,7 @@ class Twin {
 	}
 
 	onStudyRequestPageCapture(ev, bcr) {
+		if (this._studyWin === null) return;  // When window is closed while capturing
 		this._studyWin.capturePage(bcr, (ni) => {
 			ev.returnValue = ni.toDataURL();
 		});
