@@ -344,15 +344,15 @@ class Study {
 		}, 200);
 	}
 
-	addErrorMessage(info, opt) {  // Called By Twin
+	addErrorMessage(info) {  // Called By Twin
 		let msg;
 		if (info.import) {
 			msg = this._res.msg.cannotImport.replace('%s', info.msg);
 		} else {
-			const file = opt.isUserCode ? '' : `(${opt.fileName}) `;
+			const file = info.isUserCode ? '' : `(${info.fileName}) `;
 			const transMsg = new ErrorTranslator(this._lang).translate(info.msg);
 			msg = `${file}%lineno% [${info.col}] - ${transMsg}`;
-			if (opt.isUserCode && this._editor.isLineNumberByFunctionEnabled()) {
+			if (info.isUserCode && this._editor.isLineNumberByFunctionEnabled()) {
 				const lnf = this._editor.getLineNumberByFunction(info.line - 1);
 				msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
 			} else {
@@ -360,7 +360,7 @@ class Study {
 			}
 		}
 		const elm = this._outputErrorMessage(msg, 'err');
-		if (opt.isUserCode) {
+		if (info.isUserCode) {
 			const doc = this._editor.getComponent().getDoc();
 			doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
 			this._clearErrorMarker();

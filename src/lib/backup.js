@@ -3,7 +3,7 @@
  * Backup (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-29
+ * @version 2018-10-04
  *
  */
 
@@ -27,6 +27,7 @@ class Backup {
 	setFilePath(filePath) {
 		this._filePath = filePath;
 		this._digest = '';
+		this._lastTimeStampStr = '';
 	}
 
 	backupText(text) {
@@ -36,15 +37,35 @@ class Backup {
 
 		const digest = this._getDigest(text);
 		if (digest === this._digest) return false;
-		this._digest = digest;
 
 		const ext  = PATH.extname(this._filePath);
 		const name = PATH.basename(this._filePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(this._filePath);
-			const to = PATH.join(backupDir, name + this._createTimeStampStr() + ext);
-			FS.writeFile(to, text);
+			this._lastTimeStampStr = this._createTimeStampStr();
+			const to = PATH.join(backupDir, name + this._lastTimeStampStr + ext);
+			FS.writeFile(to, text, (err) => { if (err) console.log(err); });
+		} catch (e) {
+			return false;
+		}
+		this._digest = digest;
+		return true;
+	}
+
+	backupErrorLog(info, text) {
+		if (!this._filePath) return false;
+
+		this.backupText(text);
+
+		const log  = JSON.stringify(info);
+		const ext  = PATH.extname(this._filePath);
+		const name = PATH.basename(this._filePath, ext);
+
+		try {
+			const backupDir = this._ensureBackupDir(this._filePath);
+			const to = PATH.join(backupDir, name + this._lastTimeStampStr + '.log');
+			FS.writeFile(to, log, (err) => { if (err) console.log(err); });
 		} catch (e) {
 			return false;
 		}
@@ -59,18 +80,19 @@ class Backup {
 
 		const digest = this._getDigest(text);
 		if (digest === this._getDigest(oldText)) return false;
-		this._digest = digest;
 
 		const ext  = PATH.extname(existingFilePath);
 		const name = PATH.basename(existingFilePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(existingFilePath);
-			const to = PATH.join(backupDir, name + this._createTimeStampStr() + ext);
+			this._lastTimeStampStr = this._createTimeStampStr();
+			const to = PATH.join(backupDir, name + this._lastTimeStampStr + ext);
 			FS.writeFileSync(to, oldText);
 		} catch (e) {
 			return false;
 		}
+		this._digest = digest;
 		return true;
 	}
 

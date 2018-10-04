@@ -46,6 +46,7 @@ class Twin {
 
 		this._exporter = new Exporter();
 		this._tempDirs = [];
+		this._codeCache = '';
 
 		ipcMain.on('fromRenderer_' + this._id, (ev, msg, ...args) => {
 			if (this[msg]) {
@@ -186,13 +187,14 @@ class Twin {
 
 	onFieldErrorOccurred(info) {
 		if (info.import) {
-			this.callStudyMethod('addErrorMessage', info, { isUserCode: false });
+			info.isUserCode = false;
 		} else {
-			const isUserCode = (info.url === this._url);
-			if (isUserCode && info.line === 1) info.col -= this._exporter._userCodeOffset;
-			const fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
-			this.callStudyMethod('addErrorMessage', info, { fileName, isUserCode });
+			info.isUserCode = (info.url === this._url);
+			if (info.isUserCode && info.line === 1) info.col -= this._exporter._userCodeOffset;
+			info.fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
 		}
+		this.callStudyMethod('addErrorMessage', info);
+		if (this._conf.get('autoBackup')) this._backup.backupErrorLog(info, this._codeCache);
 	}
 
 
@@ -526,6 +528,7 @@ class Twin {
 
 	_doRun(text) {
 		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
+		this._codeCache = text;
 
 		if (!this._fieldWin) {
 			this._createFieldWindow();
@@ -544,6 +547,7 @@ class Twin {
 
 	_doRunWithoutWindow(text) {
 		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
+		this._codeCache = text;
 
 		if (!this._fieldWin) {
 			this._createFieldWindow();
@@ -557,6 +561,7 @@ class Twin {
 
 	_doRunInFullScreen(text) {
 		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
+		this._codeCache = text;
 
 		if (!this._fieldWin) {
 			this._createFieldWindow();
