@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-28
+ * @version 2018-10-04
  *
  */
 
@@ -50,6 +50,7 @@ class Study {
 			}
 		}
 		this._msgsCache = [];
+		this._lang = 'en';
 
 		this._initEditor(editorSel);
 		this._initToolBar(tbarSel);
@@ -218,6 +219,8 @@ class Study {
 
 
 	configUpdated(conf) {  // Called By Main Directly
+		this._lang = (conf.languageIdx === 0) ? 'en' : 'ja';
+
 		this._editor.lineWrapping(conf.softWrap);
 		this._editor.fontFamily(this._res.fontSets[conf.fontSetIdx]);
 		this._editor.rulerEnabled(conf.fontSetIdx === 0);
@@ -230,7 +233,7 @@ class Study {
 
 		if (!this._jsHintLoaded) {
 			const se = document.createElement('script');
-			se.src = './lib/jshint/' + ((conf.languageIdx === 0) ? 'jshint.js' : 'jshint-ja-edu.js');
+			se.src = './lib/jshint/' + (this._lang === 'en' ? 'jshint.js' : 'jshint-ja-edu.js');
 			document.getElementsByTagName('head')[0].appendChild(se);
 			this._jsHintLoaded = true;
 		}
@@ -341,25 +344,28 @@ class Study {
 		}, 200);
 	}
 
-	addErrorMessage(infoStr, cursorPos, lineNo) {  // Called By Twin
+	addErrorMessage(info, opt) {  // Called By Twin
 		let msg;
-		if (cursorPos && this._editor.isLineNumberByFunctionEnabled()) {
-			const lnf = this._editor.getLineNumberByFunction(lineNo - 1);
-			msg = infoStr.replace('%lineno%', lnf[0] + ':' + lnf[1]);
+		if (info.import) {
+			msg = this._res.msg.cannotImport.replace('%s', info.msg);
 		} else {
-			msg = infoStr.replace('%lineno%', lineNo);
+			const file = opt.isUserCode ? '' : `(${opt.fileName}) `;
+			const transMsg = new ErrorTranslator(this._lang).translate(info.msg);
+			msg = `${file}%lineno% [${info.col}] - ${transMsg}`;
+			if (opt.isUserCode && this._editor.isLineNumberByFunctionEnabled()) {
+				const lnf = this._editor.getLineNumberByFunction(info.line - 1);
+				msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
+			} else {
+				msg = msg.replace('%lineno%', info.line);
+			}
 		}
 		const elm = this._outputErrorMessage(msg, 'err');
-		if (cursorPos) {
+		if (opt.isUserCode) {
 			const doc = this._editor.getComponent().getDoc();
-			doc.setCursor(cursorPos.line - 1, cursorPos.col - 1, {scroll: true});
+			doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
 			this._clearErrorMarker();
-			this._errorMarker = doc.addLineClass(cursorPos.line - 1, 'wrap', 'error-line');
-			elm.addEventListener('click', () => {
-				doc.setCursor(cursorPos.line - 1, cursorPos.col - 1, {scroll: true});
-				this._editor.getComponent().focus();
-			});
-			elm.style.cursor = 'pointer';
+			this._errorMarker = doc.addLineClass(info.line - 1, 'wrap', 'error-line');
+			this._makeErrorMessageClickable(elm, info);
 		}
 	}
 
@@ -379,6 +385,14 @@ class Study {
 
 		this._outputPaneEnabled(true);
 		return elm;
+	}
+
+	_makeErrorMessageClickable(elm, info) {
+		elm.addEventListener('click', () => {
+			doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
+			this._editor.getComponent().focus();
+		});
+		elm.style.cursor = 'pointer';
 	}
 
 	_cloneOutputPaneLines(keptCount) {

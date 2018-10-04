@@ -18,10 +18,10 @@ const FS      = require('fs');
 const PATH    = require('path');
 const PROCESS = require('process');
 
-const Shortcut   = require('./lib/appshortcut.js');
-const Config     = require('./lib/config.js');
-const NavMenu    = require('./lib/navmenu.js');
-const Twin       = require('./twin.js');
+const Shortcut = require('./lib/appshortcut.js');
+const Config   = require('./lib/config.js');
+const NavMenu  = require('./lib/navmenu.js');
+const Twin     = require('./twin.js');
 
 const IS_MAC = (PROCESS.platform === 'darwin');
 

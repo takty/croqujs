@@ -187,21 +187,13 @@ class Twin {
 
 	onFieldErrorOccurred(info) {
 		if (info.import) {
-			this.callStudyMethod('addErrorMessage', this._res.msg.cannotImport.replace('%s', info.msg), info);
+			this.callStudyMethod('addErrorMessage', info, { isUserCode: false });
 		} else {
 			const isUserCode = (info.url === this._url);
 			if (isUserCode && info.line === 1) info.col -= this._exporter._userCodeOffset;
 			const fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
-			const file = isUserCode ? '' : `(${fileName}) `;
-			const msg = `${file}%lineno% [${info.col}] - ${this._translateError(info.msg)}`;
-			// When an error occurred in a library file, the 2nd param must be 'undefined'!
-			this.callStudyMethod('addErrorMessage', msg, isUserCode ? info : undefined, info.line);
+			this.callStudyMethod('addErrorMessage', info, { fileName, isUserCode });
 		}
-	}
-
-	_translateError(msg) {
-		const lang = this._conf.get('languageIdx') === 0 ? 'en' : 'ja';
-		return new ErrorTrans(lang).translate(msg);
 	}
 
 
