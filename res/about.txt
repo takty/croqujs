@@ -1,15 +1,15 @@
 Pronounced as /krō-ˈkē/
 
 by Takuto Yanagida @ Space-Time Inc.
-v2018-08-27
+v2018-10-04
 
 Powered by:
-    - Acorn v5.7.1
-    - CodeMirror v5.39.2
-    - Electron v2.0.7
+    - Acorn v5.7.3
+    - CodeMirror v5.40.2
+    - Electron v3.0.2
     - Font Awesome v4.7.0
-    - js-beautify v1.7.5
+    - js-beautify v1.8.6
     - JSHint v2.9.6
-    - SweetAlert2 v7.26.11
-    - Tern v0.21.0
+    - SweetAlert2 v7.28.4
+    - Tern v0.22.3
     - Inconsolata-dz v001.010
