@@ -19,7 +19,6 @@ const OS   = require('os');
 const Backup   = require('./lib/backup.js');
 const WinState = require('./lib/winstate.js');
 const Exporter = require('./exporter.js');
-const ErrorTrans = require('./errortrans.js');
 
 const MAX_CONSOLE_OUTPUT_SIZE = 100;
 
