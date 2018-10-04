@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-30
+ * @version 2018-10-04
  *
  */
 
@@ -291,8 +291,8 @@ class Main {
 			{ type: 'checkbox', label: rm.showLineNumberByFunction, click: this._createConfigMenuSetter('isLineNumberByFunctionEnabled'), checked: this._conf.get('isLineNumberByFunctionEnabled') },
 			{ label: rm.toggleOutputPane, accelerator: 'CmdOrCtrl+L', click: this._createStudyCaller('toggleOutputPane') },
 			{ label: '', accelerator: 'F12', click: this._createTwinCaller('toggleDevTools'), visible: false },
-			{ label: '', accelerator: 'CmdOrCtrl+Shift+F12', click: this._createTwinCaller('toggleFieldDevTools'), visible: false },
-			{ label: '', accelerator: 'CmdOrCtrl+Shift+Alt+F12', click: this._createTwinCaller('toggleStudyDevTools'), visible: false },
+			{ label: '', accelerator: 'CmdOrCtrl+F12', click: this._createTwinCaller('toggleFieldDevTools'), visible: false },
+			{ label: '', accelerator: 'CmdOrCtrl+Shift+F12', click: this._createTwinCaller('toggleStudyDevTools'), visible: false },
 		];
 		const helpMenu = [
 			{ label: 'Version ' + VERSION, enabled: false },
