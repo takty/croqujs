@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-18
+ * @version 2018-10-04
  *
  */
 
@@ -57,6 +57,8 @@ class ErrorTranslator {
 				m = '数字がここにあるのはおかしいです。直前を打ち間違えていませんか？';
 			} else if (m === 'Illegal return statement') {
 				m = 'return文がここにあるのはおかしいです。';
+			} else if (m === 'Missing initializer in const declaration') {
+				m = '定数の宣言に値がありません。';
 			}
 			return m + '<div>（文法エラー）' + msg + '</div>';
 		}
