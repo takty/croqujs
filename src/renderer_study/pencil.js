@@ -237,32 +237,58 @@ class Editor {
 	initGutterSelection() {
 		const guts = document.querySelector('.CodeMirror-gutters');
 		const doc = this._comp.getDoc();
-		let fromLine, gutterDown = false;
+		let fromLine = -1, gutterDown = false, onceClicked = false;
 
 		this._comp.on('gutterClick', (ed, ll, cls, e) => {
-			let style = window.getComputedStyle(guts);
+			const style = window.getComputedStyle(guts);
 			if (e.which !== 1 || guts.offsetWidth - parseInt(style.borderRightWidth) - 1 < e.clientX) {
 				doc.setCursor(ll, 0);
+				fromLine = -1;
 				return;
 			}
-			if (e.shiftKey) {
+			if (fromLine !== -1 && e.shiftKey) {
+				this._select(fromLine, ll);
+				onceClicked = false;
+				return;
+			}
+			if (onceClicked) {
 				this._select(fromLine, ll);
 				return;
 			}
 			doc.setCursor(ll, 0);
 			doc.setSelection({line: ll, ch: 0}, this._getTailPos(doc, ll));
-			gutterDown = true;
 			fromLine = ll;
+
+			if (!e.shiftKey) {
+				onceClicked = true;
+			}
 		});
 		this._elem.addEventListener('mousemove', (e) => {
 			if (e.which !== 1) {
 				gutterDown = false;
 			} else if (gutterDown) {
-				const {line} = this._comp.coordsChar({left: e.clientX, top: e.clientY});
+				const { line } = this._comp.coordsChar({ left: e.clientX, top: e.clientY });
 				this._select(fromLine, line);
+				onceClicked = false;
 			}
 		});
-		this._elem.addEventListener('mouseup', (e) => {gutterDown = false;});
+		this._elem.addEventListener('mouseup', (e) => { gutterDown = false; });
+		this._elem.addEventListener('mousedown', (e) => {
+			if (guts.offsetWidth < e.clientX) {
+				gutterDown = false;
+				onceClicked = false;
+				fromLine = -1;
+			} else {
+				gutterDown = true;
+			}
+		});
+		this._comp.on('cursorActivity', () => {
+			if (doc.getSelection() === '') {
+				gutterDown = false;
+				onceClicked = false;
+				fromLine = -1;
+			}
+		});
 	}
 
 	_select(fromLine, toLine) {
