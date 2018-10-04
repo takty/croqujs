@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-03
+ * @version 2018-10-04
  *
  */
 
@@ -19,6 +19,7 @@ const OS   = require('os');
 const Backup   = require('./lib/backup.js');
 const WinState = require('./lib/winstate.js');
 const Exporter = require('./exporter.js');
+const ErrorTrans = require('./errortrans.js');
 
 const MAX_CONSOLE_OUTPUT_SIZE = 100;
 
@@ -192,10 +193,15 @@ class Twin {
 			if (isUserCode && info.line === 1) info.col -= this._exporter._userCodeOffset;
 			const fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
 			const file = isUserCode ? '' : `(${fileName}) `;
-			const msg = `${file}%lineno% [${info.col}] - ${this._main.translateError(info.msg)}`;
+			const msg = `${file}%lineno% [${info.col}] - ${this._translateError(info.msg)}`;
 			// When an error occurred in a library file, the 2nd param must be 'undefined'!
 			this.callStudyMethod('addErrorMessage', msg, isUserCode ? info : undefined, info.line);
 		}
+	}
+
+	_translateError(msg) {
+		const lang = this._conf.get('languageIdx') === 0 ? 'en' : 'ja';
+		return new ErrorTrans(lang).translate(msg);
 	}
 
 

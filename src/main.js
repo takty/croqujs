@@ -10,9 +10,9 @@
 
 'use strict';
 
-const VERSION = '2018-05-30';
+const VERSION = '2018-10-04';
 
-const { app, BrowserWindow, Menu, ipcMain, dialog, clipboard } = require('electron');
+const { app, Menu, ipcMain, dialog, clipboard } = require('electron');
 
 const FS      = require('fs');
 const PATH    = require('path');
@@ -21,9 +21,7 @@ const PROCESS = require('process');
 const Shortcut   = require('./lib/appshortcut.js');
 const Config     = require('./lib/config.js');
 const NavMenu    = require('./lib/navmenu.js');
-
 const Twin       = require('./twin.js');
-const ErrorTrans = require('./errortrans.js');
 
 const IS_MAC = (PROCESS.platform === 'darwin');
 
@@ -135,11 +133,6 @@ class Main {
 		for (let e of this._twins) {
 			if (e !== t) e.callStudyMethod('configUpdated', this._conf.getAll());
 		}
-	}
-
-	translateError(msg) {  // Called By Twin
-		const lang = this._conf.get('languageIdx') === 0 ? 'en' : 'ja';
-		return new ErrorTrans(lang).translate(msg);
 	}
 
 	updateTwinSpecificMenuItems(ts, nav) {  // Called By Twin
