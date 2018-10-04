@@ -8,9 +8,9 @@
     "dev": "gulp",
     "dev-start": "npm run dev && npm start",
     "build": "npm run build-mac && npm run build-win && npm run build-win32",
-    "build-mac": "electron-packager   ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-darwin-x64 && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
-    "build-win": "electron-packager   ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=x64  --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-x64  && del LICENSE* version && cd ../../",
-    "build-win32": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=ia32 --app-version=4.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-ia32 && del LICENSE* version && cd ../../"
+    "build-mac": "electron-packager   ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon.icns --asar --prune --out=package --overwrite=true --platform=darwin --arch=x64  --app-version=5.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-darwin-x64 && rm -rf LICENSE* version && zip -9 -ry ../Croqujs-darwin-x64.zip '../Croqujs-darwin-x64' && cd ../../",
+    "build-win": "electron-packager   ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=x64  --app-version=5.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-x64  && del LICENSE* version && cd ../../",
+    "build-win32": "electron-packager ./ Croqujs --app-bundle-id=croqujs --icon=./res/icon      --asar --prune --out=package --overwrite=true --platform=win32  --arch=ia32 --app-version=5.0.0 --version-string.FileDescription=Croqujs && cd package/Croqujs-win32-ia32 && del LICENSE* version && cd ../../"
   },
   "repository": {
     "type": "git",
