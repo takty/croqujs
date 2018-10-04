@@ -3,7 +3,7 @@
  * Pencil: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-28
+ * @version 2018-10-04
  *
  */
 
@@ -316,17 +316,17 @@ class Editor {
 	_complete(cm, server) {
 		const fn = (cm, c) => this._hint(server, cm, c);
 		fn.async = true;
-		cm.showHint({hint: fn, completeSingle: false, customKeys: {
-			Up: function(cm, handle) {handle.moveFocus(-1);},
-			Down: function(cm, handle) {handle.moveFocus(1);},
-			PageUp: function(cm, handle) {handle.moveFocus(-handle.menuSize() + 1, true);},
-			PageDown: function(cm, handle) {handle.moveFocus(handle.menuSize() - 1, true);},
-			Home: function(cm, handle) {handle.setFocus(0);},
-			End: function(cm, handle) {handle.setFocus(handle.length - 1);},
-			Enter: function(cm, handle) {handle.pick();},
-			Tab: function(cm, handle) {handle.pick();},
-			Esc: function(cm, handle) {handle.close();}
-		}});
+		cm.showHint({ hint: fn, completeSingle: false, customKeys: {
+			Up:       function (cm, handle) { handle.moveFocus(-1); },
+			Down:     function (cm, handle) { handle.moveFocus(1); },
+			PageUp:   function (cm, handle) { handle.moveFocus(-handle.menuSize() + 1, true); },
+			PageDown: function (cm, handle) { handle.moveFocus(handle.menuSize() - 1, true); },
+			Home:     function (cm, handle) { handle.setFocus(0); },
+			End:      function (cm, handle) { handle.setFocus(handle.length - 1); },
+			Enter:    function (cm, handle) { handle.pick(); },
+			Tab:      function (cm, handle) { handle.pick(); },
+			Esc:      function (cm, handle) { handle.close(); }
+		} });
 	}
 
 	_hint(ts, cm, c) {
@@ -343,7 +343,7 @@ class Editor {
 			const completions = [];
 			for (let completion of data.completions) {
 				let className = this._typeToIcon(completion.type);
-				if (data.guess) className += " " + "CodeMirror-Tern-" + "guess";
+				if (data.guess) className += ' ' + 'CodeMirror-Tern-' + 'guess';
 				completions.push({text: completion.name, displayText: completion.displayName || completion.name, className: className, data: completion});
 			}
 			c({from: from, to: to, list: completions});
@@ -352,12 +352,12 @@ class Editor {
 
 	_typeToIcon(type) {
 		let suffix;
-		if (type == "?") suffix = "unknown";
-		else if (type == "number" || type == "string" || type == "bool") suffix = type;
-		else if (/^fn\(/.test(type)) suffix = "fn";
-		else if (/^\[/.test(type)) suffix = "array";
-		else suffix = "object";
-		return "CodeMirror-Tern-" + "completion " + "CodeMirror-Tern-" + "completion-" + suffix;
+		if (type == '?') suffix = 'unknown';
+		else if (type == 'number' || type == 'string' || type == 'bool') suffix = type;
+		else if (/^fn\(/.test(type)) suffix = 'fn';
+		else if (/^\[/.test(type)) suffix = 'array';
+		else suffix = 'object';
+		return 'CodeMirror-Tern-' + 'completion ' + 'CodeMirror-Tern-' + 'completion-' + suffix;
 	}
 
 
@@ -601,10 +601,6 @@ class Editor {
 				off = lines[fnIdx][0].line - 1;
 				fnIdx += 1;
 			}
-			// if (lines[fnIdx] !== undefined && i === lines[fnIdx][0]) {
-			// 	off = lines[fnIdx][0];
-			// 	fnIdx += 1;
-			// }
 			this._lineNoByFunc.push([fnIdx, (1 + i - off)]);
 		}
 
@@ -643,7 +639,7 @@ class Editor {
 			return e;
 		};
 		if (str.length === 0) str = '0';
-		const doc = cm.doc, display = cm.display;
+		const display = cm.display;
 		const test = display.measure.appendChild(_elt('div', _elt('div', document.createTextNode(str)), 'CodeMirror-function-linenumber CodeMirror-gutter-elt'));
 		const innerW = test.firstChild.offsetWidth;
 		const padding = test.offsetWidth - innerW;
