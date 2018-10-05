@@ -3,7 +3,7 @@
  * Pencil: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-04
+ * @version 2018-10-05
  *
  */
 
@@ -249,6 +249,7 @@ class Editor {
 			if (fromLine !== -1 && e.shiftKey) {
 				this._select(fromLine, ll);
 				onceClicked = false;
+				this._elem.classList.remove('line-selection-mode');
 				return;
 			}
 			if (onceClicked) {
@@ -261,6 +262,7 @@ class Editor {
 
 			if (!e.shiftKey) {
 				onceClicked = true;
+				this._elem.classList.add('line-selection-mode');
 			}
 		});
 		this._elem.addEventListener('mousemove', (e) => {
@@ -270,6 +272,7 @@ class Editor {
 				const { line } = this._comp.coordsChar({ left: e.clientX, top: e.clientY });
 				this._select(fromLine, line);
 				onceClicked = false;
+				this._elem.classList.remove('line-selection-mode');
 			}
 		});
 		this._elem.addEventListener('mouseup', (e) => { gutterDown = false; });
@@ -277,6 +280,7 @@ class Editor {
 			if (guts.offsetWidth < e.clientX) {
 				gutterDown = false;
 				onceClicked = false;
+				this._elem.classList.remove('line-selection-mode');
 				fromLine = -1;
 			} else {
 				gutterDown = true;
@@ -286,6 +290,7 @@ class Editor {
 			if (doc.getSelection() === '') {
 				gutterDown = false;
 				onceClicked = false;
+				this._elem.classList.remove('line-selection-mode');
 				fromLine = -1;
 			}
 		});

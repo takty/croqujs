@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-28
+ * @version 2018-10-05
  *
  */
 
@@ -72,9 +72,11 @@
 .CodeMirror-gutter-background {
 	z-index: 0;
 }
+
 .CodeMirror-gutter-wrapper {
 	height: 100%;
 }
+
 .CodeMirror-gutters {  /* includes right border */
 	background-color: #f8f8f8;
 	border-right: 10px solid #fbd290;  /* L-Orange 50% */
@@ -82,24 +84,40 @@
 	height: 100%;
 	cursor: text;
 }
+
 .CodeMirror-gutter {
 	padding-left: 4px;
-	cursor: url(cursor.svg) 16 16, cell;
 }
+
 .CodeMirror-gutter-elt {
 	height: 100%;
-	cursor: url(cursor.svg) 16 16, cell;
 }
-.CodeMirror-linenumber {
-	cursor: url(cursor.svg) 16 16, cell;
+
+.CodeMirror:not(.line-selection-mode) {
+	.CodeMirror-gutter,
+	.CodeMirror-gutter-elt,
+	.CodeMirror-linenumber {
+		cursor: url(right-cursor.svg) 22 8, pointer;
+	}
 }
+
+.CodeMirror.line-selection-mode {
+	.CodeMirror-gutter,
+	.CodeMirror-gutter-elt,
+	.CodeMirror-linenumber {
+		cursor: url(line-cursor.svg) 22 8, pointer;
+	}
+}
+
 .CodeMirror-lint-markers {
 	 border-left: 4px solid #f8f8f8;
 }
+
 .CodeMirror-activeline-gutter .CodeMirror-linenumber {
 	font-weight: bold;
 	color: #220;
 }
+
 :not(.CodeMirror-activeline-gutter) > .CodeMirror-linenumber {
 	color: #898989;
 }
