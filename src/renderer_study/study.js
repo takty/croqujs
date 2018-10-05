@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-04
+ * @version 2018-10-05
  *
  */
 
@@ -222,8 +222,8 @@ class Study {
 		this._lang = (conf.languageIdx === 0) ? 'en' : 'ja';
 
 		this._editor.lineWrapping(conf.softWrap);
-		this._editor.fontFamily(this._res.fontSets[conf.fontSetIdx]);
-		this._editor.rulerEnabled(conf.fontSetIdx === 0);
+		this._editor.fontFamily(this._res.fontSet);
+		this._editor.rulerEnabled(true);
 		this._editor.lineHeight(this._res.lineHeights[conf.lineHeightIdx]);
 		this._editor.fontSize(parseInt(conf.fontSize, 10), false);
 		this._editor.lineNumberByFunctionEnabled(conf.isLineNumberByFunctionEnabled);

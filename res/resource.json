@@ -1,10 +1,6 @@
 {
     "appTitle": "Croqujs",
-    "fontSets": [
-        "Inconsolata, \"Hiragino Kaku Gothic ProN\", Meiryo, \"Yu Gothic\", YuGothic, monospace",
-        "Verdana, \"Hiragino Kaku Gothic ProN\", Meiryo, \"Yu Gothic\", YuGothic, sans-serif",
-        "Georgia, \"Hiragino Mincho ProN\", \"Yu Mincho\", YuMincho, serif"
-    ],
+    "fontSet": "Inconsolata, \"Hiragino Kaku Gothic ProN\", Meiryo, \"Yu Gothic\", YuGothic, monospace",
     "lineHeights": ["135%", "150%", "165%", "180%", "195%"],
     "defaultExt": ".js",
     "divH": 8,

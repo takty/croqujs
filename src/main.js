@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-04
+ * @version 2018-10-05
  *
  */
 
@@ -55,7 +55,6 @@ class Main {
 		this._conf = new Config(PATH.join(__dirname, '../'));
 		this._conf.loadSync({
 			softWrap: false,
-			fontSetIdx: 0,
 			lineHeightIdx: 2,
 			fontSize: 16,
 			isLineNumberByFunctionEnabled: false,
@@ -191,7 +190,6 @@ class Main {
 	_createNav() {
 		const rm = this._res.menu;
 		const languageIdx   = this._conf.get('languageIdx');
-		const fontSetIdx    = this._conf.get('fontSetIdx');
 		const lineHeightIdx = this._conf.get('lineHeightIdx');
 
 		const fileMenu = [
@@ -260,13 +258,6 @@ class Main {
 			{ label: rm.tileWinH, click: this._createTwinCaller('tile') },
 			{ type: 'separator' },
 			{ type: 'checkbox', label: rm.softWrap, click: this._createConfigMenuSetter('softWrap'), checked: this._conf.get('softWrap') },
-			{
-				label: rm.font, submenu: [
-					{ type: 'radio', label: rm.monospace, click: this._createConfigSetter('fontSetIdx', 0), checked: fontSetIdx === 0 },
-					{ type: 'radio', label: rm.sansSerif, click: this._createConfigSetter('fontSetIdx', 1), checked: fontSetIdx === 1 },
-					{ type: 'radio', label: rm.serif, click: this._createConfigSetter('fontSetIdx', 2), checked: fontSetIdx === 2 },
-				]
-			},
 			{
 				label: rm.lineHeight, submenu: [
 					{ type: 'radio', label: rm.veryNarrow, click: this._createConfigSetter('lineHeightIdx', 0), checked: lineHeightIdx === 0 },
