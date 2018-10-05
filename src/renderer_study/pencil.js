@@ -52,13 +52,13 @@ class Editor {
 
 	codeMirrorOptions(jsHintOpt) {
 		return {
-			mode: "javascript",
+			mode: 'javascript',
 			autoCloseBrackets: true,
 			lineNumbers: true,
 			indentUnit: 4,
 			indentWithTabs: true,
-			gutters: ["CodeMirror-lint-markers", "CodeMirror-function-linenumbers", "CodeMirror-linenumbers"],
-			extraKeys: {"Ctrl-\\": "autocomplete", "Shift-Tab": "indentLess"},
+			gutters: ['CodeMirror-lint-markers', 'CodeMirror-function-linenumbers', 'CodeMirror-linenumbers'],
+			extraKeys: {'Ctrl-\\': 'autocomplete', 'Shift-Tab': 'indentLess'},
 			highlightSelectionMatches: true,
 			matchBrackets: true,
 			showCursorWhenSelecting: true,
@@ -66,8 +66,8 @@ class Editor {
 			cursorBlinkRate: 530,
 			cursorScrollMargin: 32,
 			styleActiveLine: true,
-			theme: "laccolla",
-			inputStyle: "textarea",
+			theme: 'laccolla',
+			inputStyle: 'textarea',
 			lineWiseCopyCut: false,
 			lint: {options: jsHintOpt},
 			autofocus: true,
