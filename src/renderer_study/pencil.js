@@ -235,73 +235,88 @@ class Editor {
 	// -------------------------------------------------------------------------
 
 	initGutterSelection() {
-		const guts = document.querySelector('.CodeMirror-gutters');
 		const doc = this._comp.getDoc();
-		let fromLine = -1, gutterDown = false, onceClicked = false;
+		const guts = document.querySelector('.CodeMirror-gutters');
+		let downLine = -1, fromLine = -1, dragging = false, lineSelMode = false;
 
-		this._comp.on('gutterClick', (ed, ll, cls, e) => {
-			const style = window.getComputedStyle(guts);
-			if (e.which !== 1 || guts.offsetWidth - parseInt(style.borderRightWidth) - 1 < e.clientX) {
-				doc.setCursor(ll, 0);
+		this._elem.addEventListener('mousedown', (e) => {
+			if (!isGutter(e)) {
+				downLine = -1;
 				fromLine = -1;
-				return;
-			}
-			if (fromLine !== -1 && e.shiftKey) {
-				this._select(fromLine, ll);
-				onceClicked = false;
-				this._elem.classList.remove('line-selection-mode');
-				return;
-			}
-			if (onceClicked) {
-				this._select(fromLine, ll);
-				return;
-			}
-			doc.setCursor(ll, 0);
-			doc.setSelection({line: ll, ch: 0}, this._getTailPos(doc, ll));
-			fromLine = ll;
+				setLineSelectionMode(false);
+				doc.setCursor(getLine(e), 0);
+			} else {  // Gutter
+				downLine = getLine(e);
+				dragging = true;
 
-			if (!e.shiftKey) {
-				onceClicked = true;
-				this._elem.classList.add('line-selection-mode');
+				if (e.shiftKey) {
+					if (fromLine === -1) fromLine = this._comp.getCursor().line;
+					this._select(fromLine, downLine);
+					setLineSelectionMode(false);
+				} else if (lineSelMode) {
+					this._select(fromLine, downLine);
+				} else {
+					fromLine = downLine;
+					this._select(fromLine);
+				}
 			}
 		});
 		this._elem.addEventListener('mousemove', (e) => {
-			if (e.which !== 1) {
-				gutterDown = false;
-			} else if (gutterDown) {
-				const { line } = this._comp.coordsChar({ left: e.clientX, top: e.clientY });
-				this._select(fromLine, line);
-				onceClicked = false;
-				this._elem.classList.remove('line-selection-mode');
+			if (!dragging) return;
+			if (e.which === 0) {
+				dragging = false;
+			} else {
+				this._select(fromLine, getLine(e));
 			}
 		});
-		this._elem.addEventListener('mouseup', (e) => { gutterDown = false; });
-		this._elem.addEventListener('mousedown', (e) => {
-			if (guts.offsetWidth < e.clientX) {
-				gutterDown = false;
-				onceClicked = false;
-				this._elem.classList.remove('line-selection-mode');
-				fromLine = -1;
-			} else {
-				gutterDown = true;
+		this._elem.addEventListener('mouseup', (e) => {
+			if (isGutter(e)) {
+				if (e.shiftKey) {
+				} else if (lineSelMode) {
+				} else {
+					if (getLine(e) === downLine) {
+						setLineSelectionMode(true);
+						fromLine = downLine;
+					}
+				}
 			}
+			dragging = false;
 		});
 		this._comp.on('cursorActivity', () => {
 			if (doc.getSelection() === '') {
-				gutterDown = false;
-				onceClicked = false;
-				this._elem.classList.remove('line-selection-mode');
-				fromLine = -1;
+				setLineSelectionMode(false);
 			}
 		});
+		const isGutter = (e) => {
+			const s = window.getComputedStyle(guts);
+			return !(guts.offsetWidth - parseInt(s.borderRightWidth) - 1 < e.clientX);
+		}
+		const getLine = (e) => {
+			const { line } = this._comp.coordsChar({ left: e.clientX, top: e.clientY });
+			return line;
+		};
+		const setLineSelectionMode = (f) => {
+			if (f) {
+				lineSelMode = true;
+				this._elem.classList.add('line-selection-mode');
+			} else {
+				lineSelMode = false;
+				this._elem.classList.remove('line-selection-mode');
+			}
+		};
 	}
 
-	_select(fromLine, toLine) {
+	_select(fromLine, toLine = false) {
 		const doc = this._comp.getDoc();
-		if (fromLine <= toLine) {
-			doc.setSelection({line: fromLine, ch: 0}, this._getTailPos(doc, toLine));
+		if (toLine === false) {
+			doc.setCursor(fromLine, 0);
+			doc.setSelection({ line: fromLine, ch: 0 }, this._getTailPos(doc, fromLine));
 		} else {
-			doc.setSelection(this._getTailPos(doc, fromLine), {line: toLine, ch: 0});
+			if (fromLine <= toLine) {
+				doc.setSelection({line: fromLine, ch: 0}, this._getTailPos(doc, toLine));
+			} else {
+				doc.setSelection(this._getTailPos(doc, fromLine), {line: toLine, ch: 0});
+			}
 		}
 	}
 
