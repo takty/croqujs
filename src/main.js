@@ -66,8 +66,8 @@ class Main {
 
 	_initializeResource() {
 		const lang = this._conf.get('languageIdx') === 0 ? 'en' : 'ja';
-		const resFp = PATH.join(__dirname, '../res/lang.' + lang + '.json');
-		const conFp = PATH.join(__dirname, '../res/resource.json');
+		const resFp = PATH.join(__dirname, '/res/lang.' + lang + '.json');
+		const conFp = PATH.join(__dirname, '/res/resource.json');
 
 		const resData = JSON.parse(FS.readFileSync(resFp), 'utf-8');
 		const conData = JSON.parse(FS.readFileSync(conFp), 'utf-8');
@@ -178,7 +178,7 @@ class Main {
 
 	_showAboutDialog() {
 		if (!this._focusedTwin._isEnabled) return;
-		const fp = PATH.join(__dirname, '../res/about.txt');
+		const fp = PATH.join(__dirname, '/res/about.txt');
 		const text = FS.readFileSync(fp, 'utf8');
 		dialog.showMessageBox({ type: 'info', title: this._res.menu.about, buttons: [], message: 'Croqujs 4', detail: text });
 	}
