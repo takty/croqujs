@@ -22,7 +22,7 @@ class Editor {
 
 		CodeMirror.keyMap.pcDefault['Shift-Ctrl-R'] = false;  // Directly Change the Key Map!
 		this._comp = new CodeMirror(domElm, this.codeMirrorOptions(this._owner._res.jsHintOpt));
-		this._comp.getMode().closeBrackets = "()[]''\"\"``";  // Must Overwrite JavaScript Mode Here!
+		this._comp.getMode().closeBrackets = '()[]\'\'""``';  // Must Overwrite JavaScript Mode Here!
 		this._elem = document.querySelector('.CodeMirror');
 		this._elem.style.userSelect = 'none';
 		this._elem.style.WebkitUserSelect = 'none';
@@ -139,6 +139,21 @@ class Editor {
 
 		this._setCanvasSize();
 		this._comp.on('change', () => { this._setCanvasSize(); });
+
+		const fn = () => {
+			const c = this._canvas;
+			const w = c.parentElement.clientWidth;
+			const h = c.parentElement.clientHeight;
+			if (c.width !== w || c.height !== h) {
+				this._setCanvasSize();
+				this._updateCodeStructureView();
+			}
+		};
+		let st = null;
+		this._comp.on('scroll', () => {
+			if (st) clearTimeout(fn);
+			st = setTimeout(fn, 200);
+		});
 	}
 
 	_setCanvasSize() {
@@ -239,13 +254,16 @@ class Editor {
 		const guts = document.querySelector('.CodeMirror-gutters');
 		let downLine = -1, fromLine = -1, dragging = false, lineSelMode = false;
 
-		this._elem.addEventListener('mousedown', (e) => {
+		this._comp.on('gutterClick', (cm, line, gut, e) => {
 			if (!isGutter(e)) {
 				downLine = -1;
 				fromLine = -1;
 				setLineSelectionMode(false);
 				doc.setCursor(getLine(e), 0);
-			} else {  // Gutter
+			}
+		});
+		this._elem.addEventListener('mousedown', (e) => {
+			if (isGutter(e)) {
 				downLine = getLine(e);
 				dragging = true;
 
@@ -270,7 +288,7 @@ class Editor {
 			}
 		});
 		this._elem.addEventListener('mouseup', (e) => {
-			if (isGutter(e)) {
+			if (dragging && isGutter(e)) {
 				if (e.shiftKey) {
 				} else if (lineSelMode) {
 				} else {
