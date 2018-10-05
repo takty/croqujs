@@ -334,8 +334,8 @@ class Editor {
 		const remote = require('electron').remote;
 		const app = remote.require('electron').app;
 
-		const code = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/ecmascript.json'), 'utf-8'));
-		const browser = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/browser.json'), 'utf-8'));
+		const code       = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/ecmascript.json'), 'utf-8'));
+		const browser    = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/browser.json'),    'utf-8'));
 		const underscore = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/underscore.json'), 'utf-8'));
 
 		const server = new CodeMirror.TernServer({defs: [code, browser, underscore]});
