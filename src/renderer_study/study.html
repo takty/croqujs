@@ -54,6 +54,7 @@
 	<div id="splitter">
 		<div class="main">
 			<div id="toolbar" class="toolbar-shadow">
+				<!-- <div id="menu"><div><i class="fa fa-bars fa-2x"></i></div></div> -->
 				<div id="save"><div><i class="fa fa-download fa-2x"></i></div></div>
 				<div id="exportAsLibrary"><div><i class="fa fa-book fa-2x"></i></div></div>
 				<div class="filler"></div>
@@ -69,6 +70,19 @@
 		</div>
 		<div id="handle"></div>
 		<div class="sub" id="output-pane"><div></div></div>
+	</div>
+	<div id="main-menu">
+		<!-- <div class="menu-button"><i class="fa fa-bars"></i></div> -->
+		<div class="menu-container">
+			<div class="menu-group" id="file"></div>
+			<ul class="menu">
+				<li id="new"></li>
+				<li id="open"></li>
+				<li id="save"></li>
+				<li id="saveAs"></li>
+				<li id="exit"></li>
+			</ul>
+		</div>
 	</div>
 	<script>
 		window.addEventListener('DOMContentLoaded', () => { new Study('#editor', '#toolbar'); });
