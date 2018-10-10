@@ -104,7 +104,7 @@ class Twin {
 		return win === this._studyWin || win === this._fieldWin;
 	}
 
-	tile() {  // Called By Main
+	tileWin() {  // Called By Main
 		const d = electron.screen.getPrimaryDisplay();
 		const w = 0 | (d.workAreaSize.width / 2), h = d.workAreaSize.height;
 		if (this._studyWin.isMaximized()) {
@@ -421,7 +421,7 @@ class Twin {
 		if (this._filePath === null) return;
 		const name = PATH.basename(this._filePath, PATH.extname(this._filePath));
 		this._ensureWindowTop(this._studyWin);
-		this.callStudyMethod('showPrompt', this._res.msg.enterLibraryName, 'input', '_doExportAsLibrary', this._res.msg.libraryName, name);
+		this.callStudyMethod('showPrompt', this._res.msg.enterLibraryName, 'input', this._res.msg.libraryName, name, '_doExportAsLibrary');
 	}
 
 	_doExportAsLibrary(val) {

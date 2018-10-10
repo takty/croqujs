@@ -47,6 +47,9 @@
 
 	<script src="pencil.js"></script>
 	<script src="errtrans.js"></script>
+	<script src="side-menu.js"></script>
+	<script src="dialog-box.js"></script>
+	<script src="toolbar.js"></script>
 	<script src="study.js"></script>
 
 </head>
@@ -54,16 +57,16 @@
 	<div id="splitter">
 		<div class="main">
 			<div id="toolbar" class="toolbar-shadow">
-				<!-- <div id="menu"><div><i class="fa fa-bars fa-2x"></i></div></div> -->
-				<div id="save"><div><i class="fa fa-download fa-2x"></i></div></div>
-				<div id="exportAsLibrary"><div><i class="fa fa-book fa-2x"></i></div></div>
+				<div id="btn-menu"><div><i class="fa fa-bars fa-2x"></i></div></div>
+				<div id="btn-save"><div><i class="fa fa-download fa-2x"></i></div></div>
+				<div id="btn-exportAsLibrary"><div><i class="fa fa-book fa-2x"></i></div></div>
 				<div class="filler"></div>
-				<div id="undo"><div><i class="fa fa-undo fa-2x"></i></div></div>
-				<div id="copy"><div><i class="fa fa-copy fa-2x"></i></div></div>
-				<div id="paste"><div><i class="fa fa-paste fa-2x"></i></div></div>
+				<div id="btn-undo"><div><i class="fa fa-undo fa-2x"></i></div></div>
+				<div id="btn-copy"><div><i class="fa fa-copy fa-2x"></i></div></div>
+				<div id="btn-paste"><div><i class="fa fa-paste fa-2x"></i></div></div>
 				<div class="filler"></div>
-				<div id="tile"><div><i class="fa fa-columns fa-2x"></i></div></div>
-				<div id="run"><div><i class="fa fa-play fa-2x"></i></div></div>
+				<div id="btn-tileWin"><div><i class="fa fa-columns fa-2x"></i></div></div>
+				<div id="btn-run"><div><i class="fa fa-play fa-2x"></i></div></div>
 				<div id="toolbar-overwrap"></div>
 			</div>
 			<div id="editor"></div>
@@ -72,15 +75,49 @@
 		<div class="sub" id="output-pane"><div></div></div>
 	</div>
 	<div id="main-menu">
-		<!-- <div class="menu-button"><i class="fa fa-bars"></i></div> -->
 		<div class="menu-container">
-			<div class="menu-group" id="file"></div>
+			<div class="menu-group" data-menu="edit"></div>
 			<ul class="menu">
-				<li id="new"></li>
-				<li id="open"></li>
-				<li id="save"></li>
-				<li id="saveAs"></li>
-				<li id="exit"></li>
+				<li class="menu-sub"><span></span>
+					<ul>
+						<li data-menu="_undo"><i class="fa fa-undo fa-lg"></i></li>
+						<li data-menu="_redo"><i class="fa fa-undo fa-lg fa-flip-horizontal"></i></li>
+					</ul>
+				</li>
+				<li class="menu-sub"><span data-menu="edit"></span>
+					<ul>
+						<li data-menu="_cut"><i class="fa fa-cut fa-lg"></i></li>
+						<li data-menu="_copy"><i class="fa fa-copy fa-lg"></i></li>
+						<li data-menu="_paste"><i class="fa fa-paste fa-lg"></i></li>
+					</ul>
+				</li>
+				<li data-menu="selectAll"></li>
+				<li class="menu-separator"></li>
+				<li data-menu="toggleComment"></li>
+				<li data-menu="format"></li>
+				<li class="menu-separator"></li>
+				<li data-menu="copyAsImage"></li>
+			</ul>
+			<div class="menu-group" data-menu="view"></div>
+			<ul class="menu">
+				<li class="menu-sub"><span data-menu="zoom"></span><ul>
+					<li data-menu="_zoomOut" id="zoom-out"><i class="fa fa-minus-circle fa-lg"></i></li>
+					<li data-menu="_zoomReset" id="zoom-reset"><i class="fa fa-circle-thin fa-lg"></i></li>
+					<li data-menu="_zoomIn" id="zoom-in"><i class="fa fa-plus-circle fa-lg"></i></li>
+				</ul></li>
+				<li class="menu-sub"><span data-menu="lineHeight"></span><ul>
+					<li data-menu="lineHeightPlus"><i class="fa fa-minus-circle fa-lg"></i></li>
+					<li data-menu="lineHeightReset"><i class="fa fa-circle-thin fa-lg"></i></li>
+					<li data-menu="lineHeightMinus"><i class="fa fa-plus-circle fa-lg"></i></li>
+				</ul></li>
+				<li data-menu="softWrap"></li>
+				<li class="menu-separator"></li>
+				<li data-menu="showLineNumberByFunction"></li>
+				<li data-menu="toggleOutputPane"></li>
+			</ul>
+			<div class="menu-group" data-menu="about"></div>
+			<ul class="menu">
+				<li data-menu="version">Version 2018-10-10</li>
 			</ul>
 		</div>
 	</div>

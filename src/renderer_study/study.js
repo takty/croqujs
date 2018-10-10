@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-05
+ * @version 2018-10-10
  *
  */
 
@@ -53,30 +53,55 @@ class Study {
 		this._lang = 'en';
 
 		this._initEditor(editorSel);
-		this._initToolBar(tbarSel);
+
+		this._sideMenu  = new SideMenu(this, this._res);
+		this._dialogBox = new DialogBox(this, this._res);
+		this._toolbar   = new Toolbar(this, this._res, tbarSel);
+
 		this._initWindowResizing(this._editor, tbarSel, editorSel);
-		this.configUpdated(ipcRenderer.sendSync('getConfig'));
+		// this.configUpdated(ipcRenderer.sendSync('getConfig'));
 
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 		this._initOutputPoller();
 
 		window.addEventListener('storage', (e) => {
-			if ('study_' + this._id !== e.key) return;
-			window.localStorage.clear();
-			const ma = JSON.parse(e.newValue);
-			if (ma.message === 'error') {
-				this._twinMessage('onFieldErrorOccurred', ma.params);
-			} else if (ma.message === 'output') {
-				this._twinMessage('onFieldOutputOccurred', ma.params);
+			// console.log('storage');
+			if (e.key === 'config') {
+				const conf = JSON.parse(e.newValue);
+				this.configUpdated(conf);
+				return;
+			}
+			if ('study_' + this._id === e.key) {
+				window.localStorage.removeItem(e.key);
+				const ma = JSON.parse(e.newValue);
+				if (ma.message === 'error') {
+					this._twinMessage('onFieldErrorOccurred', ma.params);
+				} else if (ma.message === 'output') {
+					this._twinMessage('onFieldOutputOccurred', ma.params);
+				}
 			}
 		});
 		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => {
 			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
 		});
+
+		if (!window.localStorage.getItem('config')) {
+			window.localStorage.setItem('config', JSON.stringify({
+				softWrap: false,
+				lineHeightIdx: 2,
+				fontSize: 16,
+				isLineNumberByFunctionEnabled: false,
+				languageIdx: 1/*ja*/,
+			}));
+		}
+		const conf = JSON.parse(window.localStorage.getItem('config'));
+		this.configUpdated(conf);
 	}
 
 	_initEditor(editorSel) {
 		this._editor = new Editor(this, document.querySelector(editorSel), this._res.codeMirrorOpt);
+		this._editor.fontFamily(this._res.fontSet);
+		this._editor.rulerEnabled(true);
 		const ec = this._editor.getComponent();
 
 		const w = new Worker('analyzer.js');
@@ -99,26 +124,7 @@ class Study {
 			ev.preventDefault();
 			if (ev.dataTransfer.files.length > 0) this._twinMessage('onStudyFileDropped', ev.dataTransfer.files[0].path);
 		});
-	}
-
-	_initToolBar(tbarSel) {
-		this._toolBarElm = document.querySelector(tbarSel);
-		this._toolBarElm.addEventListener('mousedown', (ev) => { ev.preventDefault(); });
-		this._toolBarElm.addEventListener('mouseup',   (ev) => { ev.preventDefault(); });
-
-		const addBtn = (id, fun, hint) => {
-			const btn = document.querySelector('#' + id);
-			btn.title = hint;
-			btn.addEventListener('mousedown', (ev) => { ev.preventDefault(); });
-			btn.addEventListener('mouseup',   (ev) => { ev.preventDefault(); fun(); });
-		};
-		addBtn('save',            () => {this._twinMessage('save');},            this._res.tooltip.save);
-		addBtn('exportAsLibrary', () => {this._twinMessage('exportAsLibrary');}, this._res.tooltip.exportAsLibrary);
-		addBtn('tile',            () => {this._twinMessage('tile');},            this._res.tooltip.tileWinH);
-		addBtn('run',             () => {this._twinMessage('run');},             this._res.tooltip.run);
-		addBtn('undo',  this._editor.undo.bind(this._editor),  this._res.tooltip.undo);
-		addBtn('copy',  this._editor.copy.bind(this._editor),  this._res.tooltip.copy);
-		addBtn('paste', this._editor.paste.bind(this._editor), this._res.tooltip.paste);
+		ec.on('focus', () => { this._sideMenu.close(); });
 	}
 
 	_initWindowResizing(ed, tbarSel, editorSel) {
@@ -218,12 +224,24 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	configUpdated(conf) {  // Called By Main Directly
+	configGetItem(key) {
+		console.log('configGetItem');
+		const conf = JSON.parse(window.localStorage.getItem('config'));
+		return conf[key];
+	}
+
+	configSetItem(key, val) {
+		console.log('configSetItem');
+		const conf = JSON.parse(window.localStorage.getItem('config'));
+		conf[key] = val;
+		window.localStorage.setItem('config', JSON.stringify(conf));
+		this.configUpdated(conf);
+	}
+
+	configUpdated(conf) {  // // Called By Main Directly
 		this._lang = (conf.languageIdx === 0) ? 'en' : 'ja';
 
 		this._editor.lineWrapping(conf.softWrap);
-		this._editor.fontFamily(this._res.fontSet);
-		this._editor.rulerEnabled(true);
 		this._editor.lineHeight(this._res.lineHeights[conf.lineHeightIdx]);
 		this._editor.fontSize(parseInt(conf.fontSize, 10), false);
 		this._editor.lineNumberByFunctionEnabled(conf.isLineNumberByFunctionEnabled);
@@ -238,10 +256,12 @@ class Study {
 			this._jsHintLoaded = true;
 		}
 		this._editor.refresh();
+		console.log('configUpdated');
+		this._sideMenu.updateConfig(conf);
 	}
 
 	reflectClipboardState(text) {  // Called By Main Directly
-		const btn = document.querySelector('#paste');
+		const btn = document.querySelector('#btn-paste');
 		if (text.length > 0) {
 			btn.classList.remove('unabled');
 			btn.title = this._res.tooltip.paste + (text.length > 0 ? ('\n' + text) : '') ;
@@ -261,11 +281,11 @@ class Study {
 
 
 	reflectTwinState(state) {  // Called By Twin
-		const ealBtn = document.querySelector('#exportAsLibrary');
+		const ealBtn = document.querySelector('#btn-exportAsLibrary');
 		if (state.isFileOpened) ealBtn.classList.remove('unabled');
 		else ealBtn.classList.add('unabled');
 
-		const uBtn = document.querySelector('#undo');
+		const uBtn = document.querySelector('#btn-undo');
 		if (state.canUndo) uBtn.classList.remove('unabled');
 		else uBtn.classList.add('unabled');
 	}
@@ -408,7 +428,7 @@ class Study {
 
 	sendBackCapturedImages() {  // Called By Twin
 		const orig = this._editor.setSimpleView();
-		this.showToolbarMessage(this._res.msg.copyingAsImage, true);
+		this._toolbar.showMessage(this._res.msg.copyingAsImage, true);
 
 		const sf = electron.screen.getPrimaryDisplay().scaleFactor;
 		const count = this._editor._comp.getDoc().lineCount();
@@ -436,7 +456,7 @@ class Study {
 			this._addImageToCanvas(canvas, this._editor._comp.getScrollInfo().top * sf, dataUrl, finished);
 
 			if (finished) {
-				this.hideToolbarMessage(200);
+				this._toolbar.hideMessage(200);
 				setTimeout(() => {
 					this._editor.restoreOriginalView(orig);
 					this._editor._comp.scrollTo(0, 0);
@@ -464,55 +484,23 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	showToolbarMessage(text, hideShadow = false) {
-		if (hideShadow) this._toolBarElm.classList.remove('toolbar-shadow');
-		const overwrap = document.querySelector('#toolbar-overwrap');
-		const overwrapMsg = document.createTextNode(text);
-		overwrap.style.display = 'flex';
-		overwrap.appendChild(overwrapMsg);
+	showAbout() {
+		this.showAlert(this._res.about, 'info');
 	}
-
-	hideToolbarMessage(delay = 0) {
-		setTimeout(() => {
-			if (!this._toolBarElm.classList.contains('toolbar-shadow')) {
-				this._toolBarElm.classList.add('toolbar-shadow');
-			}
-			const overwrap = document.querySelector('#toolbar-overwrap');
-			overwrap.style.display = 'none';
-			overwrap.removeChild(overwrap.firstChild);
-		}, delay);
-	}
-
-
-	// -------------------------------------------------------------------------
-
 
 	showAlert(text, type) {  // Called By Twin
-		this._editor.enabled(false);
-		swal({
-			title: '', html: text, type: type, animation: 'slide-from-top', allowOutsideClick: false,
-		}).then((res) => {
-			this._editor.enabled(true);
-		});
+		this._dialogBox.showAlert(text, type);
 	}
 
 	showConfirm(text, type, messageForMain) {  // Called By Twin
-		this._editor.enabled(false);
-		swal({
-			title: '', html: text, type: type, showCancelButton: true, confirmButtonText: 'OK', cancelButtonText: this._res.btn.cancel, animation: 'slide-from-top', allowOutsideClick: false,
-		}).then((res) => {
-			this._editor.enabled(true);
-			if (res.value && messageForMain) this._twinMessage(messageForMain);
+		this._dialogBox.showConfirm(text, type, () => {
+			if (messageForMain) this._twinMessage(messageForMain);
 		});
 	}
 
-	showPrompt(text, type, messageForMain, placeholder, defaultValue) {  // Called By Twin
-		this._editor.enabled(false);
-		swal({
-			title: '', html: text, input: 'text', showCancelButton: true, confirmButtonText: 'OK', cancelButtonText: this._res.btn.cancel, inputPlaceholder: placeholder, inputValue: defaultValue, animation: 'slide-from-top', allowOutsideClick: false,
-		}).then((res) => {
-			this._editor.enabled(true);
-			if (res.value && messageForMain) this._twinMessage(messageForMain, res.value);
+	showPrompt(text, type, placeholder, value, messageForMain) {  // Called By Twin
+		this._dialogBox.showPrompt(text, type, placeholder, value, (resVal) => {
+			if (messageForMain) this._twinMessage(messageForMain, resVal);
 		});
 	}
 

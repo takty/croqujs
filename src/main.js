@@ -54,11 +54,11 @@ class Main {
 	_initializeConfig() {
 		this._conf = new Config(PATH.join(__dirname, '../'));
 		this._conf.loadSync({
-			softWrap: false,
-			lineHeightIdx: 2,
-			fontSize: 16,
-			isLineNumberByFunctionEnabled: false,
-			languageIdx: 1/*ja*/,
+			// softWrap: false,
+			// lineHeightIdx: 2,
+			// fontSize: 16,
+			// isLineNumberByFunctionEnabled: false,
+			// languageIdx: 1/*ja*/,
 			autoBackup: true,
 		});
 		ipcMain.on('getConfig', (ev, message) => { ev.returnValue = this._conf.getAll(); });
@@ -232,7 +232,6 @@ class Main {
 			{ label: rm.cut, role: 'cut', accelerator: 'CmdOrCtrl+X' },
 			{ label: rm.copy, role: 'copy', accelerator: 'CmdOrCtrl+C' },
 			{ label: rm.paste, role: 'paste', accelerator: 'CmdOrCtrl+V', id: 'paste' },
-			{ label: rm.delete, role: 'delete' },
 			{ type: 'separator' },
 			{ label: rm.selectAll, click: this._createEditorCaller('selectAll'), accelerator: 'CmdOrCtrl+A' },
 			{ type: 'separator' },
@@ -255,7 +254,7 @@ class Main {
 			{ label: rm.runWithoutWindow, accelerator: 'CmdOrCtrl+Shift+R', click: this._createTwinCaller('runWithoutWindow') },
 		];
 		const viewMenu = [
-			{ label: rm.tileWinH, click: this._createTwinCaller('tile') },
+			{ label: rm.tileWin, click: this._createTwinCaller('tileWin') },
 			{ type: 'separator' },
 			{ type: 'checkbox', label: rm.softWrap, click: this._createConfigMenuSetter('softWrap'), checked: this._conf.get('softWrap') },
 			{

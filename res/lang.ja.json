@@ -25,7 +25,7 @@
             "selectAll": "すべて選択",
             "toggleComment": "コメントの切り替え",
             "format": "フォーマット",
-			"copyAsImage": "画像としてコピー",
+            "copyAsImage": "画像としてコピー",
         "code": "コード",
             "run": "実行",
             "runInFullScreen": "フルスクリーンで実行",
@@ -34,18 +34,19 @@
             "runSelection": "選択範囲を実行",
             "runWithoutWindow": "ウィンドウなしで実行",
         "view": "表示",
-			"tileWinH": "ウィンドウを左右に並べる",
+            "tileWin": "ウィンドウを左右に並べる",
             "softWrap": "右端で折り返す",
             "font": "フォント",
                 "monospace": "等幅",
                 "sansSerif": "ゴシック",
                 "serif": "明朝",
             "lineHeight": "行間",
-				"veryNarrow": "とても狭い",
+                "veryNarrow": "とても狭い",
                 "narrow": "狭い",
                 "normal": "普通",
                 "wide": "広い",
-				"veryWide": "とても広い",
+                "veryWide": "とても広い",
+            "zoom": "拡大",
             "zoomIn": "拡大",
             "zoomOut": "縮小",
             "zoomReset": "標準の大きさ",
@@ -61,7 +62,7 @@
         "confirmNew": "プログラムが保存されていません。<br>本当に新規作成しますか？",
         "confirmExit": "プログラムが保存されていません。<br>本当に終了しますか？",
         "confirmOpen": "プログラムが保存されていません。<br>本当に開きますか？",
-		"confirmReadOnly": "読み込み専用ファイルなので，上書き保存できません。<br>別のファイル名を指定しますか？",
+        "confirmReadOnly": "読み込み専用ファイルなので，上書き保存できません。<br>別のファイル名を指定しますか？",
         "alertNextTime": "次回起動時に反映されます。",
         "error": "エラーが発生しました。",
         "exportedAsWebPage": "ウェブページとしてエクスポートされました。",
@@ -69,8 +70,8 @@
         "enterLibraryName": "エクスポートするライブラリ名を入力してください。",
         "libraryName": "ライブラリ名...",
         "cannotImport": "ファイル「%s」をインポートできませんでした。",
-		"copyingAsImage": "画像としてコピー中...",
-		"copiedAsImage": "画像としてコピーしました。"
+        "copyingAsImage": "画像としてコピー中...",
+        "copiedAsImage": "画像としてコピーしました。"
     },
     "tooltip": {
         "save": "保存",
@@ -78,16 +79,16 @@
         "undo": "元に戻す",
         "copy": "コピー",
         "paste": "貼り付け",
-        "tileWinH": "ウィンドウを左右に並べる",
+        "tileWin": "ウィンドウを左右に並べる",
         "run": "実行"
     },
     "btn": {
         "cancel": "キャンセル"
     },
     "untitled": "名称未設定",
-	"fileFilters": [
+    "fileFilters": [
         {"name": "JavaScript", "extensions": ["js"]},
         {"name": "すべてのファイル", "extensions": ["*"]}
-	],
-	"readOnly": "読み込み専用"
+    ],
+    "readOnly": "読み込み専用"
 }

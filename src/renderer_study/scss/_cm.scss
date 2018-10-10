@@ -3,14 +3,14 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-05
+ * @version 2018-10-10
  *
  */
 
  
 .CodeMirror {
-	background-color: #fcfcf9;
-	color: #110;
+	background-color: $color-editor;
+	color: $color-text;
 
 	width: 100%;
 	height: 100%;
@@ -23,9 +23,11 @@
 	font-size: 16px;
 	line-height: 165%;
 }
+
 .CodeMirror-scrollbar-filler {
-	background-color: #fcfcf9;
+	background-color: $color-editor;
 }
+
 .CodeMirror pre {
 	padding-left: 2px;
 }
@@ -35,10 +37,14 @@
 .CodeMirror-line::selection,
 .CodeMirror-line > span::selection,
 .CodeMirror-line > span > span::selection {
-	background-color: rgba(160, 209, 239, 0.5);
+	background-color: rgba($L-Aqua-60, 0.5);
 }
+
 .CodeMirror-selectedtext {
-	text-shadow: #fff -1px 1px 8px, #fff 1px -1px 8px, #fff 1px 1px 8px, #fff -1px -1px 8px !important;
+	text-shadow: #fff -1px  1px 8px,
+				 #fff  1px -1px 8px,
+				 #fff  1px  1px 8px,
+				 #fff -1px -1px 8px !important;
 }
 
 .cm-tab:before {
@@ -53,7 +59,7 @@
 	left: 0;
 	width: 0;
 	white-space: nowrap;
-	color: #fbdde6;  /* L-Red 15% */
+	color: $L-Red-15;
 	z-index: -1;
 	transform: scale(0.95, 1);
 	font-weight: normal;
@@ -63,10 +69,10 @@
 	word-break: break-all;
 }
 
-.CodeMirror.wordwrap pre > * { text-indent: 0px; }
+.CodeMirror.wordwrap pre > * { text-indent: 0; }
 
 
-/* Gutter */
+// Gutter ----------------------------------------------------------------------
 
 
 .CodeMirror-gutter-background {
@@ -78,9 +84,9 @@
 }
 
 .CodeMirror-gutters {  /* includes right border */
-	background-color: #f8f8f8;
-	border-right: 10px solid #fbd290;  /* L-Orange 50% */
-	border-left: 0px;
+	background-color: $color-window;
+	border-right: 10px solid $L-Orange-50;
+	border-left: 0;
 	height: 100%;
 	cursor: text;
 }
@@ -110,118 +116,124 @@
 }
 
 .CodeMirror-lint-markers {
-	 border-left: 4px solid #f8f8f8;
+	 border-left: 4px solid $color-window;
 }
 
 .CodeMirror-activeline-gutter .CodeMirror-linenumber {
 	font-weight: bold;
-	color: #220;
+	color: $color-text;
 }
 
 :not(.CodeMirror-activeline-gutter) > .CodeMirror-linenumber {
-	color: #898989;
+	color: $L-DarkGray;
 }
 
 
-/* Function Number Gutter */
+// Function Number Gutter ------------------------------------------------------
 
 
-.CodeMirror-function-linenumber {
-	padding: 0 6px 0 2px;
-	min-width: 20px;
-	text-align: right;
-	white-space: nowrap;
-
-	color: #898989;
-	cursor: url(cursor.svg) 16 16, cell;
-
-	font-style: italic;
-}
+.CodeMirror-function-linenumber,
 .CodeMirror-function-number {
 	padding: 0 6px 0 2px;
 	min-width: 20px;
-	text-align: left;
 	white-space: nowrap;
-
-	color: #220;
 	cursor: url(cursor.svg) 16 16, cell;
 }
-.CodeMirror-activeline-gutter .CodeMirror-function-linenumber {
-	font-weight: bold;
-	color: #220;
+
+.CodeMirror-function-linenumber {
+	text-align: right;
+	color: $L-DarkGray;
+	font-style: italic;
 }
-.CodeMirror-activeline-gutter .CodeMirror-function-number {
-	font-weight: bold;
-	color: #220;
+
+.CodeMirror-function-number {
+	text-align: left;
+	color: $L-Brown;
 }
+
+.CodeMirror-activeline-gutter {
+	.CodeMirror-function-linenumber,
+	.CodeMirror-function-number {
+		font-weight: bold;
+		color: $color-text;
+	}
+}
+
 .CodeMirror-function-odd {
 	height: 100%;
 }
+
 .CodeMirror-function-even {
 	background-color: #f0f0f0;
 	height: 100%;
 }
 
 
-/* Cursor */
+// Cursor ----------------------------------------------------------------------
 
 
 .CodeMirror-cursor {
-	border-left: 2px solid rgba(78, 65, 56, 0.35);
-	border-top: 2px solid rgba(78, 65, 56, 0.35);
-	border-bottom: 2px solid rgba(78, 65, 56, 0.35);
+	border-top:    2px solid rgba($L-Brown, 0.35);
+	border-left:   2px solid rgba($L-Brown, 0.35);
+	border-bottom: 2px solid rgba($L-Brown, 0.35);
 	border-radius: 2px 0 0 2px;
-	background-color: rgba(78, 65, 56, 0.05);
+	background-color: rgba($L-Brown, 0.05);
 	box-sizing: border-box;
 	width: 6px;
 }
 
 
-/* Laccolla Theme */
+// Laccolla Theme --------------------------------------------------------------
 
 
-.cm-s-laccolla .cm-comment {
-	color: #b5b5b6;
-    font-weight: bold;
+.cm-s-laccolla {
+	.cm-comment {
+		color: $L-Gray;
+		font-weight: bold;
+	}
+	.cm-keyword,
+	.cm-operator,
+	.cm-meta {
+		color: $L-BodyBrown;
+		font-weight: bold;
+	}
+	.cm-atom,
+	.cm-number,
+	.cm-string,
+	.cm-string-2 {  /* String quoted by back quotes (`) */
+		color: $L-Orange;
+		font-weight: bold;
+		text-shadow: $L-Yellow 0 0 0.75em;
+	}
+	.cm-def {
+		color: $L-Purple;
+		font-weight: bold;
+	}
+	.cm-variable { color: $L-Turquoise; }  /* Global Varialbe */
+	.cm-variable-2 { color: $L-YellowGreen; }   /* Local Variable */
+	.cm-property { color: $L-Blue; }
+	.cm-error {
+		border-bottom: 0.15em solid $L-Red;
+	}
+	.cm-variable-3 { color: $L-Cyan; }  /* Not Used (for TypeScript) */
 }
-.cm-s-laccolla .cm-keyword,
-.cm-s-laccolla .cm-operator,
-.cm-s-laccolla .cm-meta {
-	color: #7c6a5a;
-	font-weight: bold;
-}
-.cm-s-laccolla .cm-atom,
-.cm-s-laccolla .cm-number,
-.cm-s-laccolla .cm-string,
-.cm-s-laccolla .cm-string-2 {  /* String quoted by back quotes (`) */
-	color:#f5a200;
-	font-weight: bold;
-	text-shadow: rgb(253, 222, 0) 0 0 0.75em;
-}
-.cm-s-laccolla .cm-def {
-	color: #9a74a3;
-    font-weight: bold;
-}
-.cm-s-laccolla .cm-variable { color: #005363; }  /* Global Varialbe */
-.cm-s-laccolla .cm-variable-2 { color: #7eba2e; }   /* Local Variable */
-.cm-s-laccolla .cm-property { color: #2e449a; }
-.cm-s-laccolla .cm-error {
-	border-bottom: 0.15em solid #e61e58;  /* L-Red */
-}
-.cm-s-laccolla .cm-variable-3 { color: #07a; }  /* Not Used (for TypeScript) */
 
 
-/* Laccolla Styles for Used Addons */
+// Laccolla Styles for Used Addons ---------------------------------------------
 
 
 div.CodeMirror span.CodeMirror-matchingbracket {
-	text-shadow: #e61e58 0 0 0.45em, #f6b0c5 0px -0.15em 1.5em, #f6b0c5 0 -0.3em 1.5em, #f6b0c5 0 0.15em 1.5em, #f6b0c5 0 0.3em 1.5em;
+	text-shadow: $L-Red    0       0 0.45em,
+				 $L-Red-35 0 -0.15em 1.5em,
+				 $L-Red-35 0  -0.3em 1.5em, 
+				 $L-Red-35 0  0.15em 1.5em, 
+				 $L-Red-35 0   0.3em 1.5em;
 	color: inherit;
 }
 
 .CodeMirror-focused .CodeMirror-activeline-background {
-	background: rgba(255, 255, 255, 0.4);
-	box-shadow: 0 0 4px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.10);
+	background: rgba(#fff, 0.4);
+	box-shadow: 0 0 4px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.10);
 }
 
 .CodeMirror-activeline-background {
@@ -229,16 +241,17 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 	box-shadow: none;
 }
 
-.cm-s-laccolla .CodeMirror-activeline .cm-atom,
-.cm-s-laccolla .CodeMirror-activeline .cm-number,
-.cm-s-laccolla .CodeMirror-activeline .cm-string,
-.cm-s-laccolla .CodeMirror-activeline .cm-string-2 {
-	text-shadow: none;
+.cm-s-laccolla .CodeMirror-activeline {
+	.cm-atom,
+	.cm-number,
+	.cm-string,
+	.cm-string-2 {
+		text-shadow: none;
+	}
 }
 
 
-
-
+// Others ----------------------------------------------------------------------
 
 
 .cm-space {
@@ -247,29 +260,29 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 
 .CodeMirror-activeline .cm-space {
 	visibility: visible;
-	color: #fbdde6;   /* L-Red 15% */
+	color: $L-Red-15;
 	font-weight: bold
 }
 
 .CodeMirror-activeline .cm-tab:before {
-	color: #f6b0c5;  /* L-Red 35% */
+	color: $L-Red-35;
 }
 
 .CodeMirror-focused .cm-matchhighlight {
 	border-width: 0 0 2px 0;
-	border-color: rgba(96, 179, 229, 0.75);  /* (L-Aqua) */
+	border-color: rgba($L-Aqua, 0.75);
 	border-style: dotted;
 }
 
 .CodeMirror-hints {
-	font-family: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
+	font-family: $font-ui;
 }
 
 .CodeMirror-lint-tooltip {
-	font-family: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
+	font-family: $font-ui;
 	z-index: 999;
 	border: none;
-	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
+	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.25);
 }
 
 .CodeMirror-Tern-tooltip {
@@ -277,30 +290,17 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 }
 
 .lint-error {
-	font-family: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
+	font-family: $font-ui;
 	font-size: 85%;
-	background: #fef3a6;  /* L-Yellow 35% */
+	background: $L-Yellow-35;
 	padding: 2px 5px 3px;
-	color: #e61e58;  /* L-Red */
+	color: $L-Red;
 }
 
-.lint-error-icon {
-	margin-bottom: 2px;
-	margin-right: 6px;
-	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEW7AAC7AACxAAC7AAC7AAAAAAC4AAC5AAD///+7AAAUdclpAAAABnRSTlMXnORSiwCK0ZKSAAAATUlEQVR42mWPOQ7AQAgDuQLx/z8csYRmPRIFIwRGnosRrpamvkKi0FTIiMASR3hhKW+hAN6/tIWhu9PDWiTGNEkTtIOucA5Oyr9ckPgAWm0GPBog6v4AAAAASUVORK5CYII=");
-	background-position: center center;
-	background-repeat: no-repeat;
-	display: inline-block;
-	height: 16px;
-	width: 16px;
-	vertical-align: middle;
-	position: relative;
-}
-
+.lint-error-icon,
 .lint-warning-icon {
 	margin-bottom: 2px;
 	margin-right: 6px;
-	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAANlBMVEX/uwDvrwD/uwD/uwD/uwD/uwD/uwD/uwD/uwD6twD/uwAAAADurwD2tQD7uAD+ugAAAAD/uwDhmeTRAAAADHRSTlMJ8mN1EYcbmiixgACm7WbuAAAAVklEQVR42n3PUQqAIBBFUU1LLc3u/jdbOJoW1P08DA9Gba8+YWJ6gNJoNYIBzAA2chBth5kLmG9YUoG0NHAUwFXwO9LuBQL1giCQb8gC9Oro2vp5rncCIY8L8uEx5ZkAAAAASUVORK5CYII=");
 	background-position: center center;
 	background-repeat: no-repeat;
 	display: inline-block;
@@ -310,10 +310,14 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 	position: relative;
 }
 
-.error-line {
-	background: rgba(230, 30, 88, 0.25);  /* (L-Red) */
+.lint-error-icon {
+	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEW7AAC7AACxAAC7AAC7AAAAAAC4AAC5AAD///+7AAAUdclpAAAABnRSTlMXnORSiwCK0ZKSAAAATUlEQVR42mWPOQ7AQAgDuQLx/z8csYRmPRIFIwRGnosRrpamvkKi0FTIiMASR3hhKW+hAN6/tIWhu9PDWiTGNEkTtIOucA5Oyr9ckPgAWm0GPBog6v4AAAAASUVORK5CYII=");
 }
 
-.function {
-	background-color: rgba(255, 255, 0, 0.25);  /* TEST */
+.lint-warning-icon {
+	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAANlBMVEX/uwDvrwD/uwD/uwD/uwD/uwD/uwD/uwD/uwD6twD/uwAAAADurwD2tQD7uAD+ugAAAAD/uwDhmeTRAAAADHRSTlMJ8mN1EYcbmiixgACm7WbuAAAAVklEQVR42n3PUQqAIBBFUU1LLc3u/jdbOJoW1P08DA9Gba8+YWJ6gNJoNYIBzAA2chBth5kLmG9YUoG0NHAUwFXwO9LuBQL1giCQb8gC9Oro2vp5rncCIY8L8uEx5ZkAAAAASUVORK5CYII=");
+}
+
+.error-line {
+	background: rgba($L-Red, 0.25);
 }

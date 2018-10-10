@@ -25,7 +25,7 @@
             "selectAll": "Select All",
             "toggleComment": "Toggle Comments",
             "format": "Format",
-			"copyAsImage": "Copy As Image",
+            "copyAsImage": "Copy As Image",
         "code": "Code",
             "run": "Run",
             "runInFullScreen": "Run In Full Screen",
@@ -34,18 +34,19 @@
             "runSelection": "Run Selection",
             "runWithoutWindow": "Run Without Window",
         "view": "View",
-			"tileWinH": "Tile Windows Horizontally",
+            "tileWin": "Tile Windows Horizontally",
             "softWrap": "Soft Wrap",
             "font": "Font",
                 "monospace": "Monospace",
                 "sansSerif": "Sans-Serif",
                 "serif": "Serif",
             "lineHeight": "Line Height",
-				"veryNarrow": "Very Narrow",
+                "veryNarrow": "Very Narrow",
                 "narrow": "Narrow",
                 "normal": "Normal",
                 "wide": "Wide",
-				"veryWide": "Very Wide",
+                "veryWide": "Very Wide",
+            "zoom": "Zoom",
             "zoomIn": "Zoom In",
             "zoomOut": "Zoom Out",
             "zoomReset": "Default",
@@ -53,7 +54,7 @@
                 "english": "English",
                 "japanese": "Japanese",
             "showLineNumberByFunction": "Show Line Number By Function",
-			"toggleOutputPane": "Toggle Output Pane",
+            "toggleOutputPane": "Toggle Output Pane",
         "help": "Help",
             "about": "About"
     },
@@ -61,7 +62,7 @@
         "confirmNew": "The code is not saved.<br>Are you sure you want to create a new code?",
         "confirmExit": "The code is not saved.<br>Are you sure you want to quit?",
         "confirmOpen": "The code is not saved.<br>Are you sure you want to open?",
-		"confirmReadOnly": "The specified file cannot be over wrriten because it is read only.<br>Are you sure you want to specify another file name?",
+        "confirmReadOnly": "The specified file cannot be over wrriten because it is read only.<br>Are you sure you want to specify another file name?",
         "alertNextTime": "Settings are applied when Croqujs is started at the next time.",
         "error": "An error occurred.",
         "exportedAsWebPage": "Exported as a web page.",
@@ -69,8 +70,8 @@
         "enterLibraryName": "Enter a library name to which export.",
         "libraryName": "A library name...",
         "cannotImport": "The file '%s' cannot be imported.",
-		"copyingAsImage": "Copying as an image now...",
-		"copiedAsImage": "Copied as an image."
+        "copyingAsImage": "Copying as an image now...",
+        "copiedAsImage": "Copied as an image."
     },
     "tooltip": {
         "save": "Save",
@@ -78,16 +79,16 @@
         "undo": "Undo",
         "copy": "Copy",
         "paste": "Paste",
-        "tileWinH": "Tile Windows Horizontally",
+        "tileWin": "Tile Windows Horizontally",
         "run": "Run"
     },
     "btn": {
         "cancel": "Cancel"
     },
     "untitled": "Untitled",
-	"fileFilters": [
+    "fileFilters": [
         {"name": "JavaScript", "extensions": ["js"]},
         {"name": "All Files", "extensions": ["*"]}
     ],
-	"readOnly": "Read Only"
+    "readOnly": "Read Only"
 }

@@ -3,19 +3,45 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-03
+ * @version 2018-10-10
  *
  */
 
 
+$L-Red        : #e61e58;
+$L-Red-35     : #f6b0c5;
+$L-Red-15     : #fbdde6;
+$L-Orange     : #f5a200;
+$L-Orange-b   : #f18400;
+$L-Orange-50  : #fbd290;
+$L-Yellow     : #fdde00;
+$L-Yellow-35  : #fef3a6;
+$L-YellowGreen: #7eba2e;
+$L-PaleGreen  : #4db28d;
+$L-Turquoise  : #005363;
+$L-Cyan       : #009ddf;
+$L-Aqua       : #60b3e5;
+$L-Aqua-60    : #a0d1ef;
+$L-Blue       : #2e449a;
+$L-Purple     : #9a74a3;
+$L-Brown      : #4e4138;
+$L-BodyBrown  : #7c6a5a;
+$L-LightGray  : #e8e8e8;
+$L-Gray       : #b5b5b6;
+$L-DarkGray   : #898989;
+
+$color-editor: #fcfcf9;
+$color-text  : #110;
+$color-window: #f8f8f8;
+$color-handle: #d7d7d7;
+
+$font-ui: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
+
+
 @import 'cm';
 @import 'sa';
-
-$L-Red      : #e61e58;
-$L-Turquoise: #4db28d;
-$L-LightGray: #e8e8e8;
-$L-Gray     : #b5b5b6;
-$L-DarkGray : #898989;
+@import 'toolbar';
+@import 'side-menu';
 
 @font-face {
 	font-family: 'Inconsolata';
@@ -41,7 +67,7 @@ html, body {
 #handle {
 	cursor: row-resize;
 	height: 8px;
-	background-color: #d7d7d7;
+	background-color: $color-handle;
 	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.25);
 	transition: 0.25s;
 
@@ -68,10 +94,10 @@ html, body {
 	}
 
 	div.std {
-		color: #110;
+		color: $color-text;
 
 		.count {
-			background-color: $L-Turquoise;
+			background-color: $L-PaleGreen;
 			border-radius: 2px;
 			color: #fff;
 			margin-right: 4px;
@@ -87,146 +113,6 @@ html, body {
 			color: $L-Gray;
 			font-size: 0.8em;
 			margin-top: 0;
-		}
-	}
-}
-
-
-// Tool Bar --------------------------------------------------------------------
-
-
-#toolbar {
-	height: 45px;
-	width: 100%;
-
-	display: flex;
-	text-align: right;
-	background-color: #f8f8f8;
-	z-index: 999;
-	position: relative;
-	transition: 0.25s;
-}
-
-.toolbar-shadow {
-	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 2px rgba(#000, 0.25);
-}
-
-#toolbar-overwrap {
-	display: none;
-	position: absolute;
-	justify-content: center;
-	align-items: center;
-	width: 100%;
-	height: 100%;
-	margin: 0;
-	left: 0;
-	z-index: 9999;
-	background-color: #f8f8f8;
-	color: $L-DarkGray;
-	font-family: 'Lucida Grande', 'Hiragino Kaku Gothic ProN', Meiryo, 'Yu Gothic', YuGothic, sans-serif !important;
-}
-
-#toolbar {
-	> div:not(#toolbar-overwrap) {
-		box-sizing: border-box;
-		cursor: default;
-
-		width: 46px;
-		height: 46px;
-		margin: 0 12px 2px 12px;
-		padding: 0;
-
-		&.filler { flex: 1 1 auto; }
-
-		i {
-			color: $L-Gray;
-			transition: 0.25s;
-		}
-		&:hover,
-		&:active {
-			i { color: $L-DarkGray; }
-		}
-		&:hover {
-			margin: 0 12px 2px 12px;
-			text-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.25);
-		}
-		&:active { margin: 2px 12px 0 12px; }
-
-		> div {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			width: 46px;
-			height: 46px;
-			margin: 0;
-			padding: 0;
-		}
-	}
-	
-	> div.unabled {
-		i { color: $L-LightGray; }
-
-		&:hover,
-		&:active {
-			margin: 0 12px 2px 12px;
-			text-shadow: none;
-			i { color: $L-LightGray; }
-		}
-	}
-}
-
-
-// Menu ------------------------------------------------------------------------
-
-
-#main-menu {
-	display: none;
-	position: absolute;
-	top: 45px;
-	left: 0;
-	bottom: 0;
-	z-index: 9999;
-	
-	background-color: #f8f8f8;
-	box-shadow: 0 2px 2px rgba(#000, 0.15), 2px 2px 2px rgba(#000, 0.25);
-
-	font-size: 15px;
-	line-height: 1;
-	font-family: 'Yu Gothic UI';
-}
-
-.menu-button {
-	padding: 16px;
-	color: $L-Gray;
-
-	i { font-size: 1.5em; }
-}
-
-.menu-container {
-	height: 100%;
-	overflow-y: auto;
-}
-
-.menu-group {
-	margin: 0;
-	padding: 12px 16px;
-	user-select: none;
-	font-weight: bold;
-}
-
-.menu {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-
-	li {
-		margin: 0;
-		padding: 12px 48px;
-		user-select: none;
-		min-width: 160px;
-
-		&:hover {
-			background-color: #f8f8f8;
 		}
 	}
 }
