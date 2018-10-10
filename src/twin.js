@@ -149,6 +149,10 @@ class Twin {
 		this._updateWindowTitle();
 	}
 
+	onStudyConfigModified(conf) {
+		this._updateUiState(conf);
+	}
+
 	onStudyFileDropped(path) {
 		this._droppedFilePath = path;
 		this._canDiscard(this._res.msg.confirmOpen, '_doFileDropped');
@@ -201,12 +205,17 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	_updateUiState() {
+	_updateUiState(conf) {
 		const state = {
 			isFileOpened: this._filePath != null,
 			canUndo: this._historySize.undo > 0,
 			canRedo: this._historySize.redo > 0,
 		};
+		if (conf) {
+			state.softWrap                      = conf.softWrap;
+			state.isLineNumberByFunctionEnabled = conf.isLineNumberByFunctionEnabled;
+			state.languageIdx                   = conf.languageIdx;
+		}
 		this._main.updateTwinSpecificMenuItems(state, this._nav);
 		this.callStudyMethod('reflectTwinState', state);
 	}

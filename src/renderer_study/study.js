@@ -54,9 +54,18 @@ class Study {
 
 		this._initEditor(editorSel);
 
+		this._config    = new Config({
+			softWrap: false,
+			lineHeightIdx: 2,
+			fontSize: 16,
+			isLineNumberByFunctionEnabled: false,
+			languageIdx: 1/*ja*/,
+		});
+		this._config.addEventListener((conf) => this.configUpdated(conf));
+
+		this._toolbar   = new Toolbar(this, this._res, tbarSel);
 		this._sideMenu  = new SideMenu(this, this._res);
 		this._dialogBox = new DialogBox(this, this._res);
-		this._toolbar   = new Toolbar(this, this._res, tbarSel);
 
 		this._initWindowResizing(this._editor, tbarSel, editorSel);
 		// this.configUpdated(ipcRenderer.sendSync('getConfig'));
@@ -66,11 +75,11 @@ class Study {
 
 		window.addEventListener('storage', (e) => {
 			// console.log('storage');
-			if (e.key === 'config') {
-				const conf = JSON.parse(e.newValue);
-				this.configUpdated(conf);
-				return;
-			}
+			// if (e.key === 'config') {
+			// 	const conf = JSON.parse(e.newValue);
+			// 	this.configUpdated(conf);
+			// 	return;
+			// }
 			if ('study_' + this._id === e.key) {
 				window.localStorage.removeItem(e.key);
 				const ma = JSON.parse(e.newValue);
@@ -85,17 +94,18 @@ class Study {
 			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
 		});
 
-		if (!window.localStorage.getItem('config')) {
-			window.localStorage.setItem('config', JSON.stringify({
-				softWrap: false,
-				lineHeightIdx: 2,
-				fontSize: 16,
-				isLineNumberByFunctionEnabled: false,
-				languageIdx: 1/*ja*/,
-			}));
-		}
-		const conf = JSON.parse(window.localStorage.getItem('config'));
-		this.configUpdated(conf);
+		// if (!window.localStorage.getItem('config')) {
+		// 	window.localStorage.setItem('config', JSON.stringify({
+		// 		softWrap: false,
+		// 		lineHeightIdx: 2,
+		// 		fontSize: 16,
+		// 		isLineNumberByFunctionEnabled: false,
+		// 		languageIdx: 1/*ja*/,
+		// 	}));
+		// }
+		// const conf = JSON.parse(window.localStorage.getItem('config'));
+		// this.configUpdated(conf);
+		this._config.notify();
 	}
 
 	_initEditor(editorSel) {
@@ -213,7 +223,7 @@ class Study {
 	}
 
 	onPencilFontSizeChanged(size) {
-		this._twinMessage('onStudyFontSizeChanged', size);
+		// this._twinMessage('onStudyFontSizeChanged', size);
 	}
 
 	onPencilClipboardChanged() {
@@ -224,21 +234,25 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	configGetItem(key) {
-		console.log('configGetItem');
-		const conf = JSON.parse(window.localStorage.getItem('config'));
-		return conf[key];
+	// configGetItem(key) {
+	// 	console.log('configGetItem');
+	// 	const conf = JSON.parse(window.localStorage.getItem('config'));
+	// 	return conf[key];
+	// }
+
+	// configSetItem(key, val) {
+	// 	console.log('configSetItem');
+	// 	const conf = JSON.parse(window.localStorage.getItem('config'));
+	// 	conf[key] = val;
+	// 	window.localStorage.setItem('config', JSON.stringify(conf));
+	// 	this.configUpdated(conf);
+	// }
+
+	setConfig(key, val) {  // Called By Main Directly
+		this._config.setItem(key, val);
 	}
 
-	configSetItem(key, val) {
-		console.log('configSetItem');
-		const conf = JSON.parse(window.localStorage.getItem('config'));
-		conf[key] = val;
-		window.localStorage.setItem('config', JSON.stringify(conf));
-		this.configUpdated(conf);
-	}
-
-	configUpdated(conf) {  // // Called By Main Directly
+	configUpdated(conf) {
 		this._lang = (conf.languageIdx === 0) ? 'en' : 'ja';
 
 		this._editor.lineWrapping(conf.softWrap);
@@ -256,8 +270,9 @@ class Study {
 			this._jsHintLoaded = true;
 		}
 		this._editor.refresh();
-		console.log('configUpdated');
 		this._sideMenu.updateConfig(conf);
+	
+		this._twinMessage('onStudyConfigModified', conf);
 	}
 
 	reflectClipboardState(text) {  // Called By Main Directly

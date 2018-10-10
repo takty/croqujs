@@ -61,7 +61,7 @@ class Main {
 			// languageIdx: 1/*ja*/,
 			autoBackup: true,
 		});
-		ipcMain.on('getConfig', (ev, message) => { ev.returnValue = this._conf.getAll(); });
+		// ipcMain.on('getConfig', (ev, message) => { ev.returnValue = this._conf.getAll(); });
 	}
 
 	_initializeResource() {
@@ -127,17 +127,20 @@ class Main {
 		this._twins.splice(this._twins.indexOf(t), 1);
 	}
 
-	onStudyFontSizeChanged(t, fontSize) {
-		this._conf.set('fontSize', fontSize);
-		for (let e of this._twins) {
-			if (e !== t) e.callStudyMethod('configUpdated', this._conf.getAll());
-		}
-	}
+	// onStudyFontSizeChanged(t, fontSize) {
+	// 	this._conf.set('fontSize', fontSize);
+	// 	for (let e of this._twins) {
+	// 		if (e !== t) e.callStudyMethod('configUpdated', this._conf.getAll());
+	// 	}
+	// }
 
 	updateTwinSpecificMenuItems(ts, nav) {  // Called By Twin
 		nav.menuItem('export').enabled = ts.isFileOpened;
 		nav.menuItem('undo').enabled   = ts.canUndo;
 		nav.menuItem('redo').enabled   = ts.canRedo;
+
+		nav.menuItem('softWrap').checked                 = ts.softWrap;
+		nav.menuItem('showLineNumberByFunction').checked = ts.isLineNumberByFunctionEnabled;
 	}
 
 	_reflectClipboardState() {  // Called By This and Study on Event
@@ -256,7 +259,7 @@ class Main {
 		const viewMenu = [
 			{ label: rm.tileWin, click: this._createTwinCaller('tileWin') },
 			{ type: 'separator' },
-			{ type: 'checkbox', label: rm.softWrap, click: this._createConfigMenuSetter('softWrap'), checked: this._conf.get('softWrap') },
+			{ type: 'checkbox', label: rm.softWrap, id: 'softWrap', click: this._createConfigMenuSetter('softWrap'), checked: this._conf.get('softWrap') },
 			{
 				label: rm.lineHeight, submenu: [
 					{ type: 'radio', label: rm.veryNarrow, click: this._createConfigSetter('lineHeightIdx', 0), checked: lineHeightIdx === 0 },
@@ -271,7 +274,7 @@ class Main {
 			{ label: rm.zoomOut, accelerator: 'CmdOrCtrl+-', click: this._changeFontSizeDelta.bind(this, -2) },
 			{ label: rm.zoomReset, accelerator: 'CmdOrCtrl+0', click: this._createConfigSetter('fontSize', 16) },
 			{ type: 'separator' },
-			{ type: 'checkbox', label: rm.showLineNumberByFunction, click: this._createConfigMenuSetter('isLineNumberByFunctionEnabled'), checked: this._conf.get('isLineNumberByFunctionEnabled') },
+			{ type: 'checkbox', label: rm.showLineNumberByFunction, id: 'showLineNumberByFunction', click: this._createConfigMenuSetter('isLineNumberByFunctionEnabled'), checked: this._conf.get('isLineNumberByFunctionEnabled') },
 			{ label: rm.toggleOutputPane, accelerator: 'CmdOrCtrl+L', click: this._createStudyCaller('toggleOutputPane') },
 			{ label: '', accelerator: 'F12', click: this._createTwinCaller('toggleDevTools'), visible: false },
 			{ label: '', accelerator: 'CmdOrCtrl+F12', click: this._createTwinCaller('toggleFieldDevTools'), visible: false },
@@ -334,21 +337,23 @@ class Main {
 
 	_createConfigSetter(cmd, val) {
 		return () => {
-			if (!this._focusedTwin._isEnabled) return;
-			this._conf.set(cmd, val);
-			for (let e of this._twins) {
-				e.callStudyMethod('configUpdated', this._conf.getAll());
-			}
+			this._focusedTwin.callStudyMethod('setConfig', cmd, val);
+			// if (!this._focusedTwin._isEnabled) return;
+			// this._conf.set(cmd, val);
+			// for (let e of this._twins) {
+			// 	e.callStudyMethod('configUpdated', this._conf.getAll());
+			// }
 		};
 	}
 
 	_createConfigMenuSetter(cmd) {
 		return (menuItem) => {
-			if (!this._focusedTwin._isEnabled) return;
-			this._conf.set(cmd, menuItem.checked);
-			for (let e of this._twins) {
-				e.callStudyMethod('configUpdated', this._conf.getAll());
-			}
+			this._focusedTwin.callStudyMethod('setConfig', cmd, menuItem.checked);
+			// if (!this._focusedTwin._isEnabled) return;
+			// this._conf.set(cmd, menuItem.checked);
+			// for (let e of this._twins) {
+			// 	e.callStudyMethod('configUpdated', this._conf.getAll());
+			// }
 		};
 	}
 

@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-10
+ * @version 2018-10-11
  *
  */
 
@@ -67,6 +67,7 @@ class SideMenu {
 	}
 
 	_setMenuItems() {
+		const conf = this._study._config;
 		const ts = this._mainMenu.querySelectorAll('[data-menu]');
 		for (let i = 0; i < ts.length; i += 1) {
 			const mId = ts[i].dataset['menu'];
@@ -97,46 +98,46 @@ class SideMenu {
 			if (mId === '_zoomIn') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
-					let size = this._study.configGetItem('fontSize');
+					let size = conf.getItem('fontSize');
 					size = Math.min(64, Math.max(10, size + 2));
-					this._study.configSetItem('fontSize', size);
+					conf.setItem('fontSize', size);
 				});
 			}
 			if (mId === '_zoomOut') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
-					let size = this._study.configGetItem('fontSize');
+					let size = conf.getItem('fontSize');
 					size = Math.min(64, Math.max(10, size - 2));
-					this._study.configSetItem('fontSize', size);
+					conf.setItem('fontSize', size);
 				});
 			}
 			if (mId === '_zoomReset') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
-					this._study.configSetItem('fontSize', 16);
+					conf.setItem('fontSize', 16);
 				});
 			}
 
 			if (mId === 'lineHeightPlus') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
-					let idx = this._study.configGetItem('lineHeightIdx');
+					let idx = conf.getItem('lineHeightIdx');
 					idx = Math.min(4, Math.max(0, idx - 1));
-					this._study.configSetItem('lineHeightIdx', idx);
+					conf.setItem('lineHeightIdx', idx);
 				});
 			}
 			if (mId === 'lineHeightMinus') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
-					let idx = this._study.configGetItem('lineHeightIdx');
+					let idx = conf.getItem('lineHeightIdx');
 					idx = Math.min(4, Math.max(0, idx + 1));
-					this._study.configSetItem('lineHeightIdx', idx);
+					conf.setItem('lineHeightIdx', idx);
 				});
 			}
 			if (mId === 'lineHeightReset') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
-					this._study.configSetItem('lineHeightIdx', 2);
+					conf.setItem('lineHeightIdx', 2);
 				});
 			}
 
@@ -144,16 +145,16 @@ class SideMenu {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
 					this.close();
-					const f = this._study.configGetItem('softWrap');
-					this._study.configSetItem('softWrap', !f);
+					const f = conf.getItem('softWrap');
+					conf.setItem('softWrap', !f);
 				});
 			}
 			if (mId === 'showLineNumberByFunction') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
 					this.close();
-					const f = this._study.configGetItem('isLineNumberByFunctionEnabled');
-					this._study.configSetItem('isLineNumberByFunctionEnabled', !f);
+					const f = conf.getItem('isLineNumberByFunctionEnabled');
+					conf.setItem('isLineNumberByFunctionEnabled', !f);
 				});
 			}
 			if (mId === 'toggleOutputPane') {

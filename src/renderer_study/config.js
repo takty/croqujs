@@ -3,7 +3,7 @@
  * Config
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-10
+ * @version 2018-10-11
  *
  */
 
@@ -13,25 +13,57 @@
 
 class Config {
 
-	constructor(key = 'config') {
-		this._lsKey = key;
-		this._listeners = [];
+	constructor(defaultConf = {}, key = 'config') {
+		this._lsKey       = key;
+		this._defaultConf = defaultConf;
+		this._listeners   = [];
+		this._initializeEventListener();
 	}
 
-	addListener(listener) {
+	_initializeEventListener() {
+		window.addEventListener('storage', (e) => {
+			if (e.key !== this._lsKey) return;
+			const conf = JSON.parse(e.newValue);
+			this._notifyUpdate(conf);
+		});
+	}
+
+	_notifyUpdate(conf) {
+		for (let i = 0; i < this._listeners.length; i += 1) {
+			this._listeners[i](conf);
+		}
+	}
+
+	_getConf() {
+		const lsVal = window.localStorage.getItem(this._lsKey);
+		if (lsVal) return JSON.parse(lsVal);
+		const conf = Object.assign({}, this._defaultConf);
+		this._setConf(conf);
+		return conf;
+	}
+
+	_setConf(conf) {
+		const lsVal = JSON.stringify(conf);
+		window.localStorage.setItem(this._lsKey, lsVal);
+	}
+
+	addEventListener(listener) {
 		this._listeners.push(listener);
 	}
 
+	notify() {
+		this._notifyUpdate(this._getConf());
+	}
+
 	getItem(key) {
-		const conf = JSON.parse(window.localStorage.getItem(this._lsKey));
-		return conf[key];
+		return this._getConf()[key];
 	}
 
 	setItem(key, val) {
-		const conf = JSON.parse(window.localStorage.getItem(this._lsKey));
+		const conf = this._getConf();
 		conf[key] = val;
-		window.localStorage.setItem('config', JSON.stringify(conf));
-		this.configUpdated(conf);
+		this._setConf(conf);
+		this._notifyUpdate(conf);
 	}
 
 }
