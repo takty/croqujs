@@ -83,7 +83,7 @@
 	height: 100%;
 }
 
-.CodeMirror-gutters {  /* includes right border */
+.CodeMirror-gutters {  // includes right border
 	background-color: $color-window;
 	border-right: 10px solid $L-Orange-50;
 	border-left: 0;
@@ -164,7 +164,7 @@
 }
 
 .CodeMirror-function-even {
-	background-color: #f0f0f0;
+	background-color: $L-LightGray;
 	height: 100%;
 }
 
@@ -200,7 +200,7 @@
 	.cm-atom,
 	.cm-number,
 	.cm-string,
-	.cm-string-2 {  /* String quoted by back quotes (`) */
+	.cm-string-2 {  // String quoted by back quotes (`)
 		color: $L-Orange;
 		font-weight: bold;
 		text-shadow: $L-Yellow 0 0 0.75em;
@@ -209,13 +209,13 @@
 		color: $L-Purple;
 		font-weight: bold;
 	}
-	.cm-variable { color: $L-Turquoise; }  /* Global Varialbe */
-	.cm-variable-2 { color: $L-YellowGreen; }   /* Local Variable */
+	.cm-variable { color: $L-Turquoise; }  // Global Varialbe
+	.cm-variable-2 { color: $L-YellowGreen; }  // Local Variable
 	.cm-property { color: $L-Blue; }
 	.cm-error {
 		border-bottom: 0.15em solid $L-Red;
 	}
-	.cm-variable-3 { color: $L-Cyan; }  /* Not Used (for TypeScript) */
+	.cm-variable-3 { color: $L-Cyan; }  // Not Used (for TypeScript)
 }
 
 
