@@ -38,8 +38,8 @@ $color-handle: #d7d7d7;
 $font-ui: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic", YuGothic, sans-serif !important;
 
 
-@import 'cm';
-@import 'sa';
+@import 'editor';
+@import 'dialog-box';
 @import 'toolbar';
 @import 'side-menu';
 
