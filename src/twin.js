@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-04
+ * @version 2018-10-11
  *
  */
 
@@ -198,7 +198,7 @@ class Twin {
 			info.fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
 		}
 		this.callStudyMethod('addErrorMessage', info);
-		if (this._conf.get('autoBackup')) this._backup.backupErrorLog(info, this._codeCache);
+		this._backup.backupErrorLog(info, this._codeCache);
 	}
 
 
@@ -360,7 +360,7 @@ class Twin {
 	}
 
 	_doSaveFile(text) {
-		if (this._conf.get('autoBackup')) this._backup.backupExistingFile(text, this._filePath);
+		this._backup.backupExistingFile(text, this._filePath);
 		try {
 			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 			this._isModified = false;
@@ -391,7 +391,7 @@ class Twin {
 	}
 
 	_doSaveFileVersion(text) {
-		if (this._conf.get('autoBackup')) this._backup.backupExistingFile(text, this._filePathVersion);
+		this._backup.backupExistingFile(text, this._filePathVersion);
 		try {
 			FS.writeFileSync(this._filePathVersion, text.replace(/\n/g, '\r\n'));
 		} catch (e) {
@@ -416,7 +416,7 @@ class Twin {
 	}
 
 	__doClose(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
+		if (this._isModified) this._backup.backupText(text);
 
 		this._main.onTwinDestruct(this);
 		this._studyWin.destroy();
@@ -499,14 +499,6 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	copyAsImage() {
-		this.callStudyMethod('sendBackCapturedImages');
-	}
-
-
-	// -------------------------------------------------------------------------
-
-
 	stop() {
 		if (!this._fieldWin) return;
 		this._callFieldMethod('closeProgram');
@@ -532,7 +524,7 @@ class Twin {
 	}
 
 	_doRun(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
+		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
 		if (!this._fieldWin) {
@@ -551,7 +543,7 @@ class Twin {
 	}
 
 	_doRunWithoutWindow(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
+		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
 		if (!this._fieldWin) {
@@ -565,7 +557,7 @@ class Twin {
 	}
 
 	_doRunInFullScreen(text) {
-		if (this._conf.get('autoBackup') && this._isModified) this._backup.backupText(text);
+		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
 		if (!this._fieldWin) {

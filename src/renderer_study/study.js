@@ -54,7 +54,7 @@ class Study {
 
 		this._initEditor(editorSel);
 
-		this._config    = new Config({
+		this._config = new Config({
 			softWrap: false,
 			lineHeightIdx: 2,
 			fontSize: 16,
@@ -68,7 +68,6 @@ class Study {
 		this._dialogBox = new DialogBox(this, this._res);
 
 		this._initWindowResizing(this._editor, tbarSel, editorSel);
-		// this.configUpdated(ipcRenderer.sendSync('getConfig'));
 
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 		this._initOutputPoller();
@@ -237,17 +236,14 @@ class Study {
 		this._editor.refresh();
 		this._sideMenu.reflectConfig(conf);
 	
-		this._twinMessage('onStudyConfigModified', conf);
+		setTimeout(() => {
+			this._twinMessage('onStudyConfigModified', conf);
+		}, 100);
 	}
 
 	reflectClipboardState(text) {  // Called By Main Directly
 		this._toolbar.reflectClipboard(text);
 		this._sideMenu.reflectClipboard(text);
-	}
-
-	toggleOutputPane() {  // Called By Main Directly
-		const pane = this._outputPane;
-		this._outputPaneEnabled(pane.offsetHeight === 0);
 	}
 
 
@@ -545,11 +541,11 @@ class Study {
 
 		} else if (cmd === 'lineHeightPlus') {
 			let idx = conf.getItem('lineHeightIdx');
-			idx = Math.min(4, Math.max(0, idx - 1));
+			idx = Math.min(4, Math.max(0, idx + 1));
 			conf.setItem('lineHeightIdx', idx);
 		} else if (cmd === 'lineHeightMinus') {
 			let idx = conf.getItem('lineHeightIdx');
-			idx = Math.min(4, Math.max(0, idx + 1));
+			idx = Math.min(4, Math.max(0, idx - 1));
 			conf.setItem('lineHeightIdx', idx);
 		} else if (cmd === 'lineHeightReset') {
 			conf.setItem('lineHeightIdx', 2);
@@ -561,7 +557,7 @@ class Study {
 			const f = conf.getItem('functionLineNumber');
 			conf.setItem('functionLineNumber', !f);
 		} else if (cmd === 'toggleOutputPane') {
-			this.toggleOutputPane();
+			this._outputPaneEnabled(this._outputPane.offsetHeight === 0);
 		}
 
 		// Help Command

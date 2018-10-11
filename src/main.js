@@ -29,7 +29,9 @@ const IS_MAC = (PROCESS.platform === 'darwin');
 class Main {
 
 	constructor() {
-		this._initializeConfig();
+		this._conf = new Config(PATH.join(__dirname, '../'));
+		this._conf.loadSync();
+
 		this._initializeResource();
 		this._initializePopupMenu();
 		this._initializeGlobalShortcut();
@@ -42,26 +44,10 @@ class Main {
 		app.on('browser-window-focus', (ev, win) => { this._onBrowserWindowFocus(ev, win); });
 		app.on('window-all-closed', () => {
 			this._conf.saveSync();
-			if (IS_MAC) {
-				Menu.setApplicationMenu(this._createNoWindowNav().menu());
-			} else {
-				app.quit();
-			}
+			if (IS_MAC) Menu.setApplicationMenu(this._createNoWindowNav().menu());
+			else app.quit();
 		});
 		ipcMain.on('onClipboardChanged', () => { this._reflectClipboardState(); });
-	}
-
-	_initializeConfig() {
-		this._conf = new Config(PATH.join(__dirname, '../'));
-		this._conf.loadSync({
-			// softWrap: false,
-			// lineHeightIdx: 2,
-			// fontSize: 16,
-			// functionLineNumber: false,
-			// languageIdx: 1/*ja*/,
-			autoBackup: true,
-		});
-		// ipcMain.on('getConfig', (ev, message) => { ev.returnValue = this._conf.getAll(); });
 	}
 
 	_initializeResource() {
@@ -79,8 +65,8 @@ class Main {
 	_initializePopupMenu() {
 		const rm = this._res.menu;
 		const template = [
-			{ label: rm.undo, click: this._createEditorCaller('undo'), accelerator: 'CmdOrCtrl+Z' },
-			{ label: rm.redo, click: this._createEditorCaller('redo'), accelerator: 'CmdOrCtrl+Shift+Z' },
+			{ label: rm.undo, click: this._createCommand('undo'), accelerator: 'CmdOrCtrl+Z' },
+			{ label: rm.redo, click: this._createCommand('redo'), accelerator: 'CmdOrCtrl+Shift+Z' },
 			{ type: 'separator' },
 			{ label: rm.cut, role: 'cut', accelerator: 'CmdOrCtrl+X' },
 			{ label: rm.copy, role: 'copy', accelerator: 'CmdOrCtrl+C' },
@@ -101,8 +87,8 @@ class Main {
 		this._shortcut = new Shortcut();
 		this._shortcut.add(IS_MAC ? 'Cmd+Ctrl+F' : 'F11', this._createTwinCaller('toggleFieldWinFullScreen'));
 		this._shortcut.add('CmdOrCtrl+T', this._createTwinCaller('stop'));
-		this._shortcut.add('CmdOrCtrl+=', this._changeFontSizeDelta.bind(this, 2));  // for US Keyboard
-		this._shortcut.add('CmdOrCtrl+;', this._changeFontSizeDelta.bind(this, 2));  // for JIS Keyboard
+		this._shortcut.add('CmdOrCtrl+=', this._createCommand('fontSizePlus'));  // for US Keyboard
+		this._shortcut.add('CmdOrCtrl+;', this._createCommand('fontSizePlus'));  // for JIS Keyboard
 	}
 
 	_onBrowserWindowFocus(ev, win) {
@@ -126,13 +112,6 @@ class Main {
 	onTwinDestruct(t) {
 		this._twins.splice(this._twins.indexOf(t), 1);
 	}
-
-	// onStudyFontSizeChanged(t, fontSize) {
-	// 	this._conf.set('fontSize', fontSize);
-	// 	for (let e of this._twins) {
-	// 		if (e !== t) e.callStudyMethod('configUpdated', this._conf.getAll());
-	// 	}
-	// }
 
 	updateTwinSpecificMenuItems(ts, nav) {  // Called By Twin
 		nav.menuItem('export').enabled = ts.isFileOpened;
@@ -172,28 +151,13 @@ class Main {
 		dialog.showMessageBox({ type: 'info', buttons: [], message: this._res.msg.alertNextTime });
 	}
 
-	_changeFontSizeDelta(delta) {
-		if (!this._focusedTwin._isEnabled) return;
-		let size = this._conf.get('fontSize');
-		size = Math.min(64, Math.max(10, size + delta));
-		this._createConfigSetter('fontSize', size)();
-	}
-
-	_showAboutDialog() {
-		if (!this._focusedTwin._isEnabled) return;
-		const fp = PATH.join(__dirname, '/res/about.txt');
-		const text = FS.readFileSync(fp, 'utf8');
-		dialog.showMessageBox({ type: 'info', title: this._res.menu.about, buttons: [], message: 'Croqujs 4', detail: text });
-	}
-
 
 	// -------------------------------------------------------------------------
 
 
 	_createNav() {
 		const rm = this._res.menu;
-		const languageIdx   = this._conf.get('languageIdx');
-		const lineHeightIdx = this._conf.get('lineHeightIdx');
+		const languageIdx = this._conf.get('languageIdx');
 
 		const fileMenu = [
 			{ label: rm.newWindow, accelerator: 'CmdOrCtrl+Shift+N', click: this._createNewWindow.bind(this) },
@@ -229,23 +193,23 @@ class Main {
 			fileMenu.push({ label: rm.exit, accelerator: 'Alt+F4', role: 'close' });
 		}
 		const editMenu = [
-			{ label: rm.undo, id: 'undo', click: this._createEditorCaller('undo'), accelerator: 'CmdOrCtrl+Z' },
-			{ label: rm.redo, id: 'redo', click: this._createEditorCaller('redo'), accelerator: 'CmdOrCtrl+Shift+Z' },
+			{ label: rm.undo, id: 'undo', click: this._createCommand('undo'), accelerator: 'CmdOrCtrl+Z' },
+			{ label: rm.redo, id: 'redo', click: this._createCommand('redo'), accelerator: 'CmdOrCtrl+Shift+Z' },
 			{ type: 'separator' },
 			{ label: rm.cut, role: 'cut', accelerator: 'CmdOrCtrl+X' },
 			{ label: rm.copy, role: 'copy', accelerator: 'CmdOrCtrl+C' },
 			{ label: rm.paste, role: 'paste', accelerator: 'CmdOrCtrl+V', id: 'paste' },
 			{ type: 'separator' },
-			{ label: rm.selectAll, click: this._createEditorCaller('selectAll'), accelerator: 'CmdOrCtrl+A' },
+			{ label: rm.selectAll, click: this._createCommand('selectAll'), accelerator: 'CmdOrCtrl+A' },
 			{ type: 'separator' },
-			{ label: rm.toggleComment, click: this._createEditorCaller('toggleComment'), accelerator: 'CmdOrCtrl+/' },
-			{ label: rm.format, click: this._createEditorCaller('format'), accelerator: 'CmdOrCtrl+B' },
+			{ label: rm.toggleComment, click: this._createCommand('toggleComment'), accelerator: 'CmdOrCtrl+/' },
+			{ label: rm.format, click: this._createCommand('format'), accelerator: 'CmdOrCtrl+B' },
 			{ type: 'separator' },
-			{ label: rm.find, click: this._createEditorCaller('find'), accelerator: 'CmdOrCtrl+F' },
-			{ label: rm.findNext, click: this._createEditorCaller('findNext'), accelerator: IS_MAC ? 'Cmd+G' : 'F3' },
-			{ label: rm.replace, click: this._createEditorCaller('replace'), accelerator: 'CmdOrCtrl+H' },
+			{ label: rm.find, click: this._createCommand('find'), accelerator: 'CmdOrCtrl+F' },
+			{ label: rm.findNext, click: this._createCommand('findNext'), accelerator: IS_MAC ? 'Cmd+G' : 'F3' },
+			{ label: rm.replace, click: this._createCommand('replace'), accelerator: 'CmdOrCtrl+H' },
 			{ type: 'separator' },
-			{ label: rm.copyAsImage, click: this._createTwinCaller('copyAsImage') },
+			{ label: rm.copyAsImage, click: this._createCommand('copyAsImage') },
 		];
 		const codeMenu = [
 			{ label: rm.run, accelerator: 'CmdOrCtrl+R', click: this._createTwinCaller('run') },
@@ -257,30 +221,24 @@ class Main {
 		const viewMenu = [
 			{ label: rm.tileWin, click: this._createTwinCaller('tileWin') },
 			{ type: 'separator' },
-			{ type: 'checkbox', label: rm.toggleSoftWrap, id: 'softWrap', click: this._createConfigMenuSetter('softWrap'), checked: this._conf.get('softWrap') },
-			{
-				label: rm.lineHeight, submenu: [
-					{ type: 'radio', label: rm.veryNarrow, click: this._createConfigSetter('lineHeightIdx', 0), checked: lineHeightIdx === 0 },
-					{ type: 'radio', label: rm.narrow, click: this._createConfigSetter('lineHeightIdx', 1), checked: lineHeightIdx === 1 },
-					{ type: 'radio', label: rm.normal, click: this._createConfigSetter('lineHeightIdx', 2), checked: lineHeightIdx === 2 },
-					{ type: 'radio', label: rm.wide, click: this._createConfigSetter('lineHeightIdx', 3), checked: lineHeightIdx === 3 },
-					{ type: 'radio', label: rm.veryWide, click: this._createConfigSetter('lineHeightIdx', 4), checked: lineHeightIdx === 4 },
-				]
-			},
+			{ label: rm.zoomIn, accelerator: 'CmdOrCtrl+Plus', click: this._createCommand('fontSizePlus') },
+			{ label: rm.zoomOut, accelerator: 'CmdOrCtrl+-', click: this._createCommand('fontSizeMinus') },
+			{ label: rm.zoomReset, accelerator: 'CmdOrCtrl+0', click: this._createCommand('fontSizeReset') },
 			{ type: 'separator' },
-			{ label: rm.zoomIn, accelerator: 'CmdOrCtrl+Plus', click: this._changeFontSizeDelta.bind(this, 2) },
-			{ label: rm.zoomOut, accelerator: 'CmdOrCtrl+-', click: this._changeFontSizeDelta.bind(this, -2) },
-			{ label: rm.zoomReset, accelerator: 'CmdOrCtrl+0', click: this._createConfigSetter('fontSize', 16) },
+			{ label: rm.lineHeightPlus, click: this._createCommand('lineHeightPlus') },
+			{ label: rm.lineHeightMinus, click: this._createCommand('lineHeightMinus') },
+			{ label: rm.lineHeightReset, click: this._createCommand('lineHeightReset') },
 			{ type: 'separator' },
-			{ type: 'checkbox', label: rm.toggleFunctionLineNumber, id: 'functionLineNumber', click: this._createConfigMenuSetter('functionLineNumber'), checked: this._conf.get('functionLineNumber') },
-			{ label: rm.toggleOutputPane, accelerator: 'CmdOrCtrl+L', click: this._createStudyCaller('toggleOutputPane') },
+			{ type: 'checkbox', label: rm.toggleSoftWrap, id: 'softWrap', click: this._createCommand('toggleSoftWrap') },
+			{ type: 'checkbox', label: rm.toggleFunctionLineNumber, id: 'functionLineNumber', click: this._createCommand('toggleFunctionLineNumber') },
+			{ label: rm.toggleOutputPane, accelerator: 'CmdOrCtrl+L', click: this._createCommand('toggleOutputPane') },
 			{ label: '', accelerator: 'F12', click: this._createTwinCaller('toggleDevTools'), visible: false },
 			{ label: '', accelerator: 'CmdOrCtrl+F12', click: this._createTwinCaller('toggleFieldDevTools'), visible: false },
 			{ label: '', accelerator: 'CmdOrCtrl+Shift+F12', click: this._createTwinCaller('toggleStudyDevTools'), visible: false },
 		];
 		const helpMenu = [
 			{ label: 'Version ' + VERSION, enabled: false },
-			{ label: rm.about, click: () => { this._showAboutDialog(); } }
+			{ label: rm.about, click: this._createCommand('showAbout') }
 		];
 		const bar = [
 			{ label: rm.file, submenu: fileMenu },
@@ -319,7 +277,7 @@ class Main {
 		];
 		const helpMenu = [
 			{ label: 'Version ' + VERSION, enabled: false },
-			{ label: rm.about, click: () => { this._showAboutDialog(); } }
+			{ label: rm.about, click: this._createCommand('showAbout') }
 		];
 		const bar = [
 			{ label: this._res.appTitle, submenu: appMenu },
@@ -333,38 +291,12 @@ class Main {
 	// -------------------------------------------------------------------------
 
 
-	_createConfigSetter(cmd, val) {
-		return () => {
-			this._focusedTwin.callStudyMethod('setConfig', cmd, val);
-			// if (!this._focusedTwin._isEnabled) return;
-			// this._conf.set(cmd, val);
-			// for (let e of this._twins) {
-			// 	e.callStudyMethod('configUpdated', this._conf.getAll());
-			// }
-		};
-	}
-
-	_createConfigMenuSetter(cmd) {
-		return (menuItem) => {
-			this._focusedTwin.callStudyMethod('setConfig', cmd, menuItem.checked);
-			// if (!this._focusedTwin._isEnabled) return;
-			// this._conf.set(cmd, menuItem.checked);
-			// for (let e of this._twins) {
-			// 	e.callStudyMethod('configUpdated', this._conf.getAll());
-			// }
-		};
-	}
-
 	_createTwinCaller(method) {
 		return () => { if (this._focusedTwin._isEnabled) this._focusedTwin[method](); }
 	}
 
-	_createEditorCaller(method) {
-		return () => { if (this._focusedTwin._isEnabled) this._focusedTwin.callEditorMethod(method); }
-	}
-
-	_createStudyCaller(method) {
-		return () => { if (this._focusedTwin._isEnabled) this._focusedTwin.callStudyMethod(method); }
+	_createCommand(cmd) {
+		return () => { if (this._focusedTwin._isEnabled) this._focusedTwin.callStudyMethod('executeCommand', cmd); }
 	}
 
 }
