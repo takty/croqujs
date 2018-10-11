@@ -13,7 +13,7 @@
 
 class Editor {
 
-	constructor(owner, domElm, opt) {
+	constructor(owner, domElm) {
 		this._owner = owner;
 		this._isEnabled = true;
 		this._isReadOnly = false;
@@ -37,8 +37,8 @@ class Editor {
 		this.rulerEnabled(true);
 		this.functionLineNumberEnabled(false);
 
-		this._comp.on('copy',    () => { this._owner.onPencilClipboardChanged(); });
-		this._comp.on('cut',     () => { this._owner.onPencilClipboardChanged(); });
+		this._comp.on('copy',    () => { this._owner.onEditorClipboardChanged(); });
+		this._comp.on('cut',     () => { this._owner.onEditorClipboardChanged(); });
 		this._comp.on('refresh', () => { this._updateCodeStructureView(); });
 
 		this._comp.on('renderLine', (cm, line, elt) => {
@@ -118,13 +118,11 @@ class Editor {
 
 		this._elem.addEventListener('wheel', (e) => {
 			if (!this._isEnabled || !isCtrl) return;
-			const fs = this.fontSize();
-			this.fontSize(fs + ((e.deltaY > 0) ? -1 : 1));
+			this._owner.executeCommand(e.deltaY > 0 ? 'fontSizeMinus' : 'fontSizePlus');
 			e.preventDefault();
-			this.refresh();
 		}, {passive: true});
 		this._elem.addEventListener('keydown', (e) => {if (e.which === 17) {isCtrl = (e.type === 'keydown');}});
-		this._elem.addEventListener('keyup', (e) => {if (e.which === 17) {isCtrl = (e.type === 'keydown');}});
+		this._elem.addEventListener('keyup',   (e) => {if (e.which === 17) {isCtrl = (e.type === 'keydown');}});
 		this._comp.on('blur', () => {isCtrl = false;});
 	}
 
@@ -347,10 +345,10 @@ class Editor {
 	}
 
 	initAutoComplete() {
-		const FS = require('fs');
-		const PATH = require('path');
+		const FS     = require('fs');
+		const PATH   = require('path');
 		const remote = require('electron').remote;
-		const app = remote.require('electron').app;
+		const app    = remote.require('electron').app;
 
 		const code       = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/ecmascript.json'), 'utf-8'));
 		const browser    = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/browser.json'),    'utf-8'));
@@ -443,7 +441,7 @@ class Editor {
 		this._isEnabled = flag;
 		this._comp.setOption('readOnly', flag ? this._isReadOnly : 'nocursor');
 		if (flag) this._comp.focus();
-		this._owner.onPencilEnabled(flag);
+		this._owner.onEditorEnabled(flag);
 	}
 
 	readOnly(flag) {
@@ -481,29 +479,29 @@ class Editor {
 
 	setSimpleView() {
 		const orig = {
-			scrollbarStyle: this._comp.getOption('scrollbarStyle'),
-			readOnly: this._comp.getOption('readOnly'),
+			scrollbarStyle : this._comp.getOption('scrollbarStyle'),
+			readOnly       : this._comp.getOption('readOnly'),
 			styleActiveLine: this._comp.getOption('styleActiveLine'),
 			cursorBlinkRate: this._comp.getOption('cursorBlinkRate'),
-			cursorHeight: this._comp.getOption('cursorHeight'),
-			lineWrapping: this._comp.getOption('lineWrapping'),
+			cursorHeight   : this._comp.getOption('cursorHeight'),
+			lineWrapping   : this._comp.getOption('lineWrapping'),
 		};
-		this._comp.setOption('scrollbarStyle', 'null');
-		this._comp.setOption('readOnly', 'nocursor');
+		this._comp.setOption('scrollbarStyle',  'null');
+		this._comp.setOption('readOnly',        'nocursor');
 		this._comp.setOption('styleActiveLine', false);
 		this._comp.setOption('cursorBlinkRate', -1);
-		this._comp.setOption('cursorHeight', 0);
-		this._comp.setOption('lineWrapping', false);
+		this._comp.setOption('cursorHeight',    0);
+		this._comp.setOption('lineWrapping',    false);
 		return orig;
 	}
 
 	restoreOriginalView(orig) {
-		this._comp.setOption('scrollbarStyle', orig.scrollbarStyle);
-		this._comp.setOption('readOnly', orig.readOnly);
+		this._comp.setOption('scrollbarStyle',  orig.scrollbarStyle);
+		this._comp.setOption('readOnly',        orig.readOnly);
 		this._comp.setOption('styleActiveLine', orig.styleActiveLine);
 		this._comp.setOption('cursorBlinkRate', orig.cursorBlinkRate);
-		this._comp.setOption('cursorHeight', orig.cursorHeight);
-		this._comp.setOption('lineWrapping', orig.lineWrapping);
+		this._comp.setOption('cursorHeight',    orig.cursorHeight);
+		this._comp.setOption('lineWrapping',    orig.lineWrapping);
 	}
 
 
@@ -621,11 +619,10 @@ class Editor {
 		this._elem.style.lineHeight = attr;
 	}
 
-	fontSize(px, fireEvent = true) {
+	fontSize(px) {
 		if (px === undefined) return parseInt(this._elem.style.fontSize, 10);
 		const size = Math.min(64, Math.max(10, px));
 		this._elem.style.fontSize = size + 'px';
-		if (fireEvent) this._owner.onPencilFontSizeChanged(size);
 	}
 
 	isFunctionLineNumberEnabled() {
@@ -643,7 +640,7 @@ class Editor {
 
 	_updateLineNumberGutter() {
 		if (this._isFunctionLineNumberEnabled) {
-			this._updateLineNoByFuncGutter();
+			this._updateFuncLineNoGutter();
 		} else {
 			this._comp.clearGutter('CodeMirror-function-linenumbers');
 			this._comp.setOption('lineNumbers', true);
@@ -653,7 +650,7 @@ class Editor {
 		}
 	}
 
-	_updateLineNoByFuncGutter() {
+	_updateFuncLineNoGutter() {
 		const lines = this._codeStructure.fnLocs;
 		if (!lines || lines.length === 0) return;
 		const lineCount = this._comp.getDoc().lineCount();

@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-10
+ * @version 2018-10-11
  *
  */
 
@@ -74,12 +74,6 @@ class Study {
 		this._initOutputPoller();
 
 		window.addEventListener('storage', (e) => {
-			// console.log('storage');
-			// if (e.key === 'config') {
-			// 	const conf = JSON.parse(e.newValue);
-			// 	this.configUpdated(conf);
-			// 	return;
-			// }
 			if ('study_' + this._id === e.key) {
 				window.localStorage.removeItem(e.key);
 				const ma = JSON.parse(e.newValue);
@@ -94,22 +88,11 @@ class Study {
 			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
 		});
 
-		// if (!window.localStorage.getItem('config')) {
-		// 	window.localStorage.setItem('config', JSON.stringify({
-		// 		softWrap: false,
-		// 		lineHeightIdx: 2,
-		// 		fontSize: 16,
-		// 		functionLineNumber: false,
-		// 		languageIdx: 1/*ja*/,
-		// 	}));
-		// }
-		// const conf = JSON.parse(window.localStorage.getItem('config'));
-		// this.configUpdated(conf);
 		this._config.notify();
 	}
 
 	_initEditor(editorSel) {
-		this._editor = new Editor(this, document.querySelector(editorSel), this._res.codeMirrorOpt);
+		this._editor = new Editor(this, document.querySelector(editorSel));
 		this._editor.fontFamily(this._res.fontSet);
 		this._editor.rulerEnabled(true);
 		const ec = this._editor.getComponent();
@@ -218,35 +201,17 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	onPencilEnabled(flag) {
+	onEditorEnabled(flag) {
 		this._twinMessage('onStudyEnabled', flag);
 	}
 
-	onPencilFontSizeChanged(size) {
-		// this._twinMessage('onStudyFontSizeChanged', size);
-	}
-
-	onPencilClipboardChanged() {
+	onEditorClipboardChanged() {
 		setTimeout(() => {ipcRenderer.send('onClipboardChanged');}, 0);
 	}
 
 
 	// -------------------------------------------------------------------------
 
-
-	// configGetItem(key) {
-	// 	console.log('configGetItem');
-	// 	const conf = JSON.parse(window.localStorage.getItem('config'));
-	// 	return conf[key];
-	// }
-
-	// configSetItem(key, val) {
-	// 	console.log('configSetItem');
-	// 	const conf = JSON.parse(window.localStorage.getItem('config'));
-	// 	conf[key] = val;
-	// 	window.localStorage.setItem('config', JSON.stringify(conf));
-	// 	this.configUpdated(conf);
-	// }
 
 	setConfig(key, val) {  // Called By Main Directly
 		this._config.setItem(key, val);
@@ -257,7 +222,7 @@ class Study {
 
 		this._editor.lineWrapping(conf.softWrap);
 		this._editor.lineHeight(this._res.lineHeights[conf.lineHeightIdx]);
-		this._editor.fontSize(parseInt(conf.fontSize, 10), false);
+		this._editor.fontSize(parseInt(conf.fontSize, 10));
 		this._editor.functionLineNumberEnabled(conf.functionLineNumber);
 
 		const pane = document.querySelector('.sub');
@@ -276,14 +241,7 @@ class Study {
 	}
 
 	reflectClipboardState(text) {  // Called By Main Directly
-		const btn = document.querySelector('#btn-paste');
-		if (text.length > 0) {
-			btn.classList.remove('unabled');
-			btn.title = this._res.tooltip.paste + (text.length > 0 ? ('\n' + text) : '') ;
-		} else {
-			btn.classList.add('unabled');
-			btn.title = this._res.tooltip.paste;
-		}
+		this._toolbar.reflectClipboardState(text);
 	}
 
 	toggleOutputPane() {  // Called By Main Directly
@@ -296,13 +254,7 @@ class Study {
 
 
 	reflectTwinState(state) {  // Called By Twin
-		const ealBtn = document.querySelector('#btn-exportAsLibrary');
-		if (state.isFileOpened) ealBtn.classList.remove('unabled');
-		else ealBtn.classList.add('unabled');
-
-		const uBtn = document.querySelector('#btn-undo');
-		if (state.canUndo) uBtn.classList.remove('unabled');
-		else uBtn.classList.add('unabled');
+		this._toolbar.reflectState(state);
 	}
 
 	prepareExecution(selected, nextMethod) {  // Called By Twin
@@ -517,6 +469,105 @@ class Study {
 		this._dialogBox.showPrompt(text, type, placeholder, value, (resVal) => {
 			if (messageForMain) this._twinMessage(messageForMain, resVal);
 		});
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	executeCommand(cmd, close = true) {
+		if (close) this._sideMenu.close();
+		const conf = this._config;
+
+		// File Command
+
+		if (cmd === 'save') {
+			this._twinMessage('save');
+		} else if (cmd === 'exportAsLibrary') {
+			this._twinMessage('exportAsLibrary');
+		}
+
+		// Edit Command
+
+		if (cmd === 'undo') {
+			this._editor.undo();
+		} else if (cmd === 'redo') {
+			this._editor.redo();
+
+		} else if (cmd === 'cut') {
+			this._editor.cut();
+		} else if (cmd === 'copy') {
+			this._editor.copy();
+		} else if (cmd === 'paste') {
+			this._editor.paste();
+		} else if (cmd === 'selectAll') {
+			this._editor.selectAll();
+
+		} else if (cmd === 'toggleComment') {
+			this._editor.toggleComment();
+		} else if (cmd === 'format') {
+			this._editor.format();
+
+		} else if (cmd === 'find') {
+			this._editor.find();
+		} else if (cmd === 'findNext') {
+			this._editor.findNext();
+		} else if (cmd === 'replace') {
+			this._editor.replace();
+
+		} else if (cmd === 'copyAsImage') {
+			this.sendBackCapturedImages();
+		}
+
+		// Code Command
+
+		if (cmd === 'run') {
+			this._twinMessage('run');
+		}
+
+		// View Command
+
+		if (cmd === 'tileWin') {
+			this._twinMessage('tileWin');
+
+		} else if (cmd === 'fontSizePlus') {
+			let size = conf.getItem('fontSize');
+			size = Math.min(64, Math.max(10, size + 2));
+			conf.setItem('fontSize', size);
+		} else if (cmd === 'fontSizeMinus') {
+			let size = conf.getItem('fontSize');
+			size = Math.min(64, Math.max(10, size - 2));
+			conf.setItem('fontSize', size);
+		} else if (cmd === 'fontSizeReset') {
+			conf.setItem('fontSize', 16);
+
+		} else if (cmd === 'lineHeightPlus') {
+			let idx = conf.getItem('lineHeightIdx');
+			idx = Math.min(4, Math.max(0, idx - 1));
+			conf.setItem('lineHeightIdx', idx);
+		} else if (cmd === 'lineHeightMinus') {
+			let idx = conf.getItem('lineHeightIdx');
+			idx = Math.min(4, Math.max(0, idx + 1));
+			conf.setItem('lineHeightIdx', idx);
+		} else if (cmd === 'lineHeightReset') {
+			conf.setItem('lineHeightIdx', 2);
+	
+		} else if (cmd === 'toggleSoftWrap') {
+			const f = conf.getItem('softWrap');
+			conf.setItem('softWrap', !f);
+		} else if (cmd === 'toggleFunctionLineNumber') {
+			const f = conf.getItem('functionLineNumber');
+			conf.setItem('functionLineNumber', !f);
+		} else if (cmd === 'toggleOutputPane') {
+			this.toggleOutputPane();
+		}
+
+		// Help Command
+
+		if (cmd === 'showAbout') {
+			this.showAbout();
+		}
+
 	}
 
 }

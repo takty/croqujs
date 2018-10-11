@@ -75,116 +75,72 @@ class SideMenu {
 			if (str !== undefined) ts[i].innerText = str;
 
 			if (mId === '_undo') {
-				ts[i].addEventListener('mouseup', this._editorCmd('undo'));
+				ts[i].addEventListener('mouseup', this._command('undo'));
 			}
 			if (mId === '_redo') {
-				ts[i].addEventListener('mouseup', this._editorCmd('redo'));
+				ts[i].addEventListener('mouseup', this._command('redo'));
+			}
+			if (mId === '_cut') {
+				ts[i].addEventListener('mouseup', this._command('cut'));
+			}
+			if (mId === '_copy') {
+				ts[i].addEventListener('mouseup', this._command('copy'));
+			}
+			if (mId === '_paste') {
+				ts[i].addEventListener('mouseup', this._command('paste'));
 			}
 			if (mId === 'selectAll') {
-				ts[i].addEventListener('mouseup', this._editorCmd('selectAll'));
+				ts[i].addEventListener('mouseup', this._command('selectAll'));
 			}
 			if (mId === 'toggleComment') {
-				ts[i].addEventListener('mouseup', this._editorCmd('toggleComment'));
+				ts[i].addEventListener('mouseup', this._command('toggleComment'));
 			}
 			if (mId === 'format') {
-				ts[i].addEventListener('mouseup', this._editorCmd('format'));
+				ts[i].addEventListener('mouseup', this._command('format'));
 			}
 			if (mId === 'copyAsImage') {
-				ts[i].addEventListener('mouseup', this._studyCmd('sendBackCapturedImages'));
+				ts[i].addEventListener('mouseup', this._command('copyAsImage'));
 			}
-
-
 
 			if (mId === '_zoomIn') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					let size = conf.getItem('fontSize');
-					size = Math.min(64, Math.max(10, size + 2));
-					conf.setItem('fontSize', size);
-				});
+				ts[i].addEventListener('mouseup', this._command('fontSizePlus', false));
 			}
 			if (mId === '_zoomOut') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					let size = conf.getItem('fontSize');
-					size = Math.min(64, Math.max(10, size - 2));
-					conf.setItem('fontSize', size);
-				});
+				ts[i].addEventListener('mouseup', this._command('fontSizeMinus', false));
 			}
 			if (mId === '_zoomReset') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					conf.setItem('fontSize', 16);
-				});
+				ts[i].addEventListener('mouseup', this._command('fontSizeReset', false));
 			}
-
 			if (mId === 'lineHeightPlus') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					let idx = conf.getItem('lineHeightIdx');
-					idx = Math.min(4, Math.max(0, idx - 1));
-					conf.setItem('lineHeightIdx', idx);
-				});
+				ts[i].addEventListener('mouseup', this._command('lineHeightPlus', false));
 			}
 			if (mId === 'lineHeightMinus') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					let idx = conf.getItem('lineHeightIdx');
-					idx = Math.min(4, Math.max(0, idx + 1));
-					conf.setItem('lineHeightIdx', idx);
-				});
+				ts[i].addEventListener('mouseup', this._command('lineHeightMinus', false));
 			}
 			if (mId === 'lineHeightReset') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					conf.setItem('lineHeightIdx', 2);
-				});
+				ts[i].addEventListener('mouseup', this._command('lineHeightReset', false));
 			}
-
 			if (mId === 'softWrap') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					this.close();
-					const f = conf.getItem('softWrap');
-					conf.setItem('softWrap', !f);
-				});
+				ts[i].addEventListener('mouseup', this._command('toggleSoftWrap'));
 			}
 			if (mId === 'functionLineNumber') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					this.close();
-					const f = conf.getItem('functionLineNumber');
-					conf.setItem('functionLineNumber', !f);
-				});
+				ts[i].addEventListener('mouseup', this._command('toggleFunctionLineNumber'));
 			}
 			if (mId === 'toggleOutputPane') {
-				ts[i].addEventListener('mouseup', (e) => {
-					e.preventDefault();
-					this.close();
-					this._study.toggleOutputPane();
-				});
+				ts[i].addEventListener('mouseup', this._command('toggleOutputPane'));
 			}
 
 			if (mId === 'version') {
-				ts[i].addEventListener('mouseup', this._studyCmd('showAbout'));
+				ts[i].addEventListener('mouseup', this._command('showAbout'));
 			}
 
 		}
 	}
 
-	_studyCmd(cmd) {
+	_command(cmd, close = true) {
 		return (e) => {
 			e.preventDefault();
-			this.close();
-			this._study[cmd]();
-		};
-	}
-
-	_editorCmd(cmd) {
-		return (e) => {
-			e.preventDefault();
-			this.close();
-			this._study._editor[cmd]();
+			this._study.executeCommand(cmd, close);
 		};
 	}
 

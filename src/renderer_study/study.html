@@ -57,18 +57,18 @@
 <body>
 	<div id="splitter">
 		<div class="main">
-			<div id="toolbar" class="toolbar-shadow">
-				<div id="btn-menu"><div><i class="fa fa-bars fa-2x"></i></div></div>
-				<div id="btn-save"><div><i class="fa fa-download fa-2x"></i></div></div>
-				<div id="btn-exportAsLibrary"><div><i class="fa fa-book fa-2x"></i></div></div>
+			<div class="toolbar toolbar-shadow">
+				<div class="btn" id="btn-menu"><div><i class="fa fa-bars fa-2x"></i></div></div>
+				<div class="btn" data-cmd="save"><div><i class="fa fa-download fa-2x"></i></div></div>
+				<div class="btn" data-cmd="exportAsLibrary"><div><i class="fa fa-book fa-2x"></i></div></div>
 				<div class="filler"></div>
-				<div id="btn-undo"><div><i class="fa fa-undo fa-2x"></i></div></div>
-				<div id="btn-copy"><div><i class="fa fa-copy fa-2x"></i></div></div>
-				<div id="btn-paste"><div><i class="fa fa-paste fa-2x"></i></div></div>
+				<div class="btn" data-cmd="undo"><div><i class="fa fa-undo fa-2x"></i></div></div>
+				<div class="btn" data-cmd="copy"><div><i class="fa fa-copy fa-2x"></i></div></div>
+				<div class="btn" data-cmd="paste"><div><i class="fa fa-paste fa-2x"></i></div></div>
 				<div class="filler"></div>
-				<div id="btn-tileWin"><div><i class="fa fa-columns fa-2x"></i></div></div>
-				<div id="btn-run"><div><i class="fa fa-play fa-2x"></i></div></div>
-				<div id="toolbar-overwrap"></div>
+				<div class="btn" data-cmd="tileWin"><div><i class="fa fa-columns fa-2x"></i></div></div>
+				<div class="btn" data-cmd="run"><div><i class="fa fa-play fa-2x"></i></div></div>
+				<div class="overwrap"></div>
 			</div>
 			<div id="editor"></div>
 		</div>
@@ -123,7 +123,7 @@
 		</div>
 	</div>
 	<script>
-		window.addEventListener('DOMContentLoaded', () => { new Study('#editor', '#toolbar'); });
+		window.addEventListener('DOMContentLoaded', () => { new Study('#editor', '.toolbar'); });
 	</script>
 </body>
 </html>
