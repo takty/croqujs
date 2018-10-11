@@ -81,6 +81,7 @@ class Study {
 		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => {
 			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
 		});
+		this._isModified = false;
 
 		this._config.notify();
 	}
@@ -103,13 +104,17 @@ class Study {
 		ec.on('change', () => {
 			this._clearErrorMarker();
 			if (this._editor.enabled()) {
+				this._isModified = true;
 				this._twinMessage('onStudyModified', this._editor._comp.getDoc().historySize());
 			}
 			analize();
 		});
 		ec.on('drop', (em, ev) => {
 			ev.preventDefault();
-			if (ev.dataTransfer.files.length > 0) this._twinMessage('onStudyFileDropped', ev.dataTransfer.files[0].path);
+			if (ev.dataTransfer.files.length > 0) {
+				this._checkCanDiscard(this._res.msg.confirmOpen, '_doFileDropped', ev.dataTransfer.files[0].path);
+				// this._twinMessage('onStudyFileDropped', ev.dataTransfer.files[0].path);
+			}
 		});
 		ec.on('focus', () => { this._sideMenu.close(); });
 	}
@@ -245,12 +250,16 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
+	onFileSaved() {
+		this._isModified = false;
+	}
+
 	reflectTwinState(state) {  // Called By Twin
 		this._toolbar.reflectState(state);
 		this._sideMenu.reflectState(state);
 	}
 
-	prepareExecution(nextMethod) {  // Called By Twin
+	_prepareExecution(nextMethod) {
 		setTimeout(() => {
 			this._clearErrorMarker();
 			this._outputPane.innerHTML = '<div></div>';
@@ -449,16 +458,19 @@ class Study {
 	}
 
 	showAlert(text, type) {  // Called By Twin
+		window.focus();
 		this._dialogBox.showAlert(text, type);
 	}
 
-	showConfirm(text, type, messageForMain) {  // Called By Twin
+	showConfirm(text, type, messageForMain, ...args) {  // Called By Twin
+		window.focus();
 		this._dialogBox.showConfirm(text, type, () => {
-			if (messageForMain) this._twinMessage(messageForMain);
+			if (messageForMain) this._twinMessage(messageForMain, ...args);
 		});
 	}
 
 	showPrompt(text, type, placeholder, value, messageForMain) {  // Called By Twin
+		window.focus();
 		this._dialogBox.showPrompt(text, type, placeholder, value, (resVal) => {
 			if (messageForMain) this._twinMessage(messageForMain, resVal);
 		});
@@ -468,16 +480,32 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
+	_checkCanDiscard(msg, returnMsg, ...args) {
+		if (this._isModified) {
+			this.showConfirm(msg, 'warning', returnMsg, ...args);
+		} else {
+			this._twinMessage(returnMsg, ...args);
+		}
+	}
+
 	executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
 		const conf = this._config;
 
 		// File Command
 
-		if (cmd === 'save') {
+		if (cmd === 'new') {
+			this._checkCanDiscard(this._res.msg.confirmNew, '_initializeDocument');
+		} else if (cmd === 'open') {
+			this._checkCanDiscard(this._res.msg.confirmOpen, 'doOpen');
+		} else if (cmd === 'save') {
 			this._twinMessage('save');
+		} else if (cmd === 'close') {
+			this._checkCanDiscard(this._res.msg.confirmExit, 'doClose', this._editor.value());
 		} else if (cmd === 'exportAsLibrary') {
 			this._twinMessage('exportAsLibrary');
+		} else if (cmd === 'exportAsWebPage') {
+			this._twinMessage('doExportAsWebPage', this._editor.value());
 		} else if (cmd === 'setLanguageJa') {
 			conf.setItem('language', 'ja');
 			this.showAlert(this._res.msg.alertNextTime, 'info');
@@ -521,13 +549,13 @@ class Study {
 		// Code Command
 
 		if (cmd === 'run') {
-			this.prepareExecution('doRun');
+			this._prepareExecution('doRun');
 		} else if (cmd === 'runInFullScreen') {
-			this.prepareExecution('doRunInFullScreen');
+			this._prepareExecution('doRunInFullScreen');
 		} else if (cmd === 'stop') {
 			this._twinMessage('stop');
 		} else if (cmd === 'runWithoutWindow') {
-			this.prepareExecution('doRunWithoutWindow');
+			this._prepareExecution('doRunWithoutWindow');
 		}
 
 		// View Command

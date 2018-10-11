@@ -86,7 +86,7 @@ class Twin {
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();
 			this._studyWinState._onClose();
-			this.close();
+			this.callStudyMethod('executeCommand', 'close');
 		});
 		if (this._nav) this._studyWin.setMenu(this._nav.menu());
 		this._studyWinState = new WinState(this._studyWin, false, prevTwin ? true : false, this._conf);
@@ -158,10 +158,10 @@ class Twin {
 		this._updateUiState(conf);
 	}
 
-	onStudyFileDropped(path) {
-		this._droppedFilePath = path;
-		this._canDiscard(this._res.msg.confirmOpen, '_doFileDropped');
-	}
+	// onStudyFileDropped(path) {
+	// 	this._droppedFilePath = path;
+	// 	this._canDiscard(this._res.msg.confirmOpen, '_doFileDropped');
+	// }
 
 	onStudyRequestPageCapture(ev, bcr) {
 		if (this._studyWin === null) return;  // When window is closed while capturing
@@ -252,25 +252,7 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	_canDiscard(msg, returnMsg) {
-		if (this._isModified) {
-			if (this._studyWin.isMinimized()) this._studyWin.restore();
-			this._ensureWindowTop(this._studyWin);
-			this.callStudyMethod('showConfirm', msg, 'warning', returnMsg);
-		} else {
-			this[returnMsg]();
-		}
-	}
-
-	new() {
-		this._canDiscard(this._res.msg.confirmNew, '_initializeDocument');
-	}
-
-	open() {
-		this._canDiscard(this._res.msg.confirmOpen, '_doOpen');
-	}
-
-	_doOpen(defaultPath = this._filePath) {
+	doOpen(defaultPath = this._filePath) {
 		const fp = dialog.showOpenDialog(this._studyWin, {defaultPath: defaultPath, filters: this._res.fileFilters});
 		if (fp) this._openFile(fp[0]);
 	}
@@ -305,7 +287,8 @@ class Twin {
 		this.callEditorMethod('enabled', true);
 	}
 
-	_doFileDropped() {
+	_doFileDropped(path) {
+		this._droppedFilePath = path;
 		let isDir = false;
 		try {
 			isDir = FS.statSync(this._droppedFilePath).isDirectory();
@@ -316,7 +299,7 @@ class Twin {
 			const fns = FS.readdirSync(this._droppedFilePath);
 			const fps = fns.map(e => PATH.join(this._droppedFilePath, e)).filter((fp) => {
 				try {
-				    return FS.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
+					return FS.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
 				} catch (e) {
 					return false;
 				}
@@ -324,7 +307,7 @@ class Twin {
 			if (fps.length === 1) {
 				this._openFile(fps[0]);
 			} else if (fps.length > 1) {
-				this._doOpen(this._droppedFilePath);
+				this.doOpen(this._droppedFilePath);
 			}
 		} catch (e) {
 			if (e.code !== 'ENOENT' && e.code !== 'EPERM') throw e;
@@ -369,6 +352,7 @@ class Twin {
 		try {
 			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 			this._isModified = false;
+			this.callStudyMethod('onFileSaved');
 			this._updateUiState();
 			this._updateWindowTitle();
 		} catch (e) {
@@ -376,33 +360,33 @@ class Twin {
 		}
 	}
 
-	saveVersion() {
-		const fp = dialog.showSaveDialog(this._studyWin, {defaultPath: this._filePath, filters: this._res.fileFilters});
-		if (!fp) return;  // No file is selected.
-		let writable = true;
-		try {
-			writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
-		} catch (e) {
-			if (e.code !== 'ENOENT') throw e;
-		}
-		if (writable) {
-			if (fp.indexOf('.') === -1) fp += this._res.defaultExt;
-			this._filePathVersion = fp;
-			this.callStudyMethod('sendBackText', '_doSaveFileVersion');
-		} else {
-			// In Windows, the save dialog itself does not allow to select read only files.
-			this.callStudyMethod('showConfirm', this._res.msg.confirmReadOnly, 'warning', 'saveVersion');
-		}
-	}
+	// saveVersion() {
+	// 	const fp = dialog.showSaveDialog(this._studyWin, {defaultPath: this._filePath, filters: this._res.fileFilters});
+	// 	if (!fp) return;  // No file is selected.
+	// 	let writable = true;
+	// 	try {
+	// 		writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
+	// 	} catch (e) {
+	// 		if (e.code !== 'ENOENT') throw e;
+	// 	}
+	// 	if (writable) {
+	// 		if (fp.indexOf('.') === -1) fp += this._res.defaultExt;
+	// 		this._filePathVersion = fp;
+	// 		this.callStudyMethod('sendBackText', '_doSaveFileVersion');
+	// 	} else {
+	// 		// In Windows, the save dialog itself does not allow to select read only files.
+	// 		this.callStudyMethod('showConfirm', this._res.msg.confirmReadOnly, 'warning', 'saveVersion');
+	// 	}
+	// }
 
-	_doSaveFileVersion(text) {
-		this._backup.backupExistingFile(text, this._filePathVersion);
-		try {
-			FS.writeFileSync(this._filePathVersion, text.replace(/\n/g, '\r\n'));
-		} catch (e) {
-			this._outputError(e, this._filePathVersion);
-		}
-	}
+	// _doSaveFileVersion(text) {
+	// 	this._backup.backupExistingFile(text, this._filePathVersion);
+	// 	try {
+	// 		FS.writeFileSync(this._filePathVersion, text.replace(/\n/g, '\r\n'));
+	// 	} catch (e) {
+	// 		this._outputError(e, this._filePathVersion);
+	// 	}
+	// }
 
 	_outputError(e, dir) {
 		let err = e.toString(), i = err.indexOf("'");
@@ -412,15 +396,7 @@ class Twin {
 		this.callStudyMethod('showAlert', this._res.msg.error + '\n' + dir + '\n' + err, 'error');
 	}
 
-	close() {
-		this._canDiscard(this._res.msg.confirmExit, '_doClose');
-	}
-
-	_doClose() {
-		this.callStudyMethod('sendBackText', '__doClose');
-	}
-
-	__doClose(text) {
+	doClose(text) {
 		if (this._isModified) this._backup.backupText(text);
 
 		this._main.onTwinDestruct(this);
@@ -458,21 +434,13 @@ class Twin {
 		}
 	}
 
-	exportAsWebPage() {
+	doExportAsWebPage(text) {
 		if (this._filePath === null) return;
 		const expDir = this._makeExportPath(this._filePath);
 		try {
 			this._rmdirSync(expDir);
 			FS.mkdirSync(expDir);
-			this.callStudyMethod('sendBackText', '_doExportAsWebPage');
-		} catch (e) {
-			this._outputError(e, expDir);
-		}
-	}
 
-	_doExportAsWebPage(text) {
-		const expDir = this._makeExportPath(this._filePath);
-		try {
 			this._exporter.exportAsWebPage(text, this._filePath, expDir);
 			this._ensureWindowTop(this._studyWin);
 			this.callStudyMethod('showAlert', this._res.msg.exportedAsWebPage, 'success');

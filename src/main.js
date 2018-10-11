@@ -161,17 +161,16 @@ class Main {
 		const fileMenu = [
 			{ label: rm.newWindow, accelerator: 'CmdOrCtrl+Shift+N', click: this._createNewWindow.bind(this) },
 			{ type: 'separator' },
-			{ label: rm.new, accelerator: 'CmdOrCtrl+N', click: this._createTwinCaller('new') },
-			{ label: rm.open, accelerator: 'CmdOrCtrl+O', click: this._createTwinCaller('open') },
+			{ label: rm.new, accelerator: 'CmdOrCtrl+N', click: this._createCommand('new') },
+			{ label: rm.open, accelerator: 'CmdOrCtrl+O', click: this._createCommand('open') },
 			{ type: 'separator' },
 			{ label: rm.save, accelerator: 'CmdOrCtrl+S', click: this._createTwinCaller('save') },
 			{ label: rm.saveAs, accelerator: 'CmdOrCtrl+Shift+S', click: this._createTwinCaller('saveAs') },
-			{ label: rm.saveVersion, accelerator: 'CmdOrCtrl+Alt+S', click: this._createTwinCaller('saveVersion') },
 			{ type: 'separator' },
 			{
 				label: rm.export, id: 'export', type: 'submenu', submenu: [
 					{ label: rm.asLibrary, click: this._createTwinCaller('exportAsLibrary') },
-					{ label: rm.asWebPage, click: this._createTwinCaller('exportAsWebPage') },
+					{ label: rm.asWebPage, click: this._createCommand('exportAsWebPage') },
 				]
 			},
 			{ type: 'separator' },
