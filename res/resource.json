@@ -1,7 +1,6 @@
 {
     "appTitle": "Croqujs",
     "fontSet": "Inconsolata, \"Hiragino Kaku Gothic ProN\", Meiryo, \"Yu Gothic\", YuGothic, monospace",
-    "lineHeights": ["135%", "150%", "165%", "180%", "195%"],
     "defaultExt": ".js",
     "divH": 8,
     "jsHintOpt": {

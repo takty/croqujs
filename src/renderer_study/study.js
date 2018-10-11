@@ -50,13 +50,7 @@ class Study {
 		}
 		this._msgsCache = [];
 
-		this._config = new Config({
-			softWrap: false,
-			lineHeightIdx: 2,
-			fontSize: 16,
-			functionLineNumber: false,
-			language: 'ja',
-		});
+		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
 		this._config.addEventListener((conf) => this.configUpdated(conf));
 		this._lang = this._config.getItem('language');
 		if (!this._lang) this._lang = 'ja';
@@ -221,7 +215,7 @@ class Study {
 		this._lang = conf.language;
 
 		this._editor.lineWrapping(conf.softWrap);
-		this._editor.lineHeight(this._res.lineHeights[conf.lineHeightIdx]);
+		this._editor.lineHeight(parseInt(conf.lineHeight, 10) + '%');
 		this._editor.fontSize(parseInt(conf.fontSize, 10));
 		this._editor.functionLineNumberEnabled(conf.functionLineNumber);
 
@@ -547,15 +541,15 @@ class Study {
 			conf.setItem('fontSize', 16);
 
 		} else if (cmd === 'lineHeightPlus') {
-			let idx = conf.getItem('lineHeightIdx');
-			idx = Math.min(4, Math.max(0, idx + 1));
-			conf.setItem('lineHeightIdx', idx);
+			let lh = conf.getItem('lineHeight');
+			lh = Math.min(195, Math.max(135, lh + 15));
+			conf.setItem('lineHeight', lh);
 		} else if (cmd === 'lineHeightMinus') {
-			let idx = conf.getItem('lineHeightIdx');
-			idx = Math.min(4, Math.max(0, idx - 1));
-			conf.setItem('lineHeightIdx', idx);
+			let lh = conf.getItem('lineHeight');
+			lh = Math.min(195, Math.max(135, lh - 15));
+			conf.setItem('lineHeight', lh);
 		} else if (cmd === 'lineHeightReset') {
-			conf.setItem('lineHeightIdx', 2);
+			conf.setItem('lineHeight', 165);
 	
 		} else if (cmd === 'toggleSoftWrap') {
 			const f = conf.getItem('softWrap');
