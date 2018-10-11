@@ -52,8 +52,8 @@ class SideMenu {
 
 	updateConfig(conf) {
 		let mi;
-		mi = this._mainMenu.querySelector('[data-menu=showLineNumberByFunction]');
-		if (conf.isLineNumberByFunctionEnabled) {
+		mi = this._mainMenu.querySelector('[data-menu=functionLineNumber]');
+		if (conf.functionLineNumber) {
 			mi.classList.add('checked');
 		} else {
 			mi.classList.remove('checked');
@@ -149,12 +149,12 @@ class SideMenu {
 					conf.setItem('softWrap', !f);
 				});
 			}
-			if (mId === 'showLineNumberByFunction') {
+			if (mId === 'functionLineNumber') {
 				ts[i].addEventListener('mouseup', (e) => {
 					e.preventDefault();
 					this.close();
-					const f = conf.getItem('isLineNumberByFunctionEnabled');
-					conf.setItem('isLineNumberByFunctionEnabled', !f);
+					const f = conf.getItem('functionLineNumber');
+					conf.setItem('functionLineNumber', !f);
 				});
 			}
 			if (mId === 'toggleOutputPane') {

@@ -53,7 +53,7 @@
             "language": "Language",
                 "english": "English",
                 "japanese": "Japanese",
-            "showLineNumberByFunction": "Show Line Number By Function",
+            "functionLineNumber": "Show Line Number By Function",
             "toggleOutputPane": "Toggle Output Pane",
         "help": "Help",
             "about": "About"

@@ -212,9 +212,9 @@ class Twin {
 			canRedo: this._historySize.redo > 0,
 		};
 		if (conf) {
-			state.softWrap                      = conf.softWrap;
-			state.isLineNumberByFunctionEnabled = conf.isLineNumberByFunctionEnabled;
-			state.languageIdx                   = conf.languageIdx;
+			state.softWrap           = conf.softWrap;
+			state.functionLineNumber = conf.functionLineNumber;
+			state.languageIdx        = conf.languageIdx;
 		}
 		this._main.updateTwinSpecificMenuItems(state, this._nav);
 		this.callStudyMethod('reflectTwinState', state);

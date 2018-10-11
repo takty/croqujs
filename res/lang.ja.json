@@ -53,7 +53,7 @@
             "language": "言語",
                 "english": "English",
                 "japanese": "日本語",
-            "showLineNumberByFunction": "関数ごとに行番号を表示",
+            "functionLineNumber": "関数ごとに行番号を表示",
             "toggleOutputPane": "出力ペインの開閉",
         "help": "ヘルプ",
             "about": "バージョン情報"

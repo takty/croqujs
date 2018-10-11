@@ -1,9 +1,9 @@
 /**
  *
- * Pencil: Editor Component Wrapper for CodeMirror
+ * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-05
+ * @version 2018-10-11
  *
  */
 
@@ -17,7 +17,7 @@ class Editor {
 		this._owner = owner;
 		this._isEnabled = true;
 		this._isReadOnly = false;
-		this._isLineNumberByFunctionEnabled = false;
+		this._isFunctionLineNumberEnabled = false;
 		this._codeStructure = {};
 
 		CodeMirror.keyMap.pcDefault['Shift-Ctrl-R'] = false;  // Directly Change the Key Map!
@@ -35,7 +35,7 @@ class Editor {
 		this.initCodeStructureView();
 
 		this.rulerEnabled(true);
-		this.lineNumberByFunctionEnabled(false);
+		this.functionLineNumberEnabled(false);
 
 		this._comp.on('copy',    () => { this._owner.onPencilClipboardChanged(); });
 		this._comp.on('cut',     () => { this._owner.onPencilClipboardChanged(); });
@@ -628,21 +628,21 @@ class Editor {
 		if (fireEvent) this._owner.onPencilFontSizeChanged(size);
 	}
 
-	isLineNumberByFunctionEnabled() {
-		return this._isLineNumberByFunctionEnabled;
+	isFunctionLineNumberEnabled() {
+		return this._isFunctionLineNumberEnabled;
 	}
 
-	getLineNumberByFunction(lineNo) {
+	getFunctionLineNumber(lineNo) {
 		return this._lineNoByFunc[lineNo];
 	}
 
-	lineNumberByFunctionEnabled(flag) {
-		this._isLineNumberByFunctionEnabled = flag;
+	functionLineNumberEnabled(flag) {
+		this._isFunctionLineNumberEnabled = flag;
 		this._updateLineNumberGutter();
 	}
 
 	_updateLineNumberGutter() {
-		if (this._isLineNumberByFunctionEnabled) {
+		if (this._isFunctionLineNumberEnabled) {
 			this._updateLineNoByFuncGutter();
 		} else {
 			this._comp.clearGutter('CodeMirror-function-linenumbers');

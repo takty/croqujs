@@ -57,7 +57,7 @@ class Main {
 			// softWrap: false,
 			// lineHeightIdx: 2,
 			// fontSize: 16,
-			// isLineNumberByFunctionEnabled: false,
+			// functionLineNumber: false,
 			// languageIdx: 1/*ja*/,
 			autoBackup: true,
 		});
@@ -140,7 +140,7 @@ class Main {
 		nav.menuItem('redo').enabled   = ts.canRedo;
 
 		nav.menuItem('softWrap').checked                 = ts.softWrap;
-		nav.menuItem('showLineNumberByFunction').checked = ts.isLineNumberByFunctionEnabled;
+		nav.menuItem('functionLineNumber').checked = ts.functionLineNumber;
 	}
 
 	_reflectClipboardState() {  // Called By This and Study on Event
@@ -274,7 +274,7 @@ class Main {
 			{ label: rm.zoomOut, accelerator: 'CmdOrCtrl+-', click: this._changeFontSizeDelta.bind(this, -2) },
 			{ label: rm.zoomReset, accelerator: 'CmdOrCtrl+0', click: this._createConfigSetter('fontSize', 16) },
 			{ type: 'separator' },
-			{ type: 'checkbox', label: rm.showLineNumberByFunction, id: 'showLineNumberByFunction', click: this._createConfigMenuSetter('isLineNumberByFunctionEnabled'), checked: this._conf.get('isLineNumberByFunctionEnabled') },
+			{ type: 'checkbox', label: rm.functionLineNumber, id: 'functionLineNumber', click: this._createConfigMenuSetter('functionLineNumber'), checked: this._conf.get('functionLineNumber') },
 			{ label: rm.toggleOutputPane, accelerator: 'CmdOrCtrl+L', click: this._createStudyCaller('toggleOutputPane') },
 			{ label: '', accelerator: 'F12', click: this._createTwinCaller('toggleDevTools'), visible: false },
 			{ label: '', accelerator: 'CmdOrCtrl+F12', click: this._createTwinCaller('toggleFieldDevTools'), visible: false },

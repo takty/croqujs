@@ -58,7 +58,7 @@ class Study {
 			softWrap: false,
 			lineHeightIdx: 2,
 			fontSize: 16,
-			isLineNumberByFunctionEnabled: false,
+			functionLineNumber: false,
 			languageIdx: 1/*ja*/,
 		});
 		this._config.addEventListener((conf) => this.configUpdated(conf));
@@ -99,7 +99,7 @@ class Study {
 		// 		softWrap: false,
 		// 		lineHeightIdx: 2,
 		// 		fontSize: 16,
-		// 		isLineNumberByFunctionEnabled: false,
+		// 		functionLineNumber: false,
 		// 		languageIdx: 1/*ja*/,
 		// 	}));
 		// }
@@ -258,7 +258,7 @@ class Study {
 		this._editor.lineWrapping(conf.softWrap);
 		this._editor.lineHeight(this._res.lineHeights[conf.lineHeightIdx]);
 		this._editor.fontSize(parseInt(conf.fontSize, 10), false);
-		this._editor.lineNumberByFunctionEnabled(conf.isLineNumberByFunctionEnabled);
+		this._editor.functionLineNumberEnabled(conf.functionLineNumber);
 
 		const pane = document.querySelector('.sub');
 		pane.style.fontSize = parseInt(conf.fontSize, 10) + 'px';
@@ -387,8 +387,8 @@ class Study {
 			const file = info.isUserCode ? '' : `(${info.fileName}) `;
 			const transMsg = new ErrorTranslator(this._lang).translate(info.msg);
 			msg = `${file}%lineno% [${info.col}] - ${transMsg}`;
-			if (info.isUserCode && this._editor.isLineNumberByFunctionEnabled()) {
-				const lnf = this._editor.getLineNumberByFunction(info.line - 1);
+			if (info.isUserCode && this._editor.isFunctionLineNumberEnabled()) {
+				const lnf = this._editor.getFunctionLineNumber(info.line - 1);
 				msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
 			} else {
 				msg = msg.replace('%lineno%', info.line);
