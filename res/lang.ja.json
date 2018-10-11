@@ -32,7 +32,7 @@
             "runWithoutWindow": "ウィンドウなしで実行",
         "view": "表示",
             "tileWin": "ウィンドウを左右に並べる",
-            "softWrap": "右端で折り返す",
+            "toggleSoftWrap": "右端で折り返す",
             "lineHeight": "行間",
                 "veryNarrow": "とても狭い",
                 "narrow": "狭い",
@@ -46,7 +46,7 @@
             "language": "言語",
                 "english": "English",
                 "japanese": "日本語",
-            "functionLineNumber": "関数ごとに行番号を表示",
+            "toggleFunctionLineNumber": "関数ごとに行番号を表示",
             "toggleOutputPane": "出力ペインの開閉",
         "help": "ヘルプ",
             "about": "バージョン情報"

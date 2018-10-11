@@ -63,7 +63,7 @@ class Study {
 		});
 		this._config.addEventListener((conf) => this.configUpdated(conf));
 
-		this._toolbar   = new Toolbar(this, this._res, tbarSel);
+		this._toolbar   = new Toolbar(this, this._res);
 		this._sideMenu  = new SideMenu(this, this._res);
 		this._dialogBox = new DialogBox(this, this._res);
 
@@ -235,13 +235,14 @@ class Study {
 			this._jsHintLoaded = true;
 		}
 		this._editor.refresh();
-		this._sideMenu.updateConfig(conf);
+		this._sideMenu.reflectConfig(conf);
 	
 		this._twinMessage('onStudyConfigModified', conf);
 	}
 
 	reflectClipboardState(text) {  // Called By Main Directly
 		this._toolbar.reflectClipboard(text);
+		this._sideMenu.reflectClipboard(text);
 	}
 
 	toggleOutputPane() {  // Called By Main Directly
@@ -255,6 +256,7 @@ class Study {
 
 	reflectTwinState(state) {  // Called By Twin
 		this._toolbar.reflectState(state);
+		this._sideMenu.reflectState(state);
 	}
 
 	prepareExecution(selected, nextMethod) {  // Called By Twin

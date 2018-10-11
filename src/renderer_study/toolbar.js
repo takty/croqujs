@@ -13,11 +13,11 @@
 
 class Toolbar {
 
-	constructor(study, res, selector) {
+	constructor(study, res) {
 		this._study = study;
 		this._res   = res;
 
-		this._elm = document.querySelector(selector);
+		this._elm = document.querySelector('.toolbar');
 		this._elm.addEventListener('mousedown', (e) => { e.preventDefault(); });
 		this._elm.addEventListener('mouseup',   (e) => { e.preventDefault(); });
 
@@ -44,6 +44,10 @@ class Toolbar {
 		return btn;
 	}
 
+
+	// -------------------------------------------------------------------------
+
+
 	showMessage(text, hideShadow = false) {
 		if (hideShadow) this._elm.classList.remove('toolbar-shadow');
 		const overwrap = this._elm.querySelector('.overwrap');
@@ -62,6 +66,10 @@ class Toolbar {
 			overwrap.removeChild(overwrap.firstChild);
 		}, delay);
 	}
+
+
+	// -------------------------------------------------------------------------
+
 
 	reflectClipboard(text) {
 		const btn = this._setEnabled('paste', text.length > 0);

@@ -75,50 +75,46 @@
 		<div id="handle"></div>
 		<div class="sub" id="output-pane"><div></div></div>
 	</div>
-	<div id="main-menu">
-		<div class="menu-container">
-			<div class="menu-group" data-menu="edit"></div>
+	<div class="side-menu">
+		<div class="container">
+			<div class="caption" data-res="edit"></div>
 			<ul class="menu">
-				<li class="menu-sub"><span></span>
-					<ul>
-						<li data-menu="_undo"><i class="fa fa-undo fa-lg"></i></li>
-						<li data-menu="_redo"><i class="fa fa-undo fa-lg fa-flip-horizontal"></i></li>
-					</ul>
-				</li>
-				<li class="menu-sub"><span data-menu="edit"></span>
-					<ul>
-						<li data-menu="_cut"><i class="fa fa-cut fa-lg"></i></li>
-						<li data-menu="_copy"><i class="fa fa-copy fa-lg"></i></li>
-						<li data-menu="_paste"><i class="fa fa-paste fa-lg"></i></li>
-					</ul>
-				</li>
-				<li data-menu="selectAll"></li>
-				<li class="menu-separator"></li>
-				<li data-menu="toggleComment"></li>
-				<li data-menu="format"></li>
-				<li class="menu-separator"></li>
-				<li data-menu="copyAsImage"></li>
-			</ul>
-			<div class="menu-group" data-menu="view"></div>
-			<ul class="menu">
-				<li class="menu-sub"><span data-menu="font"></span><ul>
-					<li data-menu="_zoomOut" id="zoom-out"><i class="fa fa-minus-circle fa-lg"></i></li>
-					<li data-menu="_zoomReset" id="zoom-reset"><i class="fa fa-circle-thin fa-lg"></i></li>
-					<li data-menu="_zoomIn" id="zoom-in"><i class="fa fa-plus-circle fa-lg"></i></li>
+				<li class="menu-sub"><span></span><ul>
+					<li class="icon" data-cmd="undo"><i class="fa fa-undo fa-lg"></i></li>
+					<li class="icon" data-cmd="redo"><i class="fa fa-undo fa-lg fa-flip-horizontal"></i></li>
 				</ul></li>
-				<li class="menu-sub"><span data-menu="lineHeight"></span><ul>
-					<li data-menu="lineHeightPlus"><i class="fa fa-minus-circle fa-lg"></i></li>
-					<li data-menu="lineHeightReset"><i class="fa fa-circle-thin fa-lg"></i></li>
-					<li data-menu="lineHeightMinus"><i class="fa fa-plus-circle fa-lg"></i></li>
+				<li class="menu-sub"><span data-res="edit"></span><ul>
+					<li class="icon" data-cmd="cut"><i class="fa fa-cut fa-lg"></i></li>
+					<li class="icon" data-cmd="copy"><i class="fa fa-copy fa-lg"></i></li>
+					<li class="icon" data-cmd="paste"><i class="fa fa-paste fa-lg"></i></li>
 				</ul></li>
-				<li data-menu="softWrap"></li>
-				<li class="menu-separator"></li>
-				<li data-menu="functionLineNumber"></li>
-				<li data-menu="toggleOutputPane"></li>
+				<li class="mi" data-cmd="selectAll"></li>
+				<li class="separator"></li>
+				<li class="mi" data-cmd="toggleComment"></li>
+				<li class="mi" data-cmd="format"></li>
+				<li class="separator"></li>
+				<li class="mi" data-cmd="copyAsImage"></li>
 			</ul>
-			<div class="menu-group" data-menu="about"></div>
+			<div class="caption" data-res="view"></div>
 			<ul class="menu">
-				<li data-menu="version">Version 2018-10-10</li>
+				<li class="menu-sub"><span data-res="font"></span><ul>
+					<li class="icon stay" data-cmd="fontSizeMinus"><i class="fa fa-minus-circle fa-lg"></i></li>
+					<li class="icon stay" data-cmd="fontSizeReset"><i class="fa fa-circle-thin fa-lg"></i></li>
+					<li class="icon stay" data-cmd="fontSizePlus"><i class="fa fa-plus-circle fa-lg"></i></li>
+				</ul></li>
+				<li class="menu-sub"><span data-res="lineHeight"></span><ul>
+					<li class="icon stay" data-cmd="lineHeightPlus"><i class="fa fa-minus-circle fa-lg"></i></li>
+					<li class="icon stay" data-cmd="lineHeightReset"><i class="fa fa-circle-thin fa-lg"></i></li>
+					<li class="icon stay" data-cmd="lineHeightMinus"><i class="fa fa-plus-circle fa-lg"></i></li>
+				</ul></li>
+				<li class="mi" data-cmd="toggleSoftWrap"></li>
+				<li class="separator"></li>
+				<li class="mi" data-cmd="toggleFunctionLineNumber"></li>
+				<li class="mi" data-cmd="toggleOutputPane"></li>
+			</ul>
+			<div class="caption" data-res="about"></div>
+			<ul class="menu">
+				<li class="mi" data-cmd="showAbout">Version 2018-10-10</li>
 			</ul>
 		</div>
 	</div>

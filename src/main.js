@@ -139,7 +139,7 @@ class Main {
 		nav.menuItem('undo').enabled   = ts.canUndo;
 		nav.menuItem('redo').enabled   = ts.canRedo;
 
-		nav.menuItem('softWrap').checked                 = ts.softWrap;
+		nav.menuItem('softWrap').checked           = ts.softWrap;
 		nav.menuItem('functionLineNumber').checked = ts.functionLineNumber;
 	}
 
@@ -257,7 +257,7 @@ class Main {
 		const viewMenu = [
 			{ label: rm.tileWin, click: this._createTwinCaller('tileWin') },
 			{ type: 'separator' },
-			{ type: 'checkbox', label: rm.softWrap, id: 'softWrap', click: this._createConfigMenuSetter('softWrap'), checked: this._conf.get('softWrap') },
+			{ type: 'checkbox', label: rm.toggleSoftWrap, id: 'softWrap', click: this._createConfigMenuSetter('softWrap'), checked: this._conf.get('softWrap') },
 			{
 				label: rm.lineHeight, submenu: [
 					{ type: 'radio', label: rm.veryNarrow, click: this._createConfigSetter('lineHeightIdx', 0), checked: lineHeightIdx === 0 },
@@ -272,7 +272,7 @@ class Main {
 			{ label: rm.zoomOut, accelerator: 'CmdOrCtrl+-', click: this._changeFontSizeDelta.bind(this, -2) },
 			{ label: rm.zoomReset, accelerator: 'CmdOrCtrl+0', click: this._createConfigSetter('fontSize', 16) },
 			{ type: 'separator' },
-			{ type: 'checkbox', label: rm.functionLineNumber, id: 'functionLineNumber', click: this._createConfigMenuSetter('functionLineNumber'), checked: this._conf.get('functionLineNumber') },
+			{ type: 'checkbox', label: rm.toggleFunctionLineNumber, id: 'functionLineNumber', click: this._createConfigMenuSetter('functionLineNumber'), checked: this._conf.get('functionLineNumber') },
 			{ label: rm.toggleOutputPane, accelerator: 'CmdOrCtrl+L', click: this._createStudyCaller('toggleOutputPane') },
 			{ label: '', accelerator: 'F12', click: this._createTwinCaller('toggleDevTools'), visible: false },
 			{ label: '', accelerator: 'CmdOrCtrl+F12', click: this._createTwinCaller('toggleFieldDevTools'), visible: false },

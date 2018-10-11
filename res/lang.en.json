@@ -32,7 +32,7 @@
             "runWithoutWindow": "Run Without Window",
         "view": "View",
             "tileWin": "Tile Windows Horizontally",
-            "softWrap": "Soft Wrap",
+            "toggleSoftWrap": "Soft Wrap",
             "lineHeight": "Line Height",
                 "veryNarrow": "Very Narrow",
                 "narrow": "Narrow",
@@ -46,7 +46,7 @@
             "language": "Language",
                 "english": "English",
                 "japanese": "Japanese",
-            "functionLineNumber": "Show Line Number By Function",
+            "toggleFunctionLineNumber": "Show Line Number By Function",
             "toggleOutputPane": "Toggle Output Pane",
         "help": "Help",
             "about": "About"
