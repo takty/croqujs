@@ -39,7 +39,6 @@ class Study {
 
 		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
 
-		this._res = ipcRenderer.sendSync('getResource');
 		this._errorMarker = null;
 		this._outputPane = document.getElementById('output-pane');
 		window.onkeydown = (e) => {
@@ -50,18 +49,20 @@ class Study {
 			}
 		}
 		this._msgsCache = [];
-		this._lang = 'en';
-
-		this._initEditor(editorSel);
 
 		this._config = new Config({
 			softWrap: false,
 			lineHeightIdx: 2,
 			fontSize: 16,
 			functionLineNumber: false,
-			languageIdx: 1/*ja*/,
+			language: 'ja',
 		});
 		this._config.addEventListener((conf) => this.configUpdated(conf));
+		this._lang = this._config.getItem('language');
+		if (!this._lang) this._lang = 'ja';
+
+		this._res = ipcRenderer.sendSync('getResource', this._lang);
+		this._initEditor(editorSel);
 
 		this._toolbar   = new Toolbar(this, this._res);
 		this._sideMenu  = new SideMenu(this, this._res);
@@ -217,7 +218,7 @@ class Study {
 	}
 
 	configUpdated(conf) {
-		this._lang = (conf.languageIdx === 0) ? 'en' : 'ja';
+		this._lang = conf.language;
 
 		this._editor.lineWrapping(conf.softWrap);
 		this._editor.lineHeight(this._res.lineHeights[conf.lineHeightIdx]);
@@ -483,6 +484,12 @@ class Study {
 			this._twinMessage('save');
 		} else if (cmd === 'exportAsLibrary') {
 			this._twinMessage('exportAsLibrary');
+		} else if (cmd === 'setLanguageJa') {
+			conf.setItem('language', 'ja');
+			this.showAlert(this._res.msg.alertNextTime, 'info');
+		} else if (cmd === 'setLanguageEn') {
+			conf.setItem('language', 'en');
+			this.showAlert(this._res.msg.alertNextTime, 'info');
 		}
 
 		// Edit Command

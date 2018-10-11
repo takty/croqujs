@@ -25,13 +25,13 @@ const MAX_CONSOLE_OUTPUT_SIZE = 100;
 
 class Twin {
 
-	constructor(main, res, conf, nav, prevTwin) {
+	constructor(main, res, conf, prevTwin) {
 		Twin._count += 1;
 		this._id = Twin._count;
 		this._main = main;
 		this._res = res;
 		this._conf = conf;
-		this._nav = nav;
+		this._nav = null;
 
 		this._fieldWin = null;
 		this._fieldWinBounds = null;
@@ -88,7 +88,7 @@ class Twin {
 			this._studyWinState._onClose();
 			this.close();
 		});
-		this._studyWin.setMenu(this._nav.menu());
+		if (this._nav) this._studyWin.setMenu(this._nav.menu());
 		this._studyWinState = new WinState(this._studyWin, false, prevTwin ? true : false, this._conf);
 	}
 
@@ -98,6 +98,11 @@ class Twin {
 
 	nav() {  // Called By Main
 		return this._nav;
+	}
+
+	setNav(nav) {
+		this._nav = nav;
+		this._studyWin.setMenu(this._nav.menu());
 	}
 
 	isOwnerOf(win) {  // Called By Main
@@ -214,9 +219,9 @@ class Twin {
 		if (conf) {
 			state.softWrap           = conf.softWrap;
 			state.functionLineNumber = conf.functionLineNumber;
-			state.languageIdx        = conf.languageIdx;
+			state.language           = conf.language;
 		}
-		this._main.updateTwinSpecificMenuItems(state, this._nav);
+		this._main.updateMenuItems(state, this._nav);
 		this.callStudyMethod('reflectTwinState', state);
 	}
 

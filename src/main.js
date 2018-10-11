@@ -10,9 +10,7 @@
 
 'use strict';
 
-const VERSION = '2018-10-04';
-
-const { app, Menu, ipcMain, dialog, clipboard } = require('electron');
+const { app, Menu, ipcMain, clipboard } = require('electron');
 
 const FS      = require('fs');
 const PATH    = require('path');
@@ -31,35 +29,41 @@ class Main {
 	constructor() {
 		this._conf = new Config(PATH.join(__dirname, '../'));
 		this._conf.loadSync();
-
 		this._initializeResource();
-		this._initializePopupMenu();
-		this._initializeGlobalShortcut();
 
 		this._twins = [];
 		this._focusedTwin = null;
 
 		app.on('ready', () => { this._createNewWindow(); });
 		app.on('activate', () => { if (this._twins.length === 0) this._createNewWindow(); });
-		app.on('browser-window-focus', (ev, win) => { this._onBrowserWindowFocus(ev, win); });
 		app.on('window-all-closed', () => {
 			this._conf.saveSync();
-			if (IS_MAC) Menu.setApplicationMenu(this._createNoWindowNav().menu());
+			if (IS_MAC) Menu.setApplicationMenu(this._createNoWindowNav(this._res).menu());
 			else app.quit();
 		});
-		ipcMain.on('onClipboardChanged', () => { this._reflectClipboardState(); });
+		app.on('browser-window-focus', (ev, win) => { this._onBrowserWindowFocus(ev, win); });
+		ipcMain.on('onClipboardChanged', () => { this._reflectClipboardState(this._res.menu); });
 	}
 
 	_initializeResource() {
-		const lang = this._conf.get('languageIdx') === 0 ? 'en' : 'ja';
-		const resFp = PATH.join(__dirname, '/res/lang.' + lang + '.json');
-		const conFp = PATH.join(__dirname, '/res/resource.json');
+		ipcMain.on('getResource', (ev, arg) => {
+			const lang = arg;
+			const resFp = PATH.join(__dirname, '/res/lang.' + lang + '.json');
+			const conFp = PATH.join(__dirname, '/res/resource.json');
 
-		const resData = JSON.parse(FS.readFileSync(resFp), 'utf-8');
-		const conData = JSON.parse(FS.readFileSync(conFp), 'utf-8');
-		this._res = Object.assign(resData, conData);
+			const resData = JSON.parse(FS.readFileSync(resFp), 'utf-8');
+			const conData = JSON.parse(FS.readFileSync(conFp), 'utf-8');
+			this._res = Object.assign(resData, conData);
 
-		ipcMain.on('getResource', (ev, message) => { ev.returnValue = this._res; });
+			this._initializePopupMenu();
+			this._initializeGlobalShortcut();
+
+			for (let t of this._twins) {
+				t._res = this._res;
+				t.setNav(this._createNav(this._res));
+			}
+			ev.returnValue = this._res;
+		});
 	}
 
 	_initializePopupMenu() {
@@ -91,9 +95,18 @@ class Main {
 		this._shortcut.add('CmdOrCtrl+;', this._createCommand('fontSizePlus'));  // for JIS Keyboard
 	}
 
+	_createNewWindow() {
+		if (this._focusedTwin && !this._focusedTwin._isEnabled) return;
+		if (this._twins.length === 0) {
+			new Twin(this, this._res, this._conf);
+		} else {
+			new Twin(this, this._res, this._conf, this._focusedTwin);
+		}
+	}
+
 	_onBrowserWindowFocus(ev, win) {
 		if (IS_MAC && this._twins.length === 0) {
-			Menu.setApplicationMenu(this._createNoWindowNav().menu());
+			Menu.setApplicationMenu(this._createNoWindowNav(this._res).menu());
 			return;
 		}
 		this._focusedTwin = this._twins.find(t => t.isOwnerOf(win));
@@ -101,28 +114,7 @@ class Main {
 		this._reflectClipboardState();
 	}
 
-
-	// -------------------------------------------------------------------------
-
-
-	onTwinCreated(t) {
-		this._twins.push(t);
-	}
-
-	onTwinDestruct(t) {
-		this._twins.splice(this._twins.indexOf(t), 1);
-	}
-
-	updateTwinSpecificMenuItems(ts, nav) {  // Called By Twin
-		nav.menuItem('export').enabled = ts.isFileOpened;
-		nav.menuItem('undo').enabled   = ts.canUndo;
-		nav.menuItem('redo').enabled   = ts.canRedo;
-
-		nav.menuItem('softWrap').checked           = ts.softWrap;
-		nav.menuItem('functionLineNumber').checked = ts.functionLineNumber;
-	}
-
-	_reflectClipboardState() {  // Called By This and Study on Event
+	_reflectClipboardState() {
 		const f = (clipboard.availableFormats().indexOf('text/plain') !== -1);
 		const text = f ? clipboard.readText('text/plain') : '';
 
@@ -136,29 +128,36 @@ class Main {
 	// -------------------------------------------------------------------------
 
 
-	_createNewWindow() {
-		if (this._focusedTwin && !this._focusedTwin._isEnabled) return;
-		if (this._twins.length === 0) {
-			new Twin(this, this._res, this._conf, this._createNav());
-		} else {
-			new Twin(this, this._res, this._conf, this._createNav(), this._focusedTwin);
-		}
+	onTwinCreated(t) {  // Called By Twin
+		this._twins.push(t);
 	}
 
-	_changeLanguage(langIdx) {
-		if (!this._focusedTwin._isEnabled) return;
-		this._conf.set('languageIdx', langIdx);
-		dialog.showMessageBox({ type: 'info', buttons: [], message: this._res.msg.alertNextTime });
+	onTwinDestruct(t) {  // Called By Twin
+		this._twins.splice(this._twins.indexOf(t), 1);
+	}
+
+	updateMenuItems(ts, nav) {  // Called By Twin
+		nav.menuItem('export').enabled = ts.isFileOpened;
+		nav.menuItem('undo').enabled   = ts.canUndo;
+		nav.menuItem('redo').enabled   = ts.canRedo;
+
+		if (ts.softWrap) nav.menuItem('softWrap').checked = ts.softWrap;
+		if (ts.functionLineNumber) nav.menuItem('functionLineNumber').checked = ts.functionLineNumber;
+		if (ts.language) {
+			if (ts.language === 'ja') {
+				nav.menuItem('setLanguageJa').checked = true;
+			} else {
+				nav.menuItem('setLanguageEn').checked = true;
+			}
+		}
 	}
 
 
 	// -------------------------------------------------------------------------
 
 
-	_createNav() {
-		const rm = this._res.menu;
-		const languageIdx = this._conf.get('languageIdx');
-
+	_createNav(res) {
+		const rm = res.menu;
 		const fileMenu = [
 			{ label: rm.newWindow, accelerator: 'CmdOrCtrl+Shift+N', click: this._createNewWindow.bind(this) },
 			{ type: 'separator' },
@@ -178,8 +177,8 @@ class Main {
 			{ type: 'separator' },
 			{
 				label: rm.language, submenu: [
-					{ type: 'radio', label: rm.english, click: this._changeLanguage.bind(this, 0), checked: languageIdx === 0 },
-					{ type: 'radio', label: rm.japanese, click: this._changeLanguage.bind(this, 1), checked: languageIdx === 1 },
+					{ type: 'radio', label: rm.english, id: 'setLanguageEn', click: this._createCommand('setLanguageEn') },
+					{ type: 'radio', label: rm.japanese, id: 'setLanguageJa', click: this._createCommand('setLanguageJa') },
 				]
 			},
 		];
@@ -237,7 +236,6 @@ class Main {
 			{ label: '', accelerator: 'CmdOrCtrl+Shift+F12', click: this._createTwinCaller('toggleStudyDevTools'), visible: false },
 		];
 		const helpMenu = [
-			{ label: 'Version ' + VERSION, enabled: false },
 			{ label: rm.about, click: this._createCommand('showAbout') }
 		];
 		const bar = [
@@ -257,10 +255,8 @@ class Main {
 		return new NavMenu(bar);
 	}
 
-	_createNoWindowNav() {  // Called By This
-		const rm = this._res.menu;
-		const languageIdx = this._conf.get('languageIdx');
-
+	_createNoWindowNav(res) {
+		const rm = res.menu;
 		const appMenu = [
 			{ label: rm.about },
 			{ label: rm.exit, accelerator: 'Cmd+Q', role: 'quit' },
@@ -270,13 +266,12 @@ class Main {
 			{ type: 'separator' },
 			{
 				label: rm.language, submenu: [
-					{ type: 'radio', label: rm.english, click: this._changeLanguage.bind(this, 0), checked: languageIdx === 0 },
-					{ type: 'radio', label: rm.japanese, click: this._changeLanguage.bind(this, 1), checked: languageIdx === 1 },
+					{ type: 'radio', label: rm.english, id: 'setLanguageEn', click: this._createCommand('setLanguageEn') },
+					{ type: 'radio', label: rm.japanese, id: 'setLanguageJa', click: this._createCommand('setLanguageJa') },
 				]
 			},
 		];
 		const helpMenu = [
-			{ label: 'Version ' + VERSION, enabled: false },
 			{ label: rm.about, click: this._createCommand('showAbout') }
 		];
 		const bar = [
@@ -286,10 +281,6 @@ class Main {
 		];
 		return new NavMenu(bar);
 	}
-
-
-	// -------------------------------------------------------------------------
-
 
 	_createTwinCaller(method) {
 		return () => { if (this._focusedTwin._isEnabled) this._focusedTwin[method](); }
