@@ -17,15 +17,10 @@ const MAX_CONSOLE_OUTPUT_SIZE = 100;
 
 function createDelayFunction(fn, delay) {
 	let st = null;
-	function ret() {
+	return () => {
 		if (st) clearTimeout(st);
 		st = setTimeout(fn, delay);
-	}
-	ret.cancel = function () {
-		if (st) clearTimeout(st);
-		st = null;
-	}
-	return ret;
+	};
 }
 
 
@@ -35,7 +30,6 @@ class Study {
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
 		ipcRenderer.on('callStudyMethod',  (ev, method, ...args) => { this[method](...args); });
-		ipcRenderer.on('callEditorMethod', (ev, method, ...args) => { this._editor[method](...args); });
 
 		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
 
@@ -82,10 +76,11 @@ class Study {
 			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
 		});
 
-		this._filePath   = null;
-		this._name       = null;
-		this._isReadOnly = false;
-		this._isModified = false;
+		this._filePath    = null;
+		this._name        = null;
+		this._isReadOnly  = false;
+		this._isModified  = false;
+		this._historySize = { undo: 0, redo: 0 };
 
 		this._config.notify();
 	}
@@ -101,15 +96,15 @@ class Study {
 			this._codeStructure = e.data;
 			this._editor.setCodeStructureData(this._codeStructure);
 		}, false);
-		const analize = createDelayFunction(() => {
-			w.postMessage(ec.getValue());
-		}, 400);
+		const analize = createDelayFunction(() => { w.postMessage(ec.getValue()); }, 400);
 
 		ec.on('change', () => {
 			this._clearErrorMarker();
 			if (this._editor.enabled()) {
-				this._isModified = true;
-				this._twinMessage('onStudyModified', this._editor._comp.getDoc().historySize());
+				this._isModified  = true;
+				this._historySize = this._editor._comp.getDoc().historySize();
+				this._twinMessage('onStudyModified', this._historySize );
+				this._reflectState();
 			}
 			analize();
 		});
@@ -232,7 +227,12 @@ class Study {
 		this._sideMenu.reflectClipboard(text);
 	}
 
-	reflectTwinState(state) {  // Called By Twin
+	_reflectState() {
+		const state = {
+			isFileOpened: this._filePath !== null,
+			canUndo     : this._historySize.undo > 0,
+			canRedo     : this._historySize.redo > 0,
+		}
 		this._toolbar.reflectState(state);
 		this._sideMenu.reflectState(state);
 	}
@@ -254,10 +254,12 @@ class Study {
 		this._name       = name;
 		this._isReadOnly = readOnly;
 		this._isModified = false;
+		this._reflectState();
 
 		this._editor.enabled(false);
 		this._editor.value(text);
 		this._editor.readOnly(readOnly);
+		this._editor.enabled(true);
 
 		this._clearErrorMarker();
 		this._outputPane.innerHTML = '<div></div>';
@@ -269,6 +271,7 @@ class Study {
 		this._name       = name;
 		this._isReadOnly = readOnly;
 		this._isModified = false;
+		this._reflectState();
 
 		this._editor.readOnly(readOnly);
 	}
@@ -288,7 +291,7 @@ class Study {
 			const r = document.querySelector('#handle');
 			r.dispatchEvent(ev);
 		}
-		if (flag) setTimeout(() => {pane.scrollTop = pane.scrollHeight}, 100);
+		if (flag) setTimeout(() => { pane.scrollTop = pane.scrollHeight }, 100);
 	}
 
 	addConsoleOutput(msgs) {  // Called By Twin

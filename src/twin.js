@@ -126,10 +126,6 @@ class Twin {
 		}
 	}
 
-	callEditorMethod(method, ...args) {  // Called By This and Main
-		this._studyWin.webContents.send('callEditorMethod', method, ...args);
-	}
-
 	callStudyMethod(method, ...args) {  // Called By This and Main
 		this._studyWin.webContents.send('callStudyMethod', method, ...args);
 	}
@@ -218,7 +214,6 @@ class Twin {
 			state.language           = conf.language;
 		}
 		this._main.updateMenuItems(state, this._nav);
-		this.callStudyMethod('reflectTwinState', state);
 	}
 
 	_updateWindowTitle() {
@@ -258,7 +253,6 @@ class Twin {
 		this._updateUiState(null, { undo: 0, redo: 0 });
 		this._updateWindowTitle();
 		this.stop();
-		this.callEditorMethod('enabled', true);
 	}
 
 

@@ -75,7 +75,6 @@ class Main {
 			{ label: rm.cut, role: 'cut', accelerator: 'CmdOrCtrl+X' },
 			{ label: rm.copy, role: 'copy', accelerator: 'CmdOrCtrl+C' },
 			{ label: rm.paste, role: 'paste', accelerator: 'CmdOrCtrl+V', id: 'paste' },
-			{ label: rm.delete, role: 'delete' },
 			{ type: 'separator' },
 			{ label: rm.selectAll, role: 'selectall', accelerator: 'CmdOrCtrl+A' },
 		];
@@ -138,9 +137,8 @@ class Main {
 
 	updateMenuItems(ts, nav) {  // Called By Twin
 		nav.menuItem('export').enabled = ts.isFileOpened;
-		nav.menuItem('undo').enabled   = ts.canUndo;
-		nav.menuItem('redo').enabled   = ts.canRedo;
-
+		if (ts.canUndo) nav.menuItem('undo').enabled = ts.canUndo;
+		if (ts.canRedo) nav.menuItem('redo').enabled = ts.canRedo;
 		if (ts.softWrap) nav.menuItem('softWrap').checked = ts.softWrap;
 		if (ts.functionLineNumber) nav.menuItem('functionLineNumber').checked = ts.functionLineNumber;
 		if (ts.language) {
