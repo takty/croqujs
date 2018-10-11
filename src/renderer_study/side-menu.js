@@ -17,7 +17,7 @@ class SideMenu {
 		this._study = study;
 		this._res = res;
 
-		const btn = document.getElementById('btn-menu');
+		const btn = document.querySelector('.toolbar .btn.menu');
 		const mainMenu = document.getElementById('main-menu');
 		mainMenu.style.display = 'none';
 		this._mainMenu = mainMenu;

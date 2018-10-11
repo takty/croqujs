@@ -63,12 +63,12 @@ class Toolbar {
 		}, delay);
 	}
 
-	reflectClipboardState(text) {  // Called By Main Directly
+	reflectClipboard(text) {
 		const btn = this._setEnabled('paste', text.length > 0);
 		btn.title = this._res.tooltip.paste + (text.length > 0 ? ('\n' + text) : '');
 	}
 
-	reflectState(state) {  // Called By Twin
+	reflectState(state) {
 		this._setEnabled('exportAsLibrary', state.isFileOpened);
 		this._setEnabled('undo', state.canUndo);
 	}

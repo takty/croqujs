@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-05
+ * @version 2018-10-11
  *
  */
 

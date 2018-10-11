@@ -241,7 +241,7 @@ class Study {
 	}
 
 	reflectClipboardState(text) {  // Called By Main Directly
-		this._toolbar.reflectClipboardState(text);
+		this._toolbar.reflectClipboard(text);
 	}
 
 	toggleOutputPane() {  // Called By Main Directly
