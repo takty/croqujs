@@ -10,6 +10,8 @@
             "export": "エクスポート",
                 "asWebPage": "ウェブページ",
                 "asLibrary": "ライブラリ",
+            "exportAsWebPage": "ウェブページとしてエクスポート",
+            "exportAsLibrary": "ライブラリとしてエクスポート",
             "exit": "終了",
         "edit": "編集",
             "undo": "元に戻す",
@@ -45,6 +47,8 @@
             "language": "言語",
                 "english": "English",
                 "japanese": "日本語",
+            "setLanguageJa": "日本語に切り替える",
+            "setLanguageEn": "英語に切り替える",
         "help": "ヘルプ",
             "about": "バージョン情報"
     },
