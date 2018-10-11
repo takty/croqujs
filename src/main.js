@@ -164,12 +164,12 @@ class Main {
 			{ label: rm.new, accelerator: 'CmdOrCtrl+N', click: this._createCommand('new') },
 			{ label: rm.open, accelerator: 'CmdOrCtrl+O', click: this._createCommand('open') },
 			{ type: 'separator' },
-			{ label: rm.save, accelerator: 'CmdOrCtrl+S', click: this._createTwinCaller('save') },
-			{ label: rm.saveAs, accelerator: 'CmdOrCtrl+Shift+S', click: this._createTwinCaller('saveAs') },
+			{ label: rm.save, accelerator: 'CmdOrCtrl+S', click: this._createCommand('save') },
+			{ label: rm.saveAs, accelerator: 'CmdOrCtrl+Shift+S', click: this._createCommand('saveAs') },
 			{ type: 'separator' },
 			{
-				label: rm.export, id: 'export', type: 'submenu', submenu: [
-					{ label: rm.asLibrary, click: this._createTwinCaller('exportAsLibrary') },
+				label: rm.export, id: 'export', enabled: false, type: 'submenu', submenu: [
+					{ label: rm.asLibrary, click: this._createCommand('exportAsLibrary') },
 					{ label: rm.asWebPage, click: this._createCommand('exportAsWebPage') },
 				]
 			},

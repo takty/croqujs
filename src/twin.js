@@ -27,20 +27,20 @@ class Twin {
 
 	constructor(main, res, conf, prevTwin) {
 		Twin._count += 1;
-		this._id = Twin._count;
+		this._id   = Twin._count;
 		this._main = main;
-		this._res = res;
+		this._res  = res;
 		this._conf = conf;
-		this._nav = null;
+		this._nav  = null;
 
-		this._fieldWin = null;
-		this._fieldWinBounds = null;
+		this._fieldWin         = null;
+		this._fieldWinBounds   = null;
 		this._fieldOutputCache = [];
 
-		this._filePath = null;
+		this._filePath   = null;
 		this._isReadOnly = false;
 		this._isModified = false;
-		this._historySize = {undo: 0, redo: 0};
+
 		this._backup = new Backup();
 		this._isEnabled = true;
 
@@ -149,19 +149,13 @@ class Twin {
 
 	onStudyModified(historySize) {
 		this._isModified = true;
-		this._historySize = historySize;
-		this._updateUiState();
+		this._updateUiState(null, historySize);
 		this._updateWindowTitle();
 	}
 
 	onStudyConfigModified(conf) {
-		this._updateUiState(conf);
+		this._updateUiState(conf, null);
 	}
-
-	// onStudyFileDropped(path) {
-	// 	this._droppedFilePath = path;
-	// 	this._canDiscard(this._res.msg.confirmOpen, '_doFileDropped');
-	// }
 
 	onStudyRequestPageCapture(ev, bcr) {
 		if (this._studyWin === null) return;  // When window is closed while capturing
@@ -210,12 +204,14 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	_updateUiState(conf) {
+	_updateUiState(conf, historySize) {
 		const state = {
-			isFileOpened: this._filePath != null,
-			canUndo: this._historySize.undo > 0,
-			canRedo: this._historySize.redo > 0,
+			isFileOpened: this._filePath !== null,
 		};
+		if (historySize) {
+			state.canUndo = historySize.undo > 0;
+			state.canRedo = historySize.redo > 0;
+		}
 		if (conf) {
 			state.softWrap           = conf.softWrap;
 			state.functionLineNumber = conf.functionLineNumber;
@@ -248,6 +244,23 @@ class Twin {
 		main.focus();
 	}
 
+	_initializeDocument(text = '', filePath = null) {
+		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
+
+		const name = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
+		this.callStudyMethod('initializeDocument', text, filePath, name, readOnly);
+
+		this._filePath   = filePath;
+		this._isReadOnly = readOnly;
+		this._isModified = false;
+		this._backup.setFilePath(filePath);
+
+		this._updateUiState(null, { undo: 0, redo: 0 });
+		this._updateWindowTitle();
+		this.stop();
+		this.callEditorMethod('enabled', true);
+	}
+
 
 	// -------------------------------------------------------------------------
 
@@ -257,37 +270,7 @@ class Twin {
 		if (fp) this._openFile(fp[0]);
 	}
 
-	_openFile(filePath) {
-		FS.readFile(filePath, 'utf-8', (error, contents) => {
-			if (contents == null) {
-				this._outputError('', filePath);
-				return;
-			}
-			this._initializeDocument(contents, filePath);
-		});
-	}
-
-	_initializeDocument(text = '', filePath = null) {
-		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
-
-		this.callStudyMethod('clearCurrentState');
-		this.callEditorMethod('enabled', false);
-		this.callEditorMethod('value', text);
-		this.callEditorMethod('readOnly', readOnly);
-
-		this._filePath    = filePath;
-		this._isReadOnly  = readOnly;
-		this._isModified  = false;
-		this._historySize = { undo: 0, redo: 0 };
-		this._backup.setFilePath(filePath);
-
-		this._updateUiState();
-		this._updateWindowTitle();
-		this.stop();
-		this.callEditorMethod('enabled', true);
-	}
-
-	_doFileDropped(path) {
+	doFileDropped(path) {
 		this._droppedFilePath = path;
 		let isDir = false;
 		try {
@@ -314,7 +297,17 @@ class Twin {
 		}
 	}
 
-	saveAs() {
+	_openFile(filePath) {
+		FS.readFile(filePath, 'utf-8', (error, contents) => {
+			if (contents == null) {
+				this._outputError('', filePath);
+				return;
+			}
+			this._initializeDocument(contents, filePath);
+		});
+	}
+
+	doSaveAs(text) {
 		const fp = dialog.showSaveDialog(this._studyWin, {defaultPath: this._filePath, filters: this._res.fileFilters});
 		if (!fp) return;  // No file is selected.
 		let writable = true;
@@ -324,35 +317,34 @@ class Twin {
 			if (e.code !== 'ENOENT') throw e;
 		}
 		if (writable) {
-			this._saveFile(fp);
+			this._saveFile(fp, text);
 		} else {
 			// In Windows, the save dialog itself does not allow to select read only files.
-			this.callStudyMethod('showConfirm', this._res.msg.confirmReadOnly, 'warning', 'saveAs');
+			this._outputError(e, this._filePath);
 		}
 	}
 
-	save() {
+	doSave(text) {
 		if (this._filePath === null || this._isReadOnly) {
-			this.saveAs();
+			this.doSaveAs(text);
 		} else {
-			this._saveFile(this._filePath);
+			this._saveFile(this._filePath, text);
 		}
 	}
 
-	_saveFile(fp) {
+	_saveFile(fp, text) {
 		if (fp.indexOf('.') === -1) fp += this._res.defaultExt;
-
 		this._filePath = fp;
 		this._backup.setFilePath(fp);
-		this.callStudyMethod('sendBackText', '_doSaveFile');
-	}
 
-	_doSaveFile(text) {
 		this._backup.backupExistingFile(text, this._filePath);
 		try {
 			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
+
+			const name = PATH.basename(this._filePath, PATH.extname(this._filePath));
+			this.callStudyMethod('setDocumentFilePath', this._filePath, name, false);
+
 			this._isModified = false;
-			this.callStudyMethod('onFileSaved');
 			this._updateUiState();
 			this._updateWindowTitle();
 		} catch (e) {
@@ -360,39 +352,10 @@ class Twin {
 		}
 	}
 
-	// saveVersion() {
-	// 	const fp = dialog.showSaveDialog(this._studyWin, {defaultPath: this._filePath, filters: this._res.fileFilters});
-	// 	if (!fp) return;  // No file is selected.
-	// 	let writable = true;
-	// 	try {
-	// 		writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
-	// 	} catch (e) {
-	// 		if (e.code !== 'ENOENT') throw e;
-	// 	}
-	// 	if (writable) {
-	// 		if (fp.indexOf('.') === -1) fp += this._res.defaultExt;
-	// 		this._filePathVersion = fp;
-	// 		this.callStudyMethod('sendBackText', '_doSaveFileVersion');
-	// 	} else {
-	// 		// In Windows, the save dialog itself does not allow to select read only files.
-	// 		this.callStudyMethod('showConfirm', this._res.msg.confirmReadOnly, 'warning', 'saveVersion');
-	// 	}
-	// }
-
-	// _doSaveFileVersion(text) {
-	// 	this._backup.backupExistingFile(text, this._filePathVersion);
-	// 	try {
-	// 		FS.writeFileSync(this._filePathVersion, text.replace(/\n/g, '\r\n'));
-	// 	} catch (e) {
-	// 		this._outputError(e, this._filePathVersion);
-	// 	}
-	// }
-
 	_outputError(e, dir) {
 		let err = e.toString(), i = err.indexOf("'");
 		if (i === -1) i = err.length;
 		err = err.substr(0, i).trim();
-		this._ensureWindowTop(this._studyWin);
 		this.callStudyMethod('showAlert', this._res.msg.error + '\n' + dir + '\n' + err, 'error');
 	}
 
@@ -407,27 +370,13 @@ class Twin {
 		this._clearTempPath();
 	}
 
-	exportAsLibrary() {
-		if (this._filePath === null) return;
-		const name = PATH.basename(this._filePath, PATH.extname(this._filePath));
-		this._ensureWindowTop(this._studyWin);
-		this.callStudyMethod('showPrompt', this._res.msg.enterLibraryName, 'input', this._res.msg.libraryName, name, '_doExportAsLibrary');
-	}
-
-	_doExportAsLibrary(val) {
-		this._libraryNameTemp = val;
-		this.callStudyMethod('sendBackTextWithCodeStructure', '__doExportAsLibrary');
-	}
-
-	__doExportAsLibrary(text, jsonCodeStructure) {
+	doExportAsLibrary(val, text, jsonCodeStructure) {
 		const codeStructure = JSON.parse(jsonCodeStructure);
-		const val = this._libraryNameTemp;
 		const name = val.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
 		const expDir = PATH.join(PATH.dirname(this._filePath), name + '.lib.js');
 
 		try {
 			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure);
-			this._ensureWindowTop(this._studyWin);
 			this.callStudyMethod('showAlert', this._res.msg.exportedAsLibrary, 'success');
 		} catch (e) {
 			this._outputError(e, expDir);
@@ -442,7 +391,6 @@ class Twin {
 			FS.mkdirSync(expDir);
 
 			this._exporter.exportAsWebPage(text, this._filePath, expDir);
-			this._ensureWindowTop(this._studyWin);
 			this.callStudyMethod('showAlert', this._res.msg.exportedAsWebPage, 'success');
 		} catch (e) {
 			this._outputError(e, expDir);
@@ -450,8 +398,7 @@ class Twin {
 	}
 
 	_makeExportPath(fp) {
-		const ext = PATH.extname(fp);
-		const name = PATH.basename(fp, ext);
+		const name = PATH.basename(fp, PATH.extname(fp));
 		return PATH.join(PATH.dirname(fp), name + '.export');
 	}
 
@@ -587,6 +534,10 @@ class Twin {
 		this._fieldWin.setMenu(null);
 		this._fieldWinState = new WinState(this._fieldWin, false, this._fieldWinBounds ? true : false, this._conf, 'fieldWindowState');
 	}
+
+
+	// -------------------------------------------------------------------------
+
 
 	toggleFieldWinFullScreen() {
 		if (!this._fieldWin) return;

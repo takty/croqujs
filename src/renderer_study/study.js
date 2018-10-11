@@ -31,7 +31,7 @@ function createDelayFunction(fn, delay) {
 
 class Study {
 
-	constructor(editorSel, tbarSel) {
+	constructor() {
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
 		ipcRenderer.on('callStudyMethod',  (ev, method, ...args) => { this[method](...args); });
@@ -56,13 +56,13 @@ class Study {
 		if (!this._lang) this._lang = 'ja';
 
 		this._res = ipcRenderer.sendSync('getResource', this._lang);
-		this._initEditor(editorSel);
+		this._initEditor();
 
 		this._toolbar   = new Toolbar(this, this._res);
 		this._sideMenu  = new SideMenu(this, this._res);
 		this._dialogBox = new DialogBox(this, this._res);
 
-		this._initWindowResizing(this._editor, tbarSel, editorSel);
+		this._initWindowResizing(this._editor);
 
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 		this._initOutputPoller();
@@ -81,13 +81,17 @@ class Study {
 		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => {
 			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
 		});
+
+		this._filePath   = null;
+		this._name       = null;
+		this._isReadOnly = false;
 		this._isModified = false;
 
 		this._config.notify();
 	}
 
-	_initEditor(editorSel) {
-		this._editor = new Editor(this, document.querySelector(editorSel));
+	_initEditor() {
+		this._editor = new Editor(this, document.querySelector('#editor'));
 		this._editor.fontFamily(this._res.fontSet);
 		this._editor.rulerEnabled(true);
 		const ec = this._editor.getComponent();
@@ -112,18 +116,18 @@ class Study {
 		ec.on('drop', (em, ev) => {
 			ev.preventDefault();
 			if (ev.dataTransfer.files.length > 0) {
-				this._checkCanDiscard(this._res.msg.confirmOpen, '_doFileDropped', ev.dataTransfer.files[0].path);
-				// this._twinMessage('onStudyFileDropped', ev.dataTransfer.files[0].path);
+				const filePath = ev.dataTransfer.files[0].path;
+				this._checkCanDiscard(this._res.msg.confirmOpen, 'doFileDropped', filePath);
 			}
 		});
 		ec.on('focus', () => { this._sideMenu.close(); });
 	}
 
-	_initWindowResizing(ed, tbarSel, editorSel) {
+	_initWindowResizing(ed) {
 		const body   = document.querySelector('body');
 		const main   = document.querySelector('.main');
-		const tbar   = document.querySelector(tbarSel);
-		const editor = document.querySelector(editorSel);
+		const tbar   = document.querySelector('.toolbar');
+		const editor = document.querySelector('#editor');
 		const div    = document.querySelector('#handle');
 		const sub    = document.querySelector('.sub');
 
@@ -200,22 +204,6 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	onEditorEnabled(flag) {
-		this._twinMessage('onStudyEnabled', flag);
-	}
-
-	onEditorClipboardChanged() {
-		setTimeout(() => {ipcRenderer.send('onClipboardChanged');}, 0);
-	}
-
-
-	// -------------------------------------------------------------------------
-
-
-	setConfig(key, val) {  // Called By Main Directly
-		this._config.setItem(key, val);
-	}
-
 	configUpdated(conf) {
 		this._lang = conf.language;
 
@@ -235,23 +223,13 @@ class Study {
 		}
 		this._editor.refresh();
 		this._sideMenu.reflectConfig(conf);
-	
-		setTimeout(() => {
-			this._twinMessage('onStudyConfigModified', conf);
-		}, 100);
+
+		setTimeout(() => { this._twinMessage('onStudyConfigModified', conf); }, 100);
 	}
 
-	reflectClipboardState(text) {  // Called By Main Directly
+	reflectClipboardState(text) {  // Called By Main
 		this._toolbar.reflectClipboard(text);
 		this._sideMenu.reflectClipboard(text);
-	}
-
-
-	// -------------------------------------------------------------------------
-
-
-	onFileSaved() {
-		this._isModified = false;
 	}
 
 	reflectTwinState(state) {  // Called By Twin
@@ -259,28 +237,40 @@ class Study {
 		this._sideMenu.reflectState(state);
 	}
 
-	_prepareExecution(nextMethod) {
-		setTimeout(() => {
-			this._clearErrorMarker();
-			this._outputPane.innerHTML = '<div></div>';
-			const text = this._editor.value();
-			this._twinMessage(nextMethod, text);
-		}, 100);
+	onEditorEnabled(flag) {
+		this._twinMessage('onStudyEnabled', flag);
 	}
 
-	sendBackText(messageForMain) {  // Called By Twin
-		this._twinMessage(messageForMain, this._editor.value());
+	onEditorClipboardChanged() {
+		setTimeout(() => { ipcRenderer.send('onClipboardChanged'); }, 0);
 	}
 
-	sendBackTextWithCodeStructure(messageForMain) {  // Called By Twin
-		const cs = JSON.stringify(this._codeStructure);
-		this._twinMessage(messageForMain, this._editor.value(), cs);
-	}
 
-	clearCurrentState() {  // Called By Twin
+	// -------------------------------------------------------------------------
+
+
+	initializeDocument(text, filePath, name, readOnly) {  // Called By Twin
+		this._filePath   = filePath;
+		this._name       = name;
+		this._isReadOnly = readOnly;
+		this._isModified = false;
+
+		this._editor.enabled(false);
+		this._editor.value(text);
+		this._editor.readOnly(readOnly);
+
 		this._clearErrorMarker();
 		this._outputPane.innerHTML = '<div></div>';
 		this._outputPaneEnabled(false);
+	}
+
+	setDocumentFilePath(filePath, name, readOnly) {  // Called By Twin
+		this._filePath   = filePath;
+		this._name       = name;
+		this._isReadOnly = readOnly;
+		this._isModified = false;
+
+		this._editor.readOnly(readOnly);
 	}
 
 	_clearErrorMarker() {
@@ -453,26 +443,22 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	showAbout() {
-		this.showAlert(this._res.about, 'info');
-	}
-
 	showAlert(text, type) {  // Called By Twin
 		window.focus();
 		this._dialogBox.showAlert(text, type);
 	}
 
-	showConfirm(text, type, messageForMain, ...args) {  // Called By Twin
+	_showConfirm(text, type, messageForMain, ...args) {
 		window.focus();
 		this._dialogBox.showConfirm(text, type, () => {
 			if (messageForMain) this._twinMessage(messageForMain, ...args);
 		});
 	}
 
-	showPrompt(text, type, placeholder, value, messageForMain) {  // Called By Twin
+	_showPrompt(text, type, placeholder, value, messageForMain, ...args) {
 		window.focus();
 		this._dialogBox.showPrompt(text, type, placeholder, value, (resVal) => {
-			if (messageForMain) this._twinMessage(messageForMain, resVal);
+			if (messageForMain) this._twinMessage(messageForMain, resVal, ...args);
 		});
 	}
 
@@ -482,10 +468,18 @@ class Study {
 
 	_checkCanDiscard(msg, returnMsg, ...args) {
 		if (this._isModified) {
-			this.showConfirm(msg, 'warning', returnMsg, ...args);
+			this._showConfirm(msg, 'warning', returnMsg, ...args);
 		} else {
 			this._twinMessage(returnMsg, ...args);
 		}
+	}
+
+	_prepareExecution(nextMethod) {
+		setTimeout(() => {
+			this._clearErrorMarker();
+			this._outputPane.innerHTML = '<div></div>';
+			this._twinMessage(nextMethod, this._editor.value());
+		}, 100);
 	}
 
 	executeCommand(cmd, close = true) {
@@ -499,13 +493,18 @@ class Study {
 		} else if (cmd === 'open') {
 			this._checkCanDiscard(this._res.msg.confirmOpen, 'doOpen');
 		} else if (cmd === 'save') {
-			this._twinMessage('save');
+			this._twinMessage('doSave', this._editor.value());
+		} else if (cmd === 'saveAs') {
+			this._twinMessage('doSaveAs', this._editor.value());
 		} else if (cmd === 'close') {
 			this._checkCanDiscard(this._res.msg.confirmExit, 'doClose', this._editor.value());
+
 		} else if (cmd === 'exportAsLibrary') {
-			this._twinMessage('exportAsLibrary');
+			const cs = JSON.stringify(this._codeStructure);
+			this._showPrompt(this._res.msg.enterLibraryName, 'input', this._res.msg.libraryName, this._name, 'doExportAsLibrary', this._editor.value(), cs);
 		} else if (cmd === 'exportAsWebPage') {
 			this._twinMessage('doExportAsWebPage', this._editor.value());
+
 		} else if (cmd === 'setLanguageJa') {
 			conf.setItem('language', 'ja');
 			this.showAlert(this._res.msg.alertNextTime, 'info');
@@ -564,33 +563,27 @@ class Study {
 			this._twinMessage('tileWin');
 
 		} else if (cmd === 'fontSizePlus') {
-			let size = conf.getItem('fontSize');
-			size = Math.min(64, Math.max(10, size + 2));
+			const size = Math.min(64, Math.max(10, conf.getItem('fontSize') + 2));
 			conf.setItem('fontSize', size);
 		} else if (cmd === 'fontSizeMinus') {
-			let size = conf.getItem('fontSize');
-			size = Math.min(64, Math.max(10, size - 2));
+			const size = Math.min(64, Math.max(10, conf.getItem('fontSize') - 2));
 			conf.setItem('fontSize', size);
 		} else if (cmd === 'fontSizeReset') {
 			conf.setItem('fontSize', 16);
 
 		} else if (cmd === 'lineHeightPlus') {
-			let lh = conf.getItem('lineHeight');
-			lh = Math.min(195, Math.max(135, lh + 15));
+			const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') + 15));
 			conf.setItem('lineHeight', lh);
 		} else if (cmd === 'lineHeightMinus') {
-			let lh = conf.getItem('lineHeight');
-			lh = Math.min(195, Math.max(135, lh - 15));
+			const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') - 15));
 			conf.setItem('lineHeight', lh);
 		} else if (cmd === 'lineHeightReset') {
 			conf.setItem('lineHeight', 165);
 	
 		} else if (cmd === 'toggleSoftWrap') {
-			const f = conf.getItem('softWrap');
-			conf.setItem('softWrap', !f);
+			conf.setItem('softWrap', !conf.getItem('softWrap'));
 		} else if (cmd === 'toggleFunctionLineNumber') {
-			const f = conf.getItem('functionLineNumber');
-			conf.setItem('functionLineNumber', !f);
+			conf.setItem('functionLineNumber', !conf.getItem('functionLineNumber'));
 		} else if (cmd === 'toggleOutputPane') {
 			this._outputPaneEnabled(this._outputPane.offsetHeight === 0);
 		}
@@ -598,7 +591,7 @@ class Study {
 		// Help Command
 
 		if (cmd === 'showAbout') {
-			this.showAbout();
+			this.showAlert(this._res.about, 'info');
 		}
 
 	}
