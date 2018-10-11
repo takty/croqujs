@@ -517,10 +517,6 @@ class Twin {
 		this._prepareExecution(false, '_doRun');
 	}
 
-	runSelection() {
-		this._prepareExecution(true, '_doRun');
-	}
-
 	runWithoutWindow() {
 		this._prepareExecution(false, '_doRunWithoutWindow');
 	}

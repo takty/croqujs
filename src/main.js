@@ -252,8 +252,6 @@ class Main {
 			{ label: rm.runInFullScreen, accelerator: 'CmdOrCtrl+Alt+R', click: this._createTwinCaller('runInFullScreen') },
 			{ label: rm.stop, accelerator: 'CmdOrCtrl+T', click: this._createTwinCaller('stop') },
 			{ type: 'separator' },
-			{ label: rm.runSelection, click: this._createTwinCaller('runSelection') },
-			{ type: 'separator' },
 			{ label: rm.runWithoutWindow, accelerator: 'CmdOrCtrl+Shift+R', click: this._createTwinCaller('runWithoutWindow') },
 		];
 		const viewMenu = [

@@ -31,7 +31,6 @@
             "runInFullScreen": "Run In Full Screen",
             "stop": "Stop",
             "autoRun": "Auto-Run",
-            "runSelection": "Run Selection",
             "runWithoutWindow": "Run Without Window",
         "view": "View",
             "tileWin": "Tile Windows Horizontally",

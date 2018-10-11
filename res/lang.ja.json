@@ -31,7 +31,6 @@
             "runInFullScreen": "フルスクリーンで実行",
             "stop": "停止",
             "autoRun": "自動的に実行",
-            "runSelection": "選択範囲を実行",
             "runWithoutWindow": "ウィンドウなしで実行",
         "view": "表示",
             "tileWin": "ウィンドウを左右に並べる",
