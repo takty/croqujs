@@ -94,11 +94,20 @@ class SideMenu {
 	reflectState(state) {
 		this._setEnabled('undo', state.canUndo);
 		this._setEnabled('redo', state.canRedo);
+		this._setEnabled('exportAsLibrary', state.isFileOpend);
+		this._setEnabled('exportAsWebPage', state.isFileOpend);
 	}
 
 	reflectConfig(conf) {
 		this._setChecked('toggleSoftWrap', conf.softWrap);
 		this._setChecked('toggleFunctionLineNumber', conf.functionLineNumber);
+		if (conf.language === 'ja') {
+			this._setChecked('setLanguageJa', true);
+			this._setChecked('setLanguageEn', false);
+		} else {
+			this._setChecked('setLanguageJa', false);
+			this._setChecked('setLanguageEn', true);
+		}
 	}
 
 }
