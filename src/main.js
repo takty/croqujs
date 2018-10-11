@@ -211,11 +211,11 @@ class Main {
 			{ label: rm.copyAsImage, click: this._createCommand('copyAsImage') },
 		];
 		const codeMenu = [
-			{ label: rm.run, accelerator: 'CmdOrCtrl+R', click: this._createTwinCaller('run') },
-			{ label: rm.runInFullScreen, accelerator: 'CmdOrCtrl+Alt+R', click: this._createTwinCaller('runInFullScreen') },
-			{ label: rm.stop, accelerator: 'CmdOrCtrl+T', click: this._createTwinCaller('stop') },
+			{ label: rm.run, accelerator: 'CmdOrCtrl+R', click: this._createCommand('run') },
+			{ label: rm.runInFullScreen, accelerator: 'CmdOrCtrl+Alt+R', click: this._createCommand('runInFullScreen') },
+			{ label: rm.stop, accelerator: 'CmdOrCtrl+T', click: this._createCommand('stop') },
 			{ type: 'separator' },
-			{ label: rm.runWithoutWindow, accelerator: 'CmdOrCtrl+Shift+R', click: this._createTwinCaller('runWithoutWindow') },
+			{ label: rm.runWithoutWindow, accelerator: 'CmdOrCtrl+Shift+R', click: this._createCommand('runWithoutWindow') },
 		];
 		const viewMenu = [
 			{ label: rm.tileWin, click: this._createTwinCaller('tileWin') },

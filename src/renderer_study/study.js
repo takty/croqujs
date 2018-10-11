@@ -250,11 +250,11 @@ class Study {
 		this._sideMenu.reflectState(state);
 	}
 
-	prepareExecution(selected, nextMethod) {  // Called By Twin
+	prepareExecution(nextMethod) {  // Called By Twin
 		setTimeout(() => {
 			this._clearErrorMarker();
 			this._outputPane.innerHTML = '<div></div>';
-			const text = selected ? this._editor.selection() : this._editor.value();
+			const text = this._editor.value();
 			this._twinMessage(nextMethod, text);
 		}, 100);
 	}
@@ -521,7 +521,13 @@ class Study {
 		// Code Command
 
 		if (cmd === 'run') {
-			this._twinMessage('run');
+			this.prepareExecution('doRun');
+		} else if (cmd === 'runInFullScreen') {
+			this.prepareExecution('doRunInFullScreen');
+		} else if (cmd === 'stop') {
+			this._twinMessage('stop');
+		} else if (cmd === 'runWithoutWindow') {
+			this.prepareExecution('doRunWithoutWindow');
 		}
 
 		// View Command
