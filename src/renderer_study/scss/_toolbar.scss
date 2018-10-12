@@ -3,7 +3,7 @@
  * Toolbar Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-12
  *
  */
 
@@ -45,7 +45,7 @@
 	}
 	
 	.btn.disabled {
-		i { color: $L-LightGray; }
+		pointer-events: none;
 
 		&:hover,
 		&:active {
@@ -53,6 +53,7 @@
 			text-shadow: none;
 			i { color: $L-LightGray; }
 		}
+		i { color: $L-LightGray; }
 	}
 
 	.filler { flex: 1 1 auto; }
