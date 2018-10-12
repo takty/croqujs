@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-12
  *
  */
 
@@ -175,21 +175,15 @@ class Editor {
 
 		if (cs.fnLocs) {
 			ctx.fillStyle = 'rgba(255, 127, 0, 0.1)';
-			for (let i = 0; i < cs.fnLocs.length; i += 1) {
-				this._drawSyntaxRange(ctx, cs.fnLocs[i]);
-			}
+			for (let loc of cs.fnLocs) this._drawSyntaxRange(ctx, loc);
 		}
 		if (cs.ifLocs) {
 			ctx.fillStyle = 'rgba(0, 127, 0, 0.1)';
-			for (let i = 0; i < cs.ifLocs.length; i += 1) {
-				this._drawSyntaxRange(ctx, cs.ifLocs[i]);
-			}
+			for (let loc of cs.ifLocs) this._drawSyntaxRange(ctx, loc);
 		}
 		if (cs.forLocs) {
 			ctx.fillStyle = 'rgba(0, 127, 255, 0.1)';
-			for (let i = 0; i < cs.forLocs.length; i += 1) {
-				this._drawSyntaxRange(ctx, cs.forLocs[i]);
-			}
+			for (let loc of cs.forLocs) this._drawSyntaxRange(ctx, loc);
 		}
 	}
 

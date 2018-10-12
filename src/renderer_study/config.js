@@ -3,7 +3,7 @@
  * Config
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-12
  *
  */
 
@@ -29,9 +29,7 @@ class Config {
 	}
 
 	_notifyUpdate(conf) {
-		for (let i = 0; i < this._listeners.length; i += 1) {
-			this._listeners[i](conf);
-		}
+		for (let l of this._listeners) l(conf);
 	}
 
 	_getConf() {
