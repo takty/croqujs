@@ -145,7 +145,6 @@ class Study {
 			resizing = false;
 		};
 		const onHandleMove = (e) => {
-			console.log(e);
 			if (!pressed) return;
 			resizing = true;
 
