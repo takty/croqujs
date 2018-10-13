@@ -529,7 +529,7 @@ class Study {
 		// Help Command
 
 		if (cmd === 'showAbout') {
-			this.showAlert(this._res.about, 'info');
+			this.showAlert(this._res.about.join('\n'), 'info');
 		}
 
 	}

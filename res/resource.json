@@ -2,7 +2,6 @@
     "appTitle": "Croqujs",
     "fontSet": "Inconsolata, \"Hiragino Kaku Gothic ProN\", Meiryo, \"Yu Gothic\", YuGothic, monospace",
     "defaultExt": ".js",
-    "divH": 8,
     "jsHintOpt": {
         "bitwise": true,
         "curly": true,
@@ -24,5 +23,20 @@
         "space_before_conditional": true,
         "unescape_strings": true
     },
-    "about": "Croqujs\n/krō-ˈkē/\n\nby Takuto Yanagida @ Space-Time Inc.\nv2018-10-11\n\nPowered by:\n    - Acorn v5.7.3\n    - CodeMirror v5.40.2\n    - Electron v3.0.2\n    - Font Awesome v4.7.0\n    - js-beautify v1.8.6\n    - JSHint v2.9.6\n    - SweetAlert2 v7.28.4\n    - Tern v0.22.3\n    - Inconsolata-dz v001.010"
+    "about": ["Croqujs 5",
+        "/krō-ˈkē/",
+        "",
+        "by Takuto Yanagida @ Space-Time Inc.",
+        "v2018-10-13",
+        "",
+        "Powered by:",
+        "    - Acorn v5.7.3",
+        "    - CodeMirror v5.40.2",
+        "    - Electron v3.0.3",
+        "    - Font Awesome v4.7.0",
+        "    - js-beautify v1.8.6",
+        "    - JSHint v2.9.6",
+        "    - SweetAlert2 v7.28.4",
+        "    - Tern v0.22.3",
+        "    - Inconsolata-dz v001.010"]
 }
