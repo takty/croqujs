@@ -118,58 +118,63 @@ class Study {
 	}
 
 	_initWindowResizing(ed) {
-		const body   = document.querySelector('body');
 		const main   = document.querySelector('.main');
-		const tbar   = document.querySelector('.toolbar');
 		const editor = document.querySelector('#editor');
-		const div    = document.querySelector('#handle');
+		const handle = document.querySelector('#handle');
 		const sub    = document.querySelector('.sub');
 
-		const tbarH  = tbar.offsetHeight;
-		const divH   = this._res.divH;
+		const TH = document.querySelector('.toolbar').offsetHeight;
+		const HH = 8;
+		const MIN_MAIN_H = 100;
+		const MIN_SUB_H  = 32;
 
-		let mouseDown = false, resizing = false;
-		let subH = 100, py;
-
-		const setSubPaneHeight = (subH) => {
-			const h   = body.offsetHeight;
-			const edH = h - (tbarH + divH + subH);
-			editor.style.height = edH + 'px';
-			main.style.height   = (tbarH + edH) + 'px';
-			sub.style.height    = subH + 'px';
+		const setSubPaneHeight = (h) => {
+			const bh = document.body.offsetHeight;
+			editor.style.height = (bh - (TH + HH + h)) + 'px';
+			main.style.height   = (bh - (HH + h)) + 'px';
+			sub.style.height    = h + 'px';
 			ed.refresh();
 		};
-		const onMouseMoveDiv = (e) => {
-			if (!mouseDown) return;
-			const h = body.offsetHeight;
+
+		let pressed = false, resizing = false;
+		let lastSubH = 100, py;
+
+		const onHandleDown = (e) => {
+			py = e.pageY - handle.offsetTop;
+			pressed = true;
+			resizing = false;
+		};
+		const onHandleMove = (e) => {
+			console.log(e);
+			if (!pressed) return;
+			resizing = true;
+
+			const bh = document.body.offsetHeight;
 			const mainH = e.pageY - py;
 
-			let subH = h - (mainH + divH);
-			if (mainH - tbarH < 100) subH = h - (tbarH + 100 + divH);
-			if (subH < 32) subH = 0;
+			let subH = bh - (mainH + HH);
+			if (mainH - TH < MIN_MAIN_H) subH = bh - (TH + MIN_MAIN_H + HH);
+			if (subH < MIN_SUB_H) subH = 0;
 			setSubPaneHeight(subH);
-			resizing = true;
 			e.preventDefault();
 		};
-		const onMouseUpDiv = (e) => {
-			if (!mouseDown) return;
-			mouseDown = false;
-			if (sub.offsetHeight > 32) subH = sub.offsetHeight;
+		const onHandleUp = (e) => {
+			if (!pressed) return;
+			pressed = false;
+			if (MIN_SUB_H < sub.offsetHeight) lastSubH = sub.offsetHeight;
 			e.preventDefault();
 		};
-		div.addEventListener('mousedown', (e) => {
-			py = e.pageY - div.offsetTop;
-			mouseDown = true;
-			resizing = false;
+		handle.addEventListener('mousedown', onHandleDown);
+		handle.addEventListener('mousemove', onHandleMove);
+		handle.addEventListener('mouseup', onHandleUp);
+		handle.addEventListener('click', () => {
+			if (!resizing) setSubPaneHeight(sub.offsetHeight === 0 ? lastSubH : 0);
 		});
-		div.addEventListener('mousemove', onMouseMoveDiv);
-		div.addEventListener('mouseup', onMouseUpDiv);
-		div.addEventListener('click', () => { if (!resizing) setSubPaneHeight(sub.offsetHeight === 0 ? subH : 0); });
-
-		document.body.addEventListener('mousemove', onMouseMoveDiv);
-		document.body.addEventListener('mouseup', onMouseUpDiv);
-		document.body.addEventListener('mouseenter', (e) => { if (mouseDown && !e.buttons) mouseDown = false; });
-
+		document.body.addEventListener('mousemove', onHandleMove);
+		document.body.addEventListener('mouseup', onHandleUp);
+		document.body.addEventListener('mouseenter', (e) => {
+			if (pressed && !e.buttons) pressed = false;
+		});
 		window.addEventListener('resize', () => { setSubPaneHeight(sub.offsetHeight); });
 		setSubPaneHeight(sub.offsetHeight);
 	}

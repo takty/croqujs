@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-13
  *
  */
 
@@ -60,10 +60,6 @@ html, body {
 // Main Splitter ---------------------------------------------------------------
 
 
-.splitter {
-	height: 100%;
-}
-
 #handle {
 	cursor: row-resize;
 	height: 8px;
@@ -83,7 +79,7 @@ html, body {
 
 
 .sub {
-	overflow: scroll;
+	overflow-y: scroll;
 	height: 0;
 	font-family: Inconsolata, 'Hiragino Kaku Gothic ProN', Meiryo, 'Yu Gothic', YuGothic, monospace;
 	
