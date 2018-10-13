@@ -34,7 +34,6 @@ class Study {
 		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
 
 		this._errorMarker = null;
-		this._outputPane = document.getElementById('output-pane');
 		window.onkeydown = (e) => {
 			if (this._editor._comp.hasFocus()) return;
 			if (e.ctrlKey && e.keyCode == 'A'.charCodeAt(0)) {
@@ -42,19 +41,19 @@ class Study {
 				return false;
 			}
 		}
-		this._msgsCache = [];
 
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
 		this._config.addEventListener((conf) => this.configUpdated(conf));
 		this._lang = this._config.getItem('language');
 		if (!this._lang) this._lang = 'ja';
-
 		this._res = ipcRenderer.sendSync('getResource', this._lang);
+
 		this._initEditor();
 
-		this._toolbar   = new Toolbar(this, this._res);
-		this._sideMenu  = new SideMenu(this, this._res);
-		this._dialogBox = new DialogBox(this, this._res);
+		this._toolbar    = new Toolbar(this, this._res);
+		this._sideMenu   = new SideMenu(this, this._res);
+		this._dialogBox  = new DialogBox(this, this._res);
+		this._outputPane = new OutputPane();
 
 		this._initWindowResizing(this._editor);
 
@@ -262,8 +261,7 @@ class Study {
 		this._editor.enabled(true);
 
 		this._clearErrorMarker();
-		this._outputPane.innerHTML = '<div></div>';
-		this._outputPaneEnabled(false);
+		this._outputPane.initialize();
 	}
 
 	setDocumentFilePath(filePath, name, readOnly) {  // Called By Twin
@@ -283,47 +281,8 @@ class Study {
 		}
 	}
 
-	_outputPaneEnabled(flag) {
-		const pane = this._outputPane;
-		if ((flag && pane.offsetHeight === 0) || (!flag && pane.offsetHeight > 0)) {
-			const ev = document.createEvent('HTMLEvents');
-			ev.initEvent('click', true, false);
-			const r = document.querySelector('#handle');
-			r.dispatchEvent(ev);
-		}
-		if (flag) setTimeout(() => { pane.scrollTop = pane.scrollHeight }, 100);
-	}
-
 	addConsoleOutput(msgs) {  // Called By Twin
-		this._msgsCache = this._msgsCache.concat(msgs);
-		const fn = () => {
-			this._onOutputTimeout = null;
-			this._outputs(this._msgsCache.splice(0, 100));
-			if (this._msgsCache.length) {
-				this._onOutputTimeout = setTimeout(fn, 100);
-			}
-		};
-		if (!this._onOutputTimeout) setTimeout(fn, 100);
-	}
-
-	_outputs(msgs) {
-		const pane = this._outputPane;
-		const inner = this._cloneOutputPaneLines(MAX_CONSOLE_OUTPUT_SIZE - msgs.length);
-
-		for (let m of msgs) {
-			let elm = document.createElement('div');
-			elm.className = m.type;
-			const count = (m.count > 1) ? ('<span class="count">' + m.count + '</span>') : '';
-			elm.innerHTML = count + m.msg;
-			inner.appendChild(elm);
-		}
-		pane.replaceChild(inner, pane.firstChild);
-
-		if (this._outputPaneEnabledTimeout) clearTimeout(this._outputPaneEnabledTimeout);
-		this._outputPaneEnabledTimeout = setTimeout(() => {
-			this._outputPaneEnabled(true);
-			this._outputPaneEnabledTimeout = null;
-		}, 200);
+		this._outputPane.addConsoleOutput(msgs);
 	}
 
 	addErrorMessage(info) {  // Called By Twin
@@ -341,47 +300,19 @@ class Study {
 				msg = msg.replace('%lineno%', info.line);
 			}
 		}
-		const elm = this._outputErrorMessage(msg, 'err');
 		if (info.isUserCode) {
 			const doc = this._editor.getComponent().getDoc();
-			doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
+			const jump = () => {
+				doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
+				this._editor.getComponent().focus();
+			};
+			this._outputPane.setErrorMessage(msg, 'err', jump);
 			this._clearErrorMarker();
 			this._errorMarker = doc.addLineClass(info.line - 1, 'wrap', 'error-line');
-			this._makeErrorMessageClickable(elm, info);
-		}
-	}
-
-	_outputErrorMessage(msg, className) {
-		const pane = this._outputPane;
-		const inner = this._cloneOutputPaneLines(MAX_CONSOLE_OUTPUT_SIZE - 1);
-		pane.replaceChild(inner, pane.firstChild);
-
-		const elm = document.createElement('div');
-		elm.className = className;
-		if (msg.indexOf('<') === -1) {
-			elm.appendChild(document.createTextNode(msg));
+			jump();
 		} else {
-			elm.innerHTML = msg;
+			this._outputPane.setErrorMessage(msg, 'err');
 		}
-		pane.firstChild.appendChild(elm);
-
-		this._outputPaneEnabled(true);
-		return elm;
-	}
-
-	_makeErrorMessageClickable(elm, info) {
-		elm.addEventListener('click', () => {
-			doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
-			this._editor.getComponent().focus();
-		});
-		elm.style.cursor = 'pointer';
-	}
-
-	_cloneOutputPaneLines(keptCount) {
-		const inner = this._outputPane.firstChild.cloneNode(true);
-		const size = inner.hasChildNodes() ? inner.childNodes.length : 0;
-		for (let i = 0, I = Math.min(size, size - keptCount); i < I; i += 1) inner.removeChild(inner.firstChild);
-		return inner;
 	}
 
 
@@ -480,7 +411,7 @@ class Study {
 	_prepareExecution(nextMethod) {
 		setTimeout(() => {
 			this._clearErrorMarker();
-			this._outputPane.innerHTML = '<div></div>';
+			this._outputPane.initialize();
 			this._twinMessage(nextMethod, this._editor.value());
 		}, 100);
 	}
@@ -588,7 +519,7 @@ class Study {
 		} else if (cmd === 'toggleFunctionLineNumber') {
 			conf.setItem('functionLineNumber', !conf.getItem('functionLineNumber'));
 		} else if (cmd === 'toggleOutputPane') {
-			this._outputPaneEnabled(this._outputPane.offsetHeight === 0);
+			this._outputPane.toggle();
 		}
 
 		// Help Command
