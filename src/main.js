@@ -67,7 +67,6 @@ class Main {
 	}
 
 	_createNewWindow() {
-		if (this._focusedTwin && !this._focusedTwin._isEnabled) return;
 		if (this._twins.length === 0) {
 			new Twin(this, this._res, this._conf);
 		} else {
@@ -135,11 +134,7 @@ class Main {
 	}
 
 	_createTwinCaller(method) {
-		return () => { if (this._focusedTwin._isEnabled) this._focusedTwin[method](); }
-	}
-
-	_createCommand(cmd) {
-		return () => { if (this._focusedTwin._isEnabled) this._focusedTwin.callStudyMethod('executeCommand', cmd); }
+		return () => { this._focusedTwin[method](); }
 	}
 
 

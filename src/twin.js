@@ -42,8 +42,6 @@ class Twin {
 		this._isModified = false;
 
 		this._backup = new Backup();
-		this._isEnabled = true;
-
 		this._exporter = new Exporter();
 		this._tempDirs = [];
 		this._codeCache = '';
@@ -138,10 +136,6 @@ class Twin {
 
 	// -------------------------------------------------------------------------
 
-
-	onStudyEnabled(flag) {
-		this._isEnabled = flag;
-	}
 
 	onStudyModified() {
 		this._isModified = true;

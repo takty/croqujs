@@ -43,7 +43,7 @@ class Study {
 		}
 
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
-		this._config.addEventListener((conf) => this.configUpdated(conf));
+		this._config.addEventListener((conf) => this._configUpdated(conf));
 		this._lang = this._config.getItem('language');
 		if (!this._lang) this._lang = 'ja';
 		this._res = ipcRenderer.sendSync('getResource', this._lang);
@@ -204,7 +204,7 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	configUpdated(conf) {
+	_configUpdated(conf) {
 		this._lang = conf.language;
 
 		this._editor.lineWrapping(conf.softWrap);
@@ -238,10 +238,6 @@ class Study {
 		}
 		this._toolbar.reflectState(state);
 		this._sideMenu.reflectState(state);
-	}
-
-	onEditorEnabled(flag) {
-		this._twinMessage('onStudyEnabled', flag);
 	}
 
 	onEditorClipboardChanged() {

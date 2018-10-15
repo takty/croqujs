@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-12
+ * @version 2018-10-15
  *
  */
 
@@ -435,7 +435,6 @@ class Editor {
 		this._isEnabled = flag;
 		this._comp.setOption('readOnly', flag ? this._isReadOnly : 'nocursor');
 		if (flag) this._comp.focus();
-		this._owner.onEditorEnabled(flag);
 	}
 
 	readOnly(flag) {
