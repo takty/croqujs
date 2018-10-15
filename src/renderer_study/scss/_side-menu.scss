@@ -3,7 +3,7 @@
  * Side Menu Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-15
  *
  */
 
@@ -18,7 +18,7 @@ $menu-padding-v: 10px;
 	left: 0;
 	bottom: 0;
 	z-index: 9999;
-	
+
 	background-color: $color-window;
 	box-shadow: 0 2px 2px rgba(#000, 0.15), 2px 2px 2px rgba(#000, 0.25);
 
@@ -49,18 +49,38 @@ $menu-padding-v: 10px;
 	.caption {
 		padding: $menu-padding-v 16px;
 		font-weight: bold;
-	}	
+	}
 	.menu + .caption { margin-top: 12px; }
 	.menu {
 		.mi {
-			padding: $menu-padding-v 48px;
+			padding: $menu-padding-v 16px $menu-padding-v 48px;
 			min-width: 160px;
 			&:hover { background-color: $L-LightGray; }
+
+			display: flex;
+			align-items: center;
+			> span {  // Accelerator Keys
+				margin-left: 32px;
+				flex-grow: 1;
+				text-align: right;
+				font-size: 12px;
+				color: $L-Gray;
+			}
+
+			position: relative;
+			> i {  // Icon
+				position: absolute;
+				display: inline-block;
+				margin-left: -28px;
+				color: $L-DarkGray;
+				top: 50%;
+				transform: translateY(-50%);
+			}
 		}
 		.menu-sub {
-			padding: 0 48px;
+			padding: 0 16px 0 48px;
 			display: flex;
-	
+
 			> span {
 				padding: $menu-padding-v 16px $menu-padding-v 0;
 				flex-grow: 1;
@@ -69,14 +89,22 @@ $menu-padding-v: 10px;
 				font-weight: bold;
 			}
 			> ul {
+				margin-right: -10px;
 				display: inline-flex;
 				color: $L-DarkGray;
-		
+
 				> li {
 					padding: $menu-padding-v 10px;
-					max-width: 18px;
 					min-width: 18px;
 					&:hover { background-color: $L-LightGray; }
+				}
+
+				> li.icon {
+					max-width: 18px;
+				}
+
+				.checked {
+					background-color: $L-LightGray;
 				}
 			}
 		}
@@ -88,7 +116,7 @@ $menu-padding-v: 10px;
 		.separator.icon {
 			width: 12px;
 		}
-		[data-cmd].checked {
+		> [data-cmd].checked {
 			position: relative;
 			&::before {
 				content: '\f00c';

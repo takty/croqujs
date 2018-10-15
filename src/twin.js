@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-15
  *
  */
 
@@ -145,13 +145,13 @@ class Twin {
 
 	onStudyModified(historySize) {
 		this._isModified = true;
-		this._updateUiState(null, historySize);
+		// this._updateUiState(null, historySize);
 		this._updateWindowTitle();
 	}
 
-	onStudyConfigModified(conf) {
-		this._updateUiState(conf, null);
-	}
+	// onStudyConfigModified(conf) {
+	// 	this._updateUiState(conf, null);
+	// }
 
 	onStudyRequestPageCapture(ev, bcr) {
 		if (this._studyWin === null) return;  // When window is closed while capturing
@@ -200,21 +200,21 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	_updateUiState(conf, historySize) {
-		const state = {
-			isFileOpened: this._filePath !== null,
-		};
-		if (historySize) {
-			state.canUndo = historySize.undo > 0;
-			state.canRedo = historySize.redo > 0;
-		}
-		if (conf) {
-			state.softWrap           = conf.softWrap;
-			state.functionLineNumber = conf.functionLineNumber;
-			state.language           = conf.language;
-		}
-		this._main.updateMenuItems(state, this._nav);
-	}
+	// _updateUiState(conf, historySize) {
+	// 	const state = {
+	// 		isFileOpened: this._filePath !== null,
+	// 	};
+	// 	if (historySize) {
+	// 		state.canUndo = historySize.undo > 0;
+	// 		state.canRedo = historySize.redo > 0;
+	// 	}
+	// 	if (conf) {
+	// 		state.softWrap           = conf.softWrap;
+	// 		state.functionLineNumber = conf.functionLineNumber;
+	// 		state.language           = conf.language;
+	// 	}
+	// 	this._main.updateMenuItems(state, this._nav);
+	// }
 
 	_updateWindowTitle() {
 		const prefix = (this._isModified ? '* ' : '') + (this._isReadOnly ? `(${this._res.readOnly}) ` : '');
@@ -250,7 +250,7 @@ class Twin {
 		this._isModified = false;
 		this._backup.setFilePath(filePath);
 
-		this._updateUiState(null, { undo: 0, redo: 0 });
+		// this._updateUiState(null, { undo: 0, redo: 0 });
 		this._updateWindowTitle();
 		this.stop();
 	}
@@ -339,7 +339,7 @@ class Twin {
 			this.callStudyMethod('setDocumentFilePath', this._filePath, name, false);
 
 			this._isModified = false;
-			this._updateUiState();
+			// this._updateUiState();
 			this._updateWindowTitle();
 		} catch (e) {
 			this._outputError(e, this._filePath);

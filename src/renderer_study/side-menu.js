@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-15
  *
  */
 
@@ -14,8 +14,11 @@
 class SideMenu {
 
 	constructor(study, res) {
+		this.IS_MAC = navigator.platform.toLowerCase().indexOf('mac') !== -1;
+
 		this._study = study;
 		this._res   = res;
+		this._accs  = {}
 
 		this._elm = document.querySelector('.side-menu');
 		this._elm.style.display = 'none';
@@ -41,18 +44,67 @@ class SideMenu {
 		const mis = this._elm.querySelectorAll('*[data-cmd]');
 		for (let i = 0; i < mis.length; i += 1) {
 			this._setItem(mis[i]);
+			this._addAccelerator(mis[i]);
 		}
+		this._setShortcuts();
 	}
 
 	_setItem(mi) {
 		const cmd = mi.dataset.cmd;
 		const str = this._res.menu[cmd];
-		if (str !== undefined && !mi.classList.contains('icon')) mi.innerText = str;
+		if (str !== undefined) {
+			if (mi.classList.contains('icon')) {
+				mi.title = str;
+			} else {
+				const tn = document.createTextNode(str);
+				mi.appendChild(tn);
+			}
+		}
 		const doClose = !mi.classList.contains('stay');
 		mi.addEventListener('mouseup', (e) => {
 			e.preventDefault();
 			this._study.executeCommand(cmd, doClose);
 		});
+	}
+
+	_addAccelerator(mi) {
+		const acc = mi.dataset.acc;
+		if (!acc) return;
+
+		const cmd = mi.dataset.cmd;
+		const doClose = !mi.classList.contains('stay');
+
+		for (let ac of acc.toLowerCase().split(' ')) {
+			const key = ac.split('+').sort().join('+');
+			this._accs[key] = () => { this._study.executeCommand(cmd, doClose); }
+		}
+		let ac = acc.replace(/ /g, ', ');
+		ac = ac.replace(/CC/g, this.IS_MAC ? '⌘' : 'Ctrl');
+		if (mi.classList.contains('icon')) {
+			mi.title += (mi.title ? ' ' : '') + ac;
+		} else {
+			const se = document.createElement('span');
+			mi.appendChild(se);
+			se.innerText = ac;
+		}
+	}
+
+	_setShortcuts() {
+		window.addEventListener('keydown', (e) => {
+			const pks = [];
+			if (e.altKey) pks.push('alt');
+			if ((this.IS_MAC && e.metaKey) || (!this.IS_MAC && e.ctrlKey)) pks.push('cc');
+			if (e.shiftKey) pks.push('shift');
+			pks.push(this._convertKey(e.key));
+			const ac = pks.sort().join('+');
+			if (this._accs[ac]) this._accs[ac]();
+		});
+	}
+
+	_convertKey(key) {
+		key = key.toLowerCase();
+		if (key === '+') key = 'plus';
+		return key;
 	}
 
 	_setEnabled(cmd, flag) {
@@ -94,8 +146,8 @@ class SideMenu {
 	reflectState(state) {
 		this._setEnabled('undo', state.canUndo);
 		this._setEnabled('redo', state.canRedo);
-		this._setEnabled('exportAsLibrary', state.isFileOpend);
-		this._setEnabled('exportAsWebPage', state.isFileOpend);
+		this._setEnabled('exportAsLibrary', state.isFileOpened);
+		this._setEnabled('exportAsWebPage', state.isFileOpened);
 	}
 
 	reflectConfig(conf) {

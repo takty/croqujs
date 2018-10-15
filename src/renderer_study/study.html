@@ -53,7 +53,6 @@
 	<script src="config.js"></script>
 	<script src="output-pane.js"></script>
 	<script src="study.js"></script>
-
 </head>
 <body>
 	<div id="splitter">
@@ -80,51 +79,52 @@
 		<div class="container">
 			<div class="caption" data-res="file"></div>
 			<ul class="menu">
-				<li class="mi" data-cmd="new"></li>
-				<li class="mi" data-cmd="open"></li>
-				<li class="mi" data-cmd="save"></li>
-				<li class="mi" data-cmd="saveAs"></li>
-				<li class="mi" data-cmd="close"></li>
+				<li class="mi" data-cmd="new" data-acc="CC+N"></li>
+				<li class="mi" data-cmd="open" data-acc="CC+O"></li>
+				<li class="mi" data-cmd="save" data-acc="CC+S"><i class="fa fa-download fa-lg"></i></li>
+				<li class="mi" data-cmd="saveAs" data-acc="CC+Shift+S"></li>
 				<li class="separator"></li>
-				<li class="mi" data-cmd="exportAsLibrary"></li>
-				<li class="mi" data-cmd="exportAsWebPage"></li>
+				<li class="menu-sub"><span data-res="export"></span><ul>
+					<li class="icon" data-cmd="exportAsLibrary"><i class="fa fa-book fa-lg"></i></li>
+					<li class="icon" data-cmd="exportAsWebPage"><i class="fa fa-file fa-lg"></i></li>
+				</ul></li>
 			</ul>
 			<div class="caption" data-res="edit"></div>
 			<ul class="menu">
 				<li class="menu-sub"><span></span><ul>
-					<li class="icon" data-cmd="undo"><i class="fa fa-undo fa-lg"></i></li>
-					<li class="icon" data-cmd="redo"><i class="fa fa-undo fa-lg fa-flip-horizontal"></i></li>
+					<li class="icon" data-cmd="undo" data-acc="CC+Z"><i class="fa fa-undo fa-lg"></i></li>
+					<li class="icon" data-cmd="redo" data-acc="CC+Shift+Z"><i class="fa fa-undo fa-lg fa-flip-horizontal"></i></li>
 				</ul></li>
 				<li class="menu-sub"><span data-res="edit"></span><ul>
-					<li class="icon" data-cmd="cut"><i class="fa fa-cut fa-lg"></i></li>
-					<li class="icon" data-cmd="copy"><i class="fa fa-copy fa-lg"></i></li>
-					<li class="icon" data-cmd="paste"><i class="fa fa-paste fa-lg"></i></li>
+					<li class="icon" data-cmd="cut" data-acc="CC+X"><i class="fa fa-cut fa-lg"></i></li>
+					<li class="icon" data-cmd="copy" data-acc="CC+C"><i class="fa fa-copy fa-lg"></i></li>
+					<li class="icon" data-cmd="paste" data-acc="CC+V"><i class="fa fa-paste fa-lg"></i></li>
 				</ul></li>
-				<li class="mi" data-cmd="selectAll"></li>
+				<li class="mi" data-cmd="selectAll" data-acc="CC+A"></li>
 				<li class="separator"></li>
-				<li class="mi" data-cmd="toggleComment"></li>
-				<li class="mi" data-cmd="format"></li>
+				<li class="mi" data-cmd="toggleComment" data-acc="CC+/"></li>
+				<li class="mi" data-cmd="format" data-acc="CC+B"></li>
 				<li class="separator"></li>
-				<li class="mi" data-cmd="find"></li>
-				<li class="mi" data-cmd="findNext"></li>
-				<li class="mi" data-cmd="replace"></li>
+				<li class="mi" data-cmd="find" data-acc="CC+F"></li>
+				<li class="mi" data-cmd="findNext" data-acc="CC+G F3"></li>
+				<li class="mi" data-cmd="replace" data-acc="CC+H"></li>
 				<li class="separator"></li>
 				<li class="mi" data-cmd="copyAsImage"></li>
 			</ul>
 			<div class="caption" data-res="code"></div>
 			<ul class="menu">
-				<li class="mi" data-cmd="run"></li>
-				<li class="mi" data-cmd="runInFullScreen"></li>
-				<li class="mi" data-cmd="stop"></li>
+				<li class="mi" data-cmd="run" data-acc="CC+R"><i class="fa fa-play fa-lg"></i></li>
+				<li class="mi" data-cmd="runInFullScreen" data-acc="CC+Alt+R"></li>
+				<li class="mi" data-cmd="stop" data-acc="CC+T"></li>
 				<li class="separator"></li>
-				<li class="mi" data-cmd="runWithoutWindow"></li>
+				<li class="mi" data-cmd="runWithoutWindow" data-acc="CC+Shift+R"></li>
 			</ul>
 			<div class="caption" data-res="view"></div>
 			<ul class="menu">
 				<li class="menu-sub"><span data-res="font"></span><ul>
-					<li class="icon stay" data-cmd="fontSizeMinus"><i class="fa fa-minus-circle fa-lg"></i></li>
-					<li class="icon stay" data-cmd="fontSizeReset"><i class="fa fa-circle-thin fa-lg"></i></li>
-					<li class="icon stay" data-cmd="fontSizePlus"><i class="fa fa-plus-circle fa-lg"></i></li>
+					<li class="icon stay" data-cmd="fontSizeMinus" data-acc="CC+-"><i class="fa fa-minus-circle fa-lg"></i></li>
+					<li class="icon stay" data-cmd="fontSizeReset" data-acc="CC+0"><i class="fa fa-circle-thin fa-lg"></i></li>
+					<li class="icon stay" data-cmd="fontSizePlus" data-acc="CC+Plus CC+= CC+;"><i class="fa fa-plus-circle fa-lg"></i></li>
 				</ul></li>
 				<li class="menu-sub"><span data-res="lineHeight"></span><ul>
 					<li class="icon stay" data-cmd="lineHeightMinus"><i class="fa fa-minus-circle fa-lg"></i></li>
@@ -134,14 +134,16 @@
 				<li class="mi" data-cmd="toggleSoftWrap"></li>
 				<li class="separator"></li>
 				<li class="mi" data-cmd="toggleFunctionLineNumber"></li>
-				<li class="mi" data-cmd="toggleOutputPane"></li>
+				<li class="mi" data-cmd="toggleOutputPane" data-acc="CC+L"></li>
 				<li class="separator"></li>
-				<li class="mi" data-cmd="setLanguageJa"></li>
-				<li class="mi" data-cmd="setLanguageEn"></li>
+				<li class="menu-sub"><span data-res="language"></span><ul>
+					<li class="" data-cmd="setLanguageJa"></li>
+					<li class="" data-cmd="setLanguageEn"></li>
+				</ul></li>
 			</ul>
 			<div class="caption" data-res="about"></div>
 			<ul class="menu">
-				<li class="mi" data-cmd="showAbout">Version 2018-10-13</li>
+				<li class="mi" data-cmd="showAbout">Version 2018-10-15</li>
 			</ul>
 		</div>
 	</div>

@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-13
+ * @version 2018-10-15
  *
  */
 
@@ -222,7 +222,7 @@ class Study {
 		this._editor.refresh();
 		this._sideMenu.reflectConfig(conf);
 
-		setTimeout(() => { this._twinMessage('onStudyConfigModified', conf); }, 100);
+		// setTimeout(() => { this._twinMessage('onStudyConfigModified', conf); }, 100);
 	}
 
 	reflectClipboardState(text) {  // Called By Main
@@ -517,7 +517,7 @@ class Study {
 			conf.setItem('lineHeight', lh);
 		} else if (cmd === 'lineHeightReset') {
 			conf.setItem('lineHeight', 165);
-	
+
 		} else if (cmd === 'toggleSoftWrap') {
 			conf.setItem('softWrap', !conf.getItem('softWrap'));
 		} else if (cmd === 'toggleFunctionLineNumber') {
