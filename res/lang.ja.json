@@ -42,8 +42,7 @@
             "language": "言語",
                 "setLanguageJa": "日本語",
                 "setLanguageEn": "英語",
-        "help": "ヘルプ",
-            "about": "バージョン情報"
+        "about": "バージョン情報"
     },
     "msg": {
         "confirmNew": "プログラムが保存されていません。<br>本当に新規作成しますか？",
@@ -59,15 +58,6 @@
         "cannotImport": "ファイル「%s」をインポートできませんでした。",
         "copyingAsImage": "画像としてコピー中...",
         "copiedAsImage": "画像としてコピーしました。"
-    },
-    "tooltip": {
-        "save": "保存",
-        "exportAsLibrary": "ライブラリとしてエクスポート",
-        "undo": "元に戻す",
-        "copy": "コピー",
-        "paste": "貼り付け",
-        "tileWin": "ウィンドウを左右に並べる",
-        "run": "実行"
     },
     "btn": {
         "cancel": "キャンセル"

@@ -3,7 +3,7 @@
  * Toolbar
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-11
+ * @version 2018-10-15
  *
  */
 
@@ -29,7 +29,7 @@ class Toolbar {
 
 	_setBtn(btn) {
 		const cmd = btn.dataset.cmd;
-		btn.title = this._res.tooltip[cmd];
+		btn.title = this._res.menu[cmd];
 		btn.addEventListener('mousedown', (e) => { e.preventDefault(); });
 		btn.addEventListener('mouseup', (e) => {
 			e.preventDefault();
@@ -73,7 +73,7 @@ class Toolbar {
 
 	reflectClipboard(text) {
 		const btn = this._setEnabled('paste', text.length > 0);
-		btn.title = this._res.tooltip.paste + (text.length > 0 ? ('\n' + text) : '');
+		btn.title = this._res.menu.paste + (text.length > 0 ? ('\n' + text) : '');
 	}
 
 	reflectState(state) {

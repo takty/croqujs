@@ -42,8 +42,7 @@
             "language": "Language",
                 "setLanguageJa": "Japanese",
                 "setLanguageEn": "English",
-        "help": "Help",
-            "about": "About"
+        "about": "About"
     },
     "msg": {
         "confirmNew": "The code is not saved.<br>Are you sure you want to create a new code?",
@@ -59,15 +58,6 @@
         "cannotImport": "The file '%s' cannot be imported.",
         "copyingAsImage": "Copying as an image now...",
         "copiedAsImage": "Copied as an image."
-    },
-    "tooltip": {
-        "save": "Save",
-        "exportAsLibrary": "Export As Library",
-        "undo": "Undo",
-        "copy": "Copy",
-        "paste": "Paste",
-        "tileWin": "Tile Windows Horizontally",
-        "run": "Run"
     },
     "btn": {
         "cancel": "Cancel"
