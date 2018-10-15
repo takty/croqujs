@@ -26,14 +26,14 @@
     "acorn": "5.7.3",
     "codemirror": "^5.40.2",
     "font-awesome": "^4.7.0",
-    "js-beautify": "^1.8.6",
+    "js-beautify": "^1.8.7",
     "jshint": "^2.9.6",
     "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
-    "sweetalert2": "^7.28.4",
+    "sweetalert2": "^7.28.5",
     "tern": "^0.22.3"
   },
   "devDependencies": {
-    "electron": "^3.0.3",
+    "electron": "^3.0.4",
     "electron-packager": "^12.2.0",
     "fs-extra": "^7.0.0",
     "glob": "^7.1.3",
