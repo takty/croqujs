@@ -143,15 +143,13 @@ class Twin {
 		this._isEnabled = flag;
 	}
 
-	onStudyModified(historySize) {
+	onStudyModified() {
 		this._isModified = true;
-		// this._updateUiState(null, historySize);
-		this._updateWindowTitle();
 	}
 
-	// onStudyConfigModified(conf) {
-	// 	this._updateUiState(conf, null);
-	// }
+	onStudyTitleChanged(title) {
+		this._studyWin.setTitle(title);
+	}
 
 	onStudyRequestPageCapture(ev, bcr) {
 		if (this._studyWin === null) return;  // When window is closed while capturing
@@ -200,30 +198,6 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	// _updateUiState(conf, historySize) {
-	// 	const state = {
-	// 		isFileOpened: this._filePath !== null,
-	// 	};
-	// 	if (historySize) {
-	// 		state.canUndo = historySize.undo > 0;
-	// 		state.canRedo = historySize.redo > 0;
-	// 	}
-	// 	if (conf) {
-	// 		state.softWrap           = conf.softWrap;
-	// 		state.functionLineNumber = conf.functionLineNumber;
-	// 		state.language           = conf.language;
-	// 	}
-	// 	this._main.updateMenuItems(state, this._nav);
-	// }
-
-	_updateWindowTitle() {
-		const prefix = (this._isModified ? '* ' : '') + (this._isReadOnly ? `(${this._res.readOnly}) ` : '');
-		const fn = (this._filePath === null) ? this._res.untitled : PATH.basename(this._filePath);
-		const fp = (this._filePath === null) ? '' : (' — ' + PATH.dirname(this._filePath) + '');
-		const title = prefix + fn + fp + ' — ' + this._res.appTitle;
-		if (this._studyWin.getTitle() !== title) this._studyWin.setTitle(title);
-	}
-
 	_ensureWindowTop(win) {
 		win.setAlwaysOnTop(true);
 		win.setAlwaysOnTop(false);
@@ -242,16 +216,16 @@ class Twin {
 	_initializeDocument(text = '', filePath = null) {
 		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
 
-		const name = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
-		this.callStudyMethod('initializeDocument', text, filePath, name, readOnly);
+		const name     = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
+		const baseName = filePath ? PATH.basename(filePath) : '';
+		const dirName  = filePath ? PATH.dirname(filePath) : '';
+		this.callStudyMethod('initializeDocument', text, filePath, name, baseName, dirName, readOnly);
 
 		this._filePath   = filePath;
 		this._isReadOnly = readOnly;
 		this._isModified = false;
 		this._backup.setFilePath(filePath);
 
-		// this._updateUiState(null, { undo: 0, redo: 0 });
-		this._updateWindowTitle();
 		this.stop();
 	}
 
@@ -335,12 +309,12 @@ class Twin {
 		try {
 			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 
-			const name = PATH.basename(this._filePath, PATH.extname(this._filePath));
-			this.callStudyMethod('setDocumentFilePath', this._filePath, name, false);
+			const name     = PATH.basename(this._filePath, PATH.extname(this._filePath));
+			const baseName = PATH.basename(filePath);
+			const dirName  = PATH.dirname(filePath);
+			this.callStudyMethod('setDocumentFilePath', this._filePath, name, baseName, dirName, false);
 
 			this._isModified = false;
-			// this._updateUiState();
-			this._updateWindowTitle();
 		} catch (e) {
 			this._outputError(e, this._filePath);
 		}

@@ -77,6 +77,8 @@ class Study {
 
 		this._filePath    = null;
 		this._name        = null;
+		this._baseName    = null;
+		this._dirName     = null;
 		this._isReadOnly  = false;
 		this._isModified  = false;
 		this._historySize = { undo: 0, redo: 0 };
@@ -102,7 +104,7 @@ class Study {
 			if (this._editor.enabled()) {
 				this._isModified  = true;
 				this._historySize = this._editor._comp.getDoc().historySize();
-				this._twinMessage('onStudyModified', this._historySize );
+				this._twinMessage('onStudyModified');
 				this._reflectState();
 			}
 			analize();
@@ -221,8 +223,6 @@ class Study {
 		}
 		this._editor.refresh();
 		this._sideMenu.reflectConfig(conf);
-
-		// setTimeout(() => { this._twinMessage('onStudyConfigModified', conf); }, 100);
 	}
 
 	reflectClipboardState(text) {  // Called By Main
@@ -252,9 +252,11 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	initializeDocument(text, filePath, name, readOnly) {  // Called By Twin
+	initializeDocument(text, filePath, name, baseName, dirName, readOnly) {  // Called By Twin
 		this._filePath   = filePath;
 		this._name       = name;
+		this._baseName   = baseName;
+		this._dirName    = dirName;
 		this._isReadOnly = readOnly;
 		this._isModified = false;
 		this._reflectState();
@@ -266,16 +268,31 @@ class Study {
 
 		this._clearErrorMarker();
 		this._outputPane.initialize();
+		this._updateWindowTitle();
 	}
 
-	setDocumentFilePath(filePath, name, readOnly) {  // Called By Twin
+	setDocumentFilePath(filePath, name, baseName, dirName, readOnly) {  // Called By Twin
 		this._filePath   = filePath;
 		this._name       = name;
+		this._baseName   = baseName;
+		this._dirName    = dirName;
 		this._isReadOnly = readOnly;
 		this._isModified = false;
 		this._reflectState();
 
 		this._editor.readOnly(readOnly);
+		this._updateWindowTitle();
+	}
+
+	_updateWindowTitle() {
+		const prefix = (this._isModified ? '* ' : '') + (this._isReadOnly ? `(${this._res.readOnly}) ` : '');
+		const fn = (this._filePath === null) ? this._res.untitled : this._baseName;
+		const fp = (this._filePath === null) ? '' : (' — ' + this._dirName + '');
+		const title = prefix + fn + fp + ' — ' + this._res.appTitle;
+		if (window.title !== title) {
+			window.title = title;
+			this._twinMessage('onStudyTitleChanged', title);
+		}
 	}
 
 	_clearErrorMarker() {
