@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-15
+ * @version 2018-11-02
  *
  */
 
@@ -261,7 +261,7 @@ class Twin {
 
 	_openFile(filePath) {
 		FS.readFile(filePath, 'utf-8', (error, contents) => {
-			if (contents == null) {
+			if (contents === null) {
 				this._outputError('', filePath);
 				return;
 			}

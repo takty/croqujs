@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-15
+ * @version 2018-11-02
  *
  */
 
@@ -408,8 +408,8 @@ class Editor {
 
 	_typeToIcon(type) {
 		let suffix;
-		if (type == '?') suffix = 'unknown';
-		else if (type == 'number' || type == 'string' || type == 'bool') suffix = type;
+		if (type === '?') suffix = 'unknown';
+		else if (type === 'number' || type === 'string' || type === 'bool') suffix = type;
 		else if (/^fn\(/.test(type)) suffix = 'fn';
 		else if (/^\[/.test(type)) suffix = 'array';
 		else suffix = 'object';
@@ -462,7 +462,7 @@ class Editor {
 	}
 
 	rulerEnabled(flag) {
-		if (flag === undefined) return this._comp.getOption('rulers') != null;
+		if (flag === undefined) return this._comp.getOption('rulers') !== null;
 		if (flag) {
 			this._comp.setOption('rulers', [...Array(3).keys()].map(i => ({column: (i + 1) * 4, color: '#f6b0c5', lineStyle: 'dashed'})));
 		} else {

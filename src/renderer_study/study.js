@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-15
+ * @version 2018-11-02
  *
  */
 
@@ -36,7 +36,7 @@ class Study {
 		this._errorMarker = null;
 		window.onkeydown = (e) => {
 			if (this._editor._comp.hasFocus()) return;
-			if (e.ctrlKey && e.keyCode == 'A'.charCodeAt(0)) {
+			if (e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) {
 				e.preventDefault();
 				return false;
 			}
