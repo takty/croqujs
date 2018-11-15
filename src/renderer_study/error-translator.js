@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-04
+ * @version 2018-11-15
  *
  */
 
@@ -87,5 +87,3 @@ class ErrorTranslator {
 	}
 
 }
-
-module.exports = ErrorTranslator;
