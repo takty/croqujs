@@ -3,7 +3,7 @@
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-28
+ * @version 2018-11-20
  *
  */
 
@@ -15,7 +15,7 @@ importScripts('lib/acorn/acorn_loose.js');
 importScripts('lib/acorn/walk.js');
 
 
-self.addEventListener('message', function(e) {
+self.addEventListener('message', function (e) {
 	function walk(node, visitors, base, state, override) {
 		if (!base) {
 			base = acorn.walk.base;
