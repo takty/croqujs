@@ -97,7 +97,7 @@ class Study {
 			this._codeStructure = e.data;
 			this._editor.setCodeStructureData(this._codeStructure);
 		}, false);
-		const analize = createDelayFunction(() => { w.postMessage(ec.getValue()); }, 400);
+		const analyze = createDelayFunction(() => { w.postMessage(ec.getValue()); }, 400);
 
 		ec.on('change', () => {
 			this._clearErrorMarker();
@@ -107,7 +107,7 @@ class Study {
 				this._twinMessage('onStudyModified');
 				this._reflectState();
 			}
-			analize();
+			analyze();
 		});
 		ec.on('drop', (em, ev) => {
 			ev.preventDefault();
