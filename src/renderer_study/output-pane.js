@@ -3,12 +3,16 @@
  * Output Pane
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-13
+ * @version 2018-11-21
  *
  */
 
 
 'use strict';
+
+
+const MAX_SIZE = 100;
+const DELAY    = 100;
 
 
 class OutputPane {
@@ -20,6 +24,10 @@ class OutputPane {
 		this._msgsCache = [];
 		this._stOutput = null;
 		this._stEnabled = null;
+
+		const con = new Worker('console.js');
+		con.addEventListener('message', (e) => { this._addMessages(e.data); }, false);
+		this._console = (type, msgs = false) => { con.postMessage(JSON.stringify({ type, msgs })); };
 	}
 
 	initialize() {
@@ -31,19 +39,19 @@ class OutputPane {
 		this._setEnabled(this._elm.offsetHeight === 0);
 	}
 
-	addConsoleOutput(msgs) {
-		this._msgsCache = this._msgsCache.concat(msgs);
-		const fn = () => {
-			this._stOutput = null;
-			this._outputs(this._msgsCache.splice(0, 100));
-			if (this._msgsCache.length) {
-				this._stOutput = setTimeout(fn, 100);
-			}
-		};
-		if (!this._stOutput) setTimeout(fn, 100);
+	setMessageReceivable(flag) {
+		if (flag) {
+			this._console('on');
+		} else {
+			this._console('off');
+		}
 	}
 
-	setErrorMessage(msg, className, onClick) {
+	addOutput(msgs) {
+		this._console('output', msgs);
+	}
+
+	setError(msg, className, onClick) {
 		const e = document.createElement('div');
 		e.className = className;
 		if (msg.indexOf('<') === -1) {
@@ -55,10 +63,45 @@ class OutputPane {
 			e.addEventListener('click', onClick);
 			e.style.cursor = 'pointer';
 		}
-		const inner = this._cloneLines(MAX_CONSOLE_OUTPUT_SIZE - 1);
+		const inner = this._cloneLines(MAX_SIZE - 1);
 		this._elm.replaceChild(inner, this._elm.firstChild);
 		this._elm.firstChild.appendChild(e);
 		this._setEnabled(true);
+	}
+
+	_addMessages(msgs) {
+		msgs = this._compactMessages(msgs, this._msgsCache);
+		this._msgsCache = this._msgsCache.concat(msgs);
+		const fn = () => {
+			this._stOutput = null;
+			this._outputs(this._msgsCache.splice(0, MAX_SIZE));
+			if (this._msgsCache.length) {
+				this._stOutput = setTimeout(fn, DELAY);
+			}
+		};
+		if (!this._stOutput) setTimeout(fn, DELAY);
+	}
+
+	_compactMessages(msgs, cache) {
+		const nms = [];
+		let last = null;
+		for (let m of msgs) {
+			if (last && last.type === m.type && last.msg === m.msg) {
+				last.count += m.count;
+			} else {
+				nms.push(m);
+				last = m;
+			}
+		}
+		if (0 < cache.length && 0 < nms.length) {
+			const tail = cache[cache.length - 1];
+			const top = nms[0];
+			if (tail.type === top.type && tail.msg === top.msg) {
+				tail.count += top.count;
+				nms.shift();
+			}
+		}
+		return nms;
 	}
 
 	_setEnabled(flag) {
@@ -68,11 +111,11 @@ class OutputPane {
 			const r = document.querySelector('#handle');
 			r.dispatchEvent(ev);
 		}
-		if (flag) setTimeout(() => { this._elm.scrollTop = this._elm.scrollHeight }, 100);
+		if (flag) setTimeout(() => { this._elm.scrollTop = this._elm.scrollHeight }, DELAY);
 	}
 
 	_outputs(msgs) {
-		const inner = this._cloneLines(MAX_CONSOLE_OUTPUT_SIZE - msgs.length);
+		const inner = this._cloneLines(MAX_SIZE - msgs.length);
 
 		for (let m of msgs) {
 			const e = document.createElement('div');

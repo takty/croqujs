@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-02
+ * @version 2018-11-21
  *
  */
 
@@ -20,8 +20,6 @@ const Backup   = require('./lib/backup.js');
 const WinState = require('./lib/winstate.js');
 const Exporter = require('./exporter.js');
 
-const MAX_CONSOLE_OUTPUT_SIZE = 100;
-
 
 class Twin {
 
@@ -35,7 +33,6 @@ class Twin {
 
 		this._fieldWin         = null;
 		this._fieldWinBounds   = null;
-		this._fieldOutputCache = [];
 
 		this._filePath   = null;
 		this._isReadOnly = false;
@@ -155,36 +152,10 @@ class Twin {
 	onStudyCapturedImageCreated(dataUrl) {
 		const ni = nativeImage.createFromDataURL(dataUrl);
 		clipboard.writeImage(ni);
-		setTimeout(() => {
-			this.callStudyMethod('showAlert', this._res.msg.copiedAsImage, 'success');
-		}, 0);
+		setTimeout(() => { this.callStudyMethod('showAlert', this._res.msg.copiedAsImage, 'success'); }, 0);
 	}
 
-	onStudyRequestOutput(count) {
-		if (this._fieldOutputCache.length === 0) return;
-		const sub = this._fieldOutputCache.slice(Math.max(0, this._fieldOutputCache.length - count));
-		this._fieldOutputCache.length = 0;
-		this.callStudyMethod('addConsoleOutput', sub);
-	}
-
-	onFieldOutputOccurred(msgs) {
-		if (this._ignoreFieldOutputMessage) return;
-		if (MAX_CONSOLE_OUTPUT_SIZE < msgs.length) {
-			this._fieldOutputCache = msgs.slice(msgs.length - MAX_CONSOLE_OUTPUT_SIZE);
-		} else {
-			this._fieldOutputCache = this._fieldOutputCache.concat(msgs);
-		}
-	}
-
-	onFieldErrorOccurred(info) {
-		if (info.import) {
-			info.isUserCode = false;
-		} else {
-			info.isUserCode = (info.url === this._url);
-			if (info.isUserCode && info.line === 1) info.col -= this._exporter._userCodeOffset;
-			info.fileName = info.url ? info.url.replace(this._baseUrl, '') : '';
-		}
-		this.callStudyMethod('addErrorMessage', info);
+	onStudyErrorOccurred(info) {
 		this._backup.backupErrorLog(info, this._codeCache);
 	}
 
@@ -388,9 +359,6 @@ class Twin {
 	}
 
 	doRun(text) {
-		this._ignoreFieldOutputMessage = true;
-		this._fieldOutputCache.length = 0;
-
 		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
@@ -410,9 +378,6 @@ class Twin {
 	}
 
 	doRunWithoutWindow(text) {
-		this._ignoreFieldOutputMessage = true;
-		this._fieldOutputCache.length = 0;
-
 		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
@@ -427,9 +392,6 @@ class Twin {
 	}
 
 	doRunInFullScreen(text) {
-		this._ignoreFieldOutputMessage = true;
-		this._fieldOutputCache.length = 0;
-
 		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
@@ -453,11 +415,11 @@ class Twin {
 	_execute(codeStr) {
 		const ret = this._exporter.readLibrarySources(codeStr, this._filePath);
 		if (!Array.isArray(ret)) {
-			this.onFieldErrorOccurred({msg: ret, import: true});
+			const info = { msg: ret, import: true, isUserCode: false };
+			this._backup.backupErrorLog(info, this._codeCache);
+			this.callStudyMethod('addErrorMessage', info);
 			return;
 		}
-		this._ignoreFieldOutputMessage = false;
-
 		this._clearTempPath();
 		const expDir = this._getTempPath();
 		try {
@@ -466,7 +428,8 @@ class Twin {
 			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
 			this._url = 'file:///' + expPath.replace(/\\/g, '/');
 			this._baseUrl = 'file:///' + PATH.dirname(expPath).replace(/\\/g, '/') + '/';
-			this._callFieldMethod('openProgram', this._url + '#' + this._id);
+			const uco = this._exporter._userCodeOffset;
+			this._callFieldMethod('openProgram', this._url + '#' + this._id + ',' + uco);
 		} catch (e) {
 			this._outputError(e, expDir);
 		}

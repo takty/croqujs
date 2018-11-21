@@ -3,7 +3,7 @@
  * Field (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-05-29
+ * @version 2018-11-20
  *
  */
 
@@ -15,9 +15,10 @@ window.addEventListener('DOMContentLoaded', () => { new Field(); });
 
 
 class Field {
-	
+
 	constructor() {
-		this._id = window.location.hash.replace('#', '');
+		[this._id, ] = window.location.hash.replace('#', '').split(',');
+
 		this._container = document.createElement('div');
 		document.body.appendChild(this._container);
 

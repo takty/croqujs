@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-02
+ * @version 2018-11-21
  *
  */
 
@@ -12,8 +12,6 @@
 
 const electron = require('electron');
 const {ipcRenderer} = electron;
-
-const MAX_CONSOLE_OUTPUT_SIZE = 100;
 
 function createDelayFunction(fn, delay) {
 	let st = null;
@@ -58,16 +56,16 @@ class Study {
 		this._initWindowResizing(this._editor);
 
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
-		this._initOutputPoller();
 
 		window.addEventListener('storage', (e) => {
 			if ('study_' + this._id === e.key) {
 				window.localStorage.removeItem(e.key);
 				const ma = JSON.parse(e.newValue);
 				if (ma.message === 'error') {
-					this._twinMessage('onFieldErrorOccurred', ma.params);
+					this._twinMessage('onStudyErrorOccurred', ma.params);
+					this.addErrorMessage(ma.params);
 				} else if (ma.message === 'output') {
-					this._twinMessage('onFieldOutputOccurred', ma.params);
+					this._outputPane.addOutput(ma.params);
 				}
 			}
 		});
@@ -180,18 +178,6 @@ class Study {
 		setSubPaneHeight(sub.offsetHeight);
 	}
 
-	_initOutputPoller() {
-		let lastTime = window.performance.now();
-		const loop = (curTime) => {
-			if (200 < curTime - lastTime) {
-				this._twinMessage('onStudyRequestOutput', MAX_CONSOLE_OUTPUT_SIZE);
-				lastTime = curTime;
-			}
-			window.requestAnimationFrame(loop);
-		};
-		window.requestAnimationFrame(loop);
-	}
-
 	_twinMessage(msg, ...args) {
 		ipcRenderer.send('fromRenderer_' + this._id, msg, ...args);
 	}
@@ -298,10 +284,6 @@ class Study {
 		}
 	}
 
-	addConsoleOutput(msgs) {  // Called By Twin
-		this._outputPane.addConsoleOutput(msgs);
-	}
-
 	addErrorMessage(info) {  // Called By Twin
 		let msg;
 		if (info.import) {
@@ -323,12 +305,12 @@ class Study {
 				doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
 				this._editor.getComponent().focus();
 			};
-			this._outputPane.setErrorMessage(msg, 'err', jump);
+			this._outputPane.setError(msg, 'err', jump);
 			this._clearErrorMarker();
 			this._errorMarker = doc.addLineClass(info.line - 1, 'wrap', 'error-line');
 			jump();
 		} else {
-			this._outputPane.setErrorMessage(msg, 'err');
+			this._outputPane.setError(msg, 'err');
 		}
 	}
 
@@ -426,10 +408,13 @@ class Study {
 	}
 
 	_prepareExecution(nextMethod) {
+		this._outputPane.setMessageReceivable(false);
+
 		setTimeout(() => {
 			this._clearErrorMarker();
 			this._outputPane.initialize();
 			this._twinMessage(nextMethod, this._editor.value());
+			this._outputPane.setMessageReceivable(true);
 		}, 100);
 	}
 
