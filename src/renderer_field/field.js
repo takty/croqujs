@@ -35,10 +35,11 @@ class Field {
 
 		// const fses = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
 		// for (let fse of fses) {
+		// 	console.log(fse);
 		// 	document.addEventListener(fse, () => this.onWindowFullScreenChange(), false);
 		// }
 
-		// window.addEventListener('keydown', (e) => { if (e.which === 122) { this.setFullScreen(); } });
+		window.addEventListener('keydown', (e) => { if (e.which === 122) { this.toggleFullscreen(); e.preventDefault(); } });
 
 	}
 
@@ -58,20 +59,29 @@ class Field {
 		this._frame = null;
 	}
 
-	// setFullScreen(enabled) {
-	// 	if (enabled) {
-	// 		const rfs = ['requestFullscreen', 'webkitRequestFullscreen', 'mozRequestFullScreen', 'msRequestFullscreen'];
-	// 		for (let rf of rfs) {
-	// 			if (document.body[rf] !== undefined) document.body[rf]();
-	// 			// console.log(document.body.webkitRequestFullscreen);
-	// 		}
-	// 	} else {
-	// 		const rfs = ['exitFullscreen', 'webkitExitFullscreen', 'mozCancelFullScreen', 'msExitFullscreen'];
-	// 		for (let rf of rfs) {
-	// 			if (document.body[rf] !== undefined) document.body[rf]();
-	// 		}
-	// 	}
-	// }
+	toggleFullscreen() {
+		if (!this.isFullscreen()) {
+			const rfs = ['requestFullscreen', 'webkitRequestFullscreen', 'mozRequestFullScreen', 'msRequestFullscreen'];
+			for (let rf of rfs) {
+				if (document.body[rf] !== undefined) document.body[rf]();
+			}
+			this.onWindowFullscreenEntered();
+		} else {
+			const rfs = ['exitFullscreen', 'webkitExitFullscreen', 'mozCancelFullScreen', 'msExitFullscreen'];
+			for (let rf of rfs) {
+				if (document.body[rf] !== undefined) document.body[rf]();
+			}
+			this.onWindowFullscreenLeft();
+		}
+	}
+
+	isFullscreen() {
+		const fses = ['fullscreenElement', 'webkitCurrentFullScreenElement', 'mozFullScreenElement', 'msFullscreenElement'];
+		for (let fse of fses) {
+			if (document[fse] !== undefined) return false;
+		}
+		return true;
+	}
 
 	// onWindowFullScreenChange() {
 	// 	const fses = ['fullscreenElement', 'webkitCurrentFullScreenElement', 'mozFullScreenElement', 'msFullscreenElement'];
@@ -84,11 +94,13 @@ class Field {
 	// }
 
 	onWindowFullscreenEntered() {
+		console.log('onWindowFullscreenEntered');
 		if (!this._frame) return;
 		window.localStorage.setItem('injection_' + this._id, JSON.stringify({ message: 'window-fullscreen-entered' }));
 	}
 
 	onWindowFullscreenLeft() {
+		console.log('onWindowFullscreenLeft');
 		if (!this._frame) return;
 		window.localStorage.setItem('injection_' + this._id, JSON.stringify({ message: 'window-fullscreen-left' }));
 	}
