@@ -279,11 +279,8 @@ class Study {
 		}
 	}
 
-	_clearErrorMarker() {
-		if (this._errorMarker) {
-			this._editor.getComponent().getDoc().removeLineClass(this._errorMarker, 'wrap', 'error-line');
-			this._errorMarker = null;
-		}
+	openProgram(url) {
+		this._callFieldMethod('openProgram', url);
 	}
 
 	addErrorMessage(info) {  // Called By Twin
@@ -313,6 +310,13 @@ class Study {
 			jump();
 		} else {
 			this._outputPane.setError(msg, 'err');
+		}
+	}
+
+	_clearErrorMarker() {
+		if (this._errorMarker) {
+			this._editor.getComponent().getDoc().removeLineClass(this._errorMarker, 'wrap', 'error-line');
+			this._errorMarker = null;
 		}
 	}
 

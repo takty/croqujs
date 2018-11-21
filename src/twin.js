@@ -286,7 +286,8 @@ class Twin {
 	}
 
 	_outputError(e, dir) {
-		let err = e.toString(), i = err.indexOf("'");
+		let err = e.toString();
+		let i = err.indexOf("'");
 		if (i === -1) i = err.length;
 		err = err.substr(0, i).trim();
 		this.callStudyMethod('showAlert', this._res.msg.error + '\n' + dir + '\n' + err, 'error');
@@ -424,7 +425,7 @@ class Twin {
 			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
 			const baseUrl = 'file:///' + expPath.replace(/\\/g, '/');
 			const url = baseUrl + '#' + this._id + ',' + this._exporter._userCodeOffset;
-			this._callFieldMethod('openProgram', url);
+			this.callStudyMethod('openProgram', url);
 		} catch (e) {
 			this._outputError(e, expDir);
 		}
@@ -461,6 +462,7 @@ class Twin {
 
 	toggleFieldWinFullScreen() {
 		if (!this._fieldWin) return;
+		// this._callFieldMethod('setFullScreen', true);
 		this._fieldWin.setFullScreen(!this._fieldWin.isFullScreen());
 		if (this._fieldWin.isFullScreen()) this._ensureWindowTop(this._fieldWin);
 	}

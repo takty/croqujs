@@ -32,6 +32,14 @@ class Field {
 				this[ma.params.method](...ma.params.args);
 			}
 		});
+
+		// const fses = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
+		// for (let fse of fses) {
+		// 	document.addEventListener(fse, () => this.onWindowFullScreenChange(), false);
+		// }
+
+		// window.addEventListener('keydown', (e) => { if (e.which === 122) { this.setFullScreen(); } });
+
 	}
 
 	openProgram(url) {
@@ -49,6 +57,31 @@ class Field {
 		} catch (e) { }
 		this._frame = null;
 	}
+
+	// setFullScreen(enabled) {
+	// 	if (enabled) {
+	// 		const rfs = ['requestFullscreen', 'webkitRequestFullscreen', 'mozRequestFullScreen', 'msRequestFullscreen'];
+	// 		for (let rf of rfs) {
+	// 			if (document.body[rf] !== undefined) document.body[rf]();
+	// 			// console.log(document.body.webkitRequestFullscreen);
+	// 		}
+	// 	} else {
+	// 		const rfs = ['exitFullscreen', 'webkitExitFullscreen', 'mozCancelFullScreen', 'msExitFullscreen'];
+	// 		for (let rf of rfs) {
+	// 			if (document.body[rf] !== undefined) document.body[rf]();
+	// 		}
+	// 	}
+	// }
+
+	// onWindowFullScreenChange() {
+	// 	const fses = ['fullscreenElement', 'webkitCurrentFullScreenElement', 'mozFullScreenElement', 'msFullscreenElement'];
+	// 	for (let fse of fses) {
+	// 		if (document[fse] !== undefined) {
+	// 			console.log(document[fse]);
+	// 		}
+	// 	}
+	// 	console.log('onWindowFullScreenChange');
+	// }
 
 	onWindowFullscreenEntered() {
 		if (!this._frame) return;
