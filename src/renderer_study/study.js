@@ -69,9 +69,7 @@ class Study {
 				}
 			}
 		});
-		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => {
-			window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: {method: method, args: args} }));
-		});
+		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => { this._callFieldMethod(method, args); });
 
 		this._filePath    = null;
 		this._name        = null;
@@ -82,6 +80,10 @@ class Study {
 		this._historySize = { undo: 0, redo: 0 };
 
 		this._config.notify();
+	}
+
+	_callFieldMethod(method, ...args) {
+		window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
 	}
 
 	_initEditor() {
@@ -409,6 +411,7 @@ class Study {
 
 	_prepareExecution(nextMethod) {
 		this._outputPane.setMessageReceivable(false);
+		this._callFieldMethod('closeProgram');
 
 		setTimeout(() => {
 			this._clearErrorMarker();
@@ -488,6 +491,7 @@ class Study {
 		} else if (cmd === 'runInFullScreen') {
 			this._prepareExecution('doRunInFullScreen');
 		} else if (cmd === 'stop') {
+			this._callFieldMethod('closeProgram');
 			this._twinMessage('stop');
 		} else if (cmd === 'runWithoutWindow') {
 			this._prepareExecution('doRunWithoutWindow');

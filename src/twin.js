@@ -354,7 +354,6 @@ class Twin {
 
 	stop() {
 		if (!this._fieldWin) return;
-		this._callFieldMethod('closeProgram');
 		this._fieldWin.close();
 	}
 
@@ -370,7 +369,6 @@ class Twin {
 			});
 			this._fieldWin.once('show', () => {this._ensureWindowTop(this._studyWin);});
 		} else {
-			this._callFieldMethod('closeProgram');
 			if (!this._fieldWin.isVisible()) this._fieldWin.show();
 			this._ensureWindowsFocused(this._studyWin, this._fieldWin);
 			this._execute(text);
@@ -385,7 +383,6 @@ class Twin {
 			this._createFieldWindow();
 			this._fieldWin.once('ready-to-show', () => {this._execute(text);});
 		} else {
-			this._callFieldMethod('closeProgram');
 			this._fieldWin.hide();
 			this._execute(text);
 		}
@@ -404,7 +401,6 @@ class Twin {
 			});
 			this._fieldWin.once('show', () => {this._ensureWindowTop(this._fieldWin);});
 		} else {
-			this._callFieldMethod('closeProgram');
 			this._fieldWin.setFullScreen(true);
 			if (!this._fieldWin.isVisible()) this._fieldWin.show();
 			this._ensureWindowTop(this._fieldWin);
@@ -426,10 +422,9 @@ class Twin {
 			this._rmdirSync(expDir);
 			FS.mkdirSync(expDir);
 			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
-			this._url = 'file:///' + expPath.replace(/\\/g, '/');
-			this._baseUrl = 'file:///' + PATH.dirname(expPath).replace(/\\/g, '/') + '/';
-			const uco = this._exporter._userCodeOffset;
-			this._callFieldMethod('openProgram', this._url + '#' + this._id + ',' + uco);
+			const baseUrl = 'file:///' + expPath.replace(/\\/g, '/');
+			const url = baseUrl + '#' + this._id + ',' + this._exporter._userCodeOffset;
+			this._callFieldMethod('openProgram', url);
 		} catch (e) {
 			this._outputError(e, expDir);
 		}
