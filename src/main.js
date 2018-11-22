@@ -101,7 +101,6 @@ class Main {
 		];
 		const fileMenu = [
 			{ label: rm.newWindow, accelerator: 'CmdOrCtrl+Shift+N', click: this._createNewWindow.bind(this) },
-			{ label: '', accelerator: 'F12',                 click: this._createTwinCaller('toggleDevTools'),      visible: false },
 			{ label: '', accelerator: 'CmdOrCtrl+F12',       click: this._createTwinCaller('toggleFieldDevTools'), visible: false },
 			{ label: '', accelerator: 'CmdOrCtrl+Shift+F12', click: this._createTwinCaller('toggleStudyDevTools'), visible: false },
 		];

@@ -125,11 +125,6 @@ class Twin {
 		this._studyWin.webContents.send('callStudyMethod', method, ...args);
 	}
 
-	_callFieldMethod(method, ...args) {
-		if (!this._fieldWin) return;
-		this._studyWin.webContents.send('callFieldMethod', method, ...args);
-	}
-
 
 	// -------------------------------------------------------------------------
 
@@ -437,10 +432,6 @@ class Twin {
 
 	// -------------------------------------------------------------------------
 
-
-	toggleDevTools() {
-		if (this._fieldWin) this._callFieldMethod('toggleDevTools');
-	}
 
 	toggleFieldDevTools() {
 		if (this._fieldWin) this._fieldWin.webContents.toggleDevTools();
