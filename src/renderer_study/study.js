@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-21
+ * @version 2018-11-22
  *
  */
 
@@ -492,8 +492,6 @@ class Study {
 
 		if (cmd === 'run') {
 			this._prepareExecution('doRun');
-		} else if (cmd === 'runInFullScreen') {
-			this._prepareExecution('doRunInFullScreen');
 		} else if (cmd === 'stop') {
 			this._callFieldMethod('closeProgram');
 			this._twinMessage('stop');

@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-21
+ * @version 2018-11-22
  *
  */
 
@@ -389,26 +389,6 @@ class Twin {
 		}
 	}
 
-	doRunInFullScreen(text) {
-		if (this._isModified) this._backup.backupText(text);
-		this._codeCache = text;
-
-		if (!this._fieldWin) {
-			this._createFieldWindow();
-			this._fieldWin.once('ready-to-show', () => {
-				this._fieldWin.setFullScreen(true);
-				this._fieldWin.show();
-				this._execute(text);
-			});
-			this._fieldWin.once('show', () => {this._ensureWindowTop(this._fieldWin);});
-		} else {
-			this._fieldWin.setFullScreen(true);
-			if (!this._fieldWin.isVisible()) this._fieldWin.show();
-			this._ensureWindowTop(this._fieldWin);
-			this._execute(text);
-		}
-	}
-
 	_execute(codeStr) {
 		const ret = this._exporter.readLibrarySources(codeStr, this._filePath);
 		if (!Array.isArray(ret)) {
@@ -450,8 +430,8 @@ class Twin {
 		this._fieldWin.setTitle(this._res.appTitle);
 		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => {this._fieldWin = null;});
-		this._fieldWin.on('enter-full-screen', () => {this._callFieldMethod('onWindowFullscreenEntered');});
-		this._fieldWin.on('leave-full-screen', () => {this._callFieldMethod('onWindowFullscreenLeft');});
+		this._fieldWin.on('enter-full-screen', () => {this._callFieldMethod('onFullscreenEntered');});
+		this._fieldWin.on('leave-full-screen', () => {this._callFieldMethod('onFullscreenLeft');});
 		this._fieldWin.setMenu(null);
 		this._fieldWinState = new WinState(this._fieldWin, false, this._fieldWinBounds ? true : false, this._conf, 'fieldWindowState');
 	}
