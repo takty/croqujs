@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-15
+ * @version 2018-11-22
  *
  */
 
@@ -75,10 +75,16 @@ class SideMenu {
 		const doClose = !mi.classList.contains('stay');
 
 		for (let ac of acc.toLowerCase().split(' ')) {
+			if (ac[0] === '*') continue;
 			const key = ac.split('+').sort().join('+');
 			this._accs[key] = () => { this._study.executeCommand(cmd, doClose); }
 		}
-		let ac = acc.replace(/ /g, ', ');
+		const modAcc = [];
+		for (let ac of acc.split(' ')) {
+			if (ac[0] === '*') ac = ac.substr(1);
+			modAcc.push(ac);
+		}
+		let ac = modAcc.join(', ');
 		ac = ac.replace(/CC/g, this.IS_MAC ? '⌘' : 'Ctrl');
 		if (mi.classList.contains('icon')) {
 			mi.title += (mi.title ? ' ' : '') + ac;

@@ -37,8 +37,8 @@ class Editor {
 		this.rulerEnabled(true);
 		this.functionLineNumberEnabled(false);
 
-		this._comp.on('copy',    () => { this._owner.onEditorClipboardChanged(); });
-		this._comp.on('cut',     () => { this._owner.onEditorClipboardChanged(); });
+		// this._comp.on('copy',    () => { this._owner.onEditorClipboardChanged(); });
+		// this._comp.on('cut',     () => { this._owner.onEditorClipboardChanged(); });
 		this._comp.on('refresh', () => { this._updateCodeStructureView(); });
 
 		this._comp.on('renderLine', (cm, line, elt) => {

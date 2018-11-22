@@ -80,6 +80,8 @@ class Study {
 		this._historySize = { undo: 0, redo: 0 };
 
 		this._config.notify();
+
+		window.addEventListener('focus', (e) => { navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText)); });
 	}
 
 	_callFieldMethod(method, ...args) {
@@ -117,6 +119,8 @@ class Study {
 			}
 		});
 		ec.on('focus', () => { this._sideMenu.close(); });
+		ec.on('copy', (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
+		ec.on('cut',  (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
 	}
 
 	_initWindowResizing(ed) {
@@ -213,7 +217,7 @@ class Study {
 		this._sideMenu.reflectConfig(conf);
 	}
 
-	reflectClipboardState(text) {  // Called By Main
+	_reflectClipboardState(text) {
 		this._toolbar.reflectClipboard(text);
 		this._sideMenu.reflectClipboard(text);
 	}
@@ -226,10 +230,6 @@ class Study {
 		}
 		this._toolbar.reflectState(state);
 		this._sideMenu.reflectState(state);
-	}
-
-	onEditorClipboardChanged() {
-		setTimeout(() => { ipcRenderer.send('onClipboardChanged'); }, 0);
 	}
 
 

@@ -23,7 +23,7 @@ const Exporter = require('./exporter.js');
 
 class Twin {
 
-	constructor(main, res, conf, prevTwin) {
+	constructor(main, res, conf) {
 		Twin._count += 1;
 		this._id   = Twin._count;
 		this._main = main;
@@ -31,16 +31,16 @@ class Twin {
 		this._conf = conf;
 		this._nav  = null;
 
-		this._fieldWin         = null;
-		this._fieldWinBounds   = null;
+		this._fieldWin       = null;
+		this._fieldWinBounds = null;
 
 		this._filePath   = null;
 		this._isReadOnly = false;
 		this._isModified = false;
 
-		this._backup = new Backup();
-		this._exporter = new Exporter();
-		this._tempDirs = [];
+		this._backup    = new Backup();
+		this._exporter  = new Exporter();
+		this._tempDirs  = [];
 		this._codeCache = '';
 
 		ipcMain.on('fromRenderer_' + this._id, (ev, msg, ...args) => {
@@ -58,7 +58,7 @@ class Twin {
 			}
 		});
 
-		this._createStudyWindow(prevTwin);
+		this._createStudyWindow();
 		this._main.onTwinCreated(this);
 	}
 
@@ -66,13 +66,8 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	_createStudyWindow(prevTwin) {
-		const opt = {'show': false};
-		if (prevTwin) {
-			const b = prevTwin._studyWin.getBounds();
-			Object.assign(opt, {x: b.x + 32, y: b.y + 32, width: b.width, height: b.height});
-		}
-		this._studyWin = new BrowserWindow(opt);
+	_createStudyWindow() {
+		this._studyWin = new BrowserWindow({ 'show': false });
 		this._studyWin.loadURL(`file://${__dirname}/renderer_study/study.html#${this._id}`);
 		this._studyWin.once('ready-to-show', () => {
 			this._initializeDocument();
@@ -95,7 +90,7 @@ class Twin {
 		return this._nav;
 	}
 
-	setNav(nav) {
+	setNav(nav) {  // Called By Main
 		this._nav = nav;
 		this._studyWin.setMenu(this._nav.menu());
 	}
@@ -121,7 +116,7 @@ class Twin {
 		}
 	}
 
-	callStudyMethod(method, ...args) {  // Called By This and Main
+	callStudyMethod(method, ...args) {
 		this._studyWin.webContents.send('callStudyMethod', method, ...args);
 	}
 
@@ -139,9 +134,7 @@ class Twin {
 
 	onStudyRequestPageCapture(ev, bcr) {
 		if (this._studyWin === null) return;  // When window is closed while capturing
-		this._studyWin.capturePage(bcr, (ni) => {
-			ev.returnValue = ni.toDataURL();
-		});
+		this._studyWin.capturePage(bcr, (ni) => { ev.returnValue = ni.toDataURL(); });
 	}
 
 	onStudyCapturedImageCreated(dataUrl) {
@@ -194,7 +187,7 @@ class Twin {
 
 
 	doOpen(defaultPath = this._filePath) {
-		const fp = dialog.showOpenDialog(this._studyWin, {defaultPath: defaultPath, filters: this._res.fileFilters});
+		const fp = dialog.showOpenDialog(this._studyWin, { defaultPath: defaultPath, filters: this._res.fileFilters });
 		if (fp) this._openFile(fp[0]);
 	}
 
@@ -236,7 +229,7 @@ class Twin {
 	}
 
 	doSaveAs(text) {
-		const fp = dialog.showSaveDialog(this._studyWin, {defaultPath: this._filePath, filters: this._res.fileFilters});
+		const fp = dialog.showSaveDialog(this._studyWin, { defaultPath: this._filePath, filters: this._res.fileFilters });
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
@@ -444,5 +437,4 @@ class Twin {
 }
 
 Twin._count = 0;
-
 module.exports = Twin;
