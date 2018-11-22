@@ -32,7 +32,7 @@ class Field {
 			}
 		});
 		window.addEventListener('keydown', (e) => this.onKeyDown(e));
-		this.initializeFullscreenHandler();
+		this.initializeFullscreenPoller();
 	}
 
 	openProgram(url) {
@@ -67,7 +67,7 @@ class Field {
 	// -------------------------------------------------------------------------
 
 
-	initializeFullscreenHandler() {
+	initializeFullscreenPoller() {
 		this._isFullscreenEnabled = false;
 		let last = window.performance.now();
 		const loop = (cur) => {
