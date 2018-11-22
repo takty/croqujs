@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-15
+ * @version 2018-11-22
  *
  */
 
@@ -16,7 +16,6 @@ const FS      = require('fs');
 const PATH    = require('path');
 const PROCESS = require('process');
 
-const Shortcut = require('./lib/appshortcut.js');
 const Config   = require('./lib/config.js');
 const NavMenu  = require('./lib/navmenu.js');
 const Twin     = require('./twin.js');
@@ -54,9 +53,6 @@ class Main {
 			const resData = JSON.parse(FS.readFileSync(resFp), 'utf-8');
 			const conData = JSON.parse(FS.readFileSync(conFp), 'utf-8');
 			this._res = Object.assign(resData, conData);
-
-			this._shortcut = new Shortcut();
-			this._shortcut.add(IS_MAC ? 'Cmd+Ctrl+F' : 'F11', this._createTwinCaller('toggleFieldWinFullScreen'));
 
 			for (let t of this._twins) {
 				t._res = this._res;

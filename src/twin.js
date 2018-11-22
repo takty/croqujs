@@ -430,8 +430,6 @@ class Twin {
 		this._fieldWin.setTitle(this._res.appTitle);
 		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => {this._fieldWin = null;});
-		this._fieldWin.on('enter-full-screen', () => {this._callFieldMethod('onFullscreenEntered');});
-		this._fieldWin.on('leave-full-screen', () => {this._callFieldMethod('onFullscreenLeft');});
 		this._fieldWin.setMenu(null);
 		this._fieldWinState = new WinState(this._fieldWin, false, this._fieldWinBounds ? true : false, this._conf, 'fieldWindowState');
 	}
@@ -439,13 +437,6 @@ class Twin {
 
 	// -------------------------------------------------------------------------
 
-
-	toggleFieldWinFullScreen() {
-		if (!this._fieldWin) return;
-		// this._callFieldMethod('setFullScreen', true);
-		this._fieldWin.setFullScreen(!this._fieldWin.isFullScreen());
-		if (this._fieldWin.isFullScreen()) this._ensureWindowTop(this._fieldWin);
-	}
 
 	toggleDevTools() {
 		if (this._fieldWin) this._callFieldMethod('toggleDevTools');
