@@ -69,7 +69,9 @@ class Study {
 				}
 			}
 		});
-		ipcRenderer.on('callFieldMethod', (ev, method, ...args) => { this._callFieldMethod(method, args); });
+		window.addEventListener('focus', (e) => {
+			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
+		});
 
 		this._filePath    = null;
 		this._name        = null;
@@ -80,8 +82,6 @@ class Study {
 		this._historySize = { undo: 0, redo: 0 };
 
 		this._config.notify();
-
-		window.addEventListener('focus', (e) => { navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText)); });
 	}
 
 	_callFieldMethod(method, ...args) {
