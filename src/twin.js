@@ -275,8 +275,8 @@ class Twin {
 			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 
 			const name     = PATH.basename(this._filePath, PATH.extname(this._filePath));
-			const baseName = PATH.basename(filePath);
-			const dirName  = PATH.dirname(filePath);
+			const baseName = PATH.basename(this._filePath);
+			const dirName  = PATH.dirname(this._filePath);
 			this.callStudyMethod('setDocumentFilePath', this._filePath, name, baseName, dirName, false);
 
 			this._isModified = false;
