@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-21
+ * @version 2018-11-26
  *
  */
 
@@ -61,10 +61,10 @@
 				if (lastMsg.count < MAX_SENT_OUTPUT_COUNT && lastMsg.type === type && lastMsg.msg === msg) {
 					lastMsg.count += 1;
 				} else {
-					outputCache.push({msg, type, count: 1});
+					outputCache.push({ msg, type, count: 1 });
 				}
 			} else {
-				outputCache.push({msg, type, count: 1});
+				outputCache.push({ msg, type, count: 1 });
 			}
 			// DO NOT MODIFY THE FOLLWING STATEMENT!
 			const cur = window.performance.now();
@@ -74,7 +74,11 @@
 
 		return {
 			dir: (obj) => {
-				cacheOutput(require('util').inspect(obj), 'std');
+				if (typeof require === 'function') {
+					cacheOutput(require('util').inspect(obj), 'std');
+				} else {
+					cacheOutput(obj.toString(), 'std');
+				}
 				orig.dir(obj);
 			},
 			log: (...vs) => {
