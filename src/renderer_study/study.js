@@ -3,54 +3,53 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-22
+ * @version 2018-11-26
  *
  */
 
 
 'use strict';
 
-const electron = require('electron');
-const {ipcRenderer} = electron;
-
-function createDelayFunction(fn, delay) {
-	let st = null;
-	return () => {
-		if (st) clearTimeout(st);
-		st = setTimeout(fn, delay);
-	};
-}
+const { ipcRenderer } = require('electron');
 
 
 class Study {
 
 	constructor() {
+		this._errorMarker = null;
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
-		ipcRenderer.on('callStudyMethod',  (ev, method, ...args) => { this[method](...args); });
+		ipcRenderer.on('callStudyMethod', (ev, method, ...args) => { this[method](...args); });
 
-		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
-
-		this._errorMarker = null;
-		window.onkeydown = (e) => {
-			if (this._editor._comp.hasFocus()) return;
-			if (e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) {
+		window.ondragover = (e) => { e.preventDefault(); return false; };
+		window.ondrop     = (e) => { e.preventDefault(); return false; };
+		window.onkeydown  = (e) => {
+			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) {
 				e.preventDefault();
 				return false;
 			}
 		}
-
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
 		this._config.addEventListener((conf) => this._configUpdated(conf));
 		this._lang = this._config.getItem('language');
 		if (!this._lang) this._lang = 'ja';
-		this._res = ipcRenderer.sendSync('getResource', this._lang);
 
+		loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json'], (ret) => {
+			this._res = Object.assign(ret[0], ret[1]);
+			this._constructorSecond();
+		});
+	}
+
+	_twinMessage(msg, ...args) {
+		ipcRenderer.send('fromRenderer_' + this._id, msg, ...args);
+	}
+
+	_constructorSecond() {
 		this._initEditor();
 
-		this._toolbar    = new Toolbar(this, this._res);
-		this._sideMenu   = new SideMenu(this, this._res);
-		this._dialogBox  = new DialogBox(this, this._res);
+		this._toolbar = new Toolbar(this, this._res);
+		this._sideMenu = new SideMenu(this, this._res);
+		this._dialogBox = new DialogBox(this, this._res);
 		this._outputPane = new OutputPane();
 
 		this._initWindowResizing(this._editor);
@@ -73,12 +72,12 @@ class Study {
 			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
 		});
 
-		this._filePath    = null;
-		this._name        = null;
-		this._baseName    = null;
-		this._dirName     = null;
-		this._isReadOnly  = false;
-		this._isModified  = false;
+		this._filePath = null;
+		this._name = null;
+		this._baseName = null;
+		this._dirName = null;
+		this._isReadOnly = false;
+		this._isModified = false;
 		this._historySize = { undo: 0, redo: 0 };
 
 		this._config.notify();
@@ -184,14 +183,6 @@ class Study {
 		setSubPaneHeight(sub.offsetHeight);
 	}
 
-	_twinMessage(msg, ...args) {
-		ipcRenderer.send('fromRenderer_' + this._id, msg, ...args);
-	}
-
-	_twinMessageSync(msg, ...args) {
-		return ipcRenderer.sendSync('fromRendererSync_' + this._id, msg, ...args);
-	}
-
 
 	// -------------------------------------------------------------------------
 
@@ -272,7 +263,7 @@ class Study {
 		const prefix = (this._isModified ? '* ' : '') + (this._isReadOnly ? `(${this._res.readOnly}) ` : '');
 		const fn = (this._filePath === null) ? this._res.untitled : this._baseName;
 		const fp = (this._filePath === null) ? '' : (' — ' + this._dirName + '');
-		const title = prefix + fn + fp + ' — ' + this._res.appTitle;
+		const title = prefix + fn + fp + ' — ' + 'Croqujs';
 		if (window.title !== title) {
 			window.title = title;
 			this._twinMessage('onStudyTitleChanged', title);
@@ -324,11 +315,10 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	sendBackCapturedImages() {  // Called By Twin
+	sendBackCapturedImages() {
 		const orig = this._editor.setSimpleView();
 		this._toolbar.showMessage(this._res.msg.copyingAsImage, true);
 
-		const sf = electron.screen.getPrimaryDisplay().scaleFactor;
 		const count = this._editor._comp.getDoc().lineCount();
 		const lineHeight = this._editor._comp.defaultTextHeight();
 		const logicalImageHeight = lineHeight * count + lineHeight * 0.25;
@@ -337,52 +327,64 @@ class Study {
 		const bcr = this._editor._elem.getBoundingClientRect();
 		const r = {x: bcr.left, y: bcr.top, width: bcr.width, height: bcr.height};
 
-		const canvas = document.createElement('canvas');
-		canvas.width = r.width * sf;
-		canvas.height = logicalImageHeight * sf;
-
 		this._editor._comp.scrollTo(0, 0);
 		this._editor._comp.refresh();
 		this._editor.enabled(false);  // After showing modal, it becomes true.
 
+		let canvas = null;
 		let top = 0;
-		const capture = () => {
-			const dataUrl = this._twinMessageSync('onStudyRequestPageCapture', r);
+
+		const capture = () => { this._twinMessage('onStudyRequestPageCapture', r); };
+		setTimeout(capture, 400);
+
+		this.capturedImageReceived = (dataUrl, scaleFactor) => {  // Called By Twin
+			if (canvas === null) {
+				canvas = document.createElement('canvas');
+				canvas.width = r.width * scaleFactor;
+				canvas.height = logicalImageHeight * scaleFactor;
+			}
 			top += topDelta;
 			const finished = (top > logicalImageHeight);
 
-			this._addImageToCanvas(canvas, this._editor._comp.getScrollInfo().top * sf, dataUrl, finished);
+			setTimeout(() => {
+				addImageToCanvas(canvas, this._editor._comp.getScrollInfo().top * scaleFactor, dataUrl, finished);
 
-			if (finished) {
-				this._toolbar.hideMessage(200);
-				setTimeout(() => {
-					this._editor.restoreOriginalView(orig);
-					this._editor._comp.scrollTo(0, 0);
-				}, 200);
-			} else {
-				this._editor._comp.scrollTo(0, top);
-				this._editor._comp.refresh();
-				setTimeout(capture, 200);
-			}
-		};
-		setTimeout(capture, 400);
-	}
+				if (finished) {
+					this._toolbar.hideMessage(200);
+					setTimeout(() => {
+						this._editor.restoreOriginalView(orig);
+						this._editor._comp.scrollTo(0, 0);
+					}, 200);
+				} else {
+					this._editor._comp.scrollTo(0, top);
+					this._editor._comp.refresh();
+					setTimeout(capture, 200);
+				}
+			}, 0);
+		}
 
-	_addImageToCanvas(canvas, y, dataUrl, finished) {
-		const img = new Image();
-		img.onload = () => {
-			const ctx = canvas.getContext('2d');
-			ctx.drawImage(img, 0, y);
-			if (finished) this._twinMessage('onStudyCapturedImageCreated', canvas.toDataURL('image/png'));
+		const addImageToCanvas = (canvas, y, dataUrl, finished) => {
+			const img = new Image();
+			img.onload = () => {
+				const ctx = canvas.getContext('2d');
+				ctx.drawImage(img, 0, y);
+				if (finished) this._twinMessage('onStudyCapturedImageCreated', canvas.toDataURL('image/png'));
+			};
+			img.src = dataUrl;
 		};
-		img.src = dataUrl;
 	}
 
 
 	// -------------------------------------------------------------------------
 
 
-	showAlert(text, type) {  // Called By Twin
+	showServerAlert(mid, type, additional = false) {  // Called By Twin
+		window.focus();
+		const text = this._res.msg[mid] + (additional ? additional : '');
+		this._dialogBox.showAlert(text, type);
+	}
+
+	_showAlert(text, type) {
 		window.focus();
 		this._dialogBox.showAlert(text, type);
 	}
@@ -450,10 +452,10 @@ class Study {
 
 		} else if (cmd === 'setLanguageJa') {
 			conf.setItem('language', 'ja');
-			this.showAlert(this._res.msg.alertNextTime, 'info');
+			this._showAlert(this._res.msg.alertNextTime, 'info');
 		} else if (cmd === 'setLanguageEn') {
 			conf.setItem('language', 'en');
-			this.showAlert(this._res.msg.alertNextTime, 'info');
+			this._showAlert(this._res.msg.alertNextTime, 'info');
 		}
 
 		// Edit Command
@@ -533,7 +535,7 @@ class Study {
 		// Help Command
 
 		if (cmd === 'showAbout') {
-			this.showAlert(this._res.about.join('\n'), 'info');
+			this._showAlert(this._res.about.join('\n'), 'info');
 		}
 
 	}

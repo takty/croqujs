@@ -3,21 +3,18 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-22
+ * @version 2018-11-26
  *
  */
 
 
 'use strict';
 
-const { app, Menu, ipcMain } = require('electron');
+const { app, Menu } = require('electron');
 
-const FS      = require('fs');
 const PATH    = require('path');
 const PROCESS = require('process');
-
 const Config  = require('./lib/config.js');
-const NavMenu = require('./lib/navmenu.js');
 const Twin    = require('./twin.js');
 
 const IS_MAC = (PROCESS.platform === 'darwin');
@@ -28,7 +25,6 @@ class Main {
 	constructor() {
 		this._conf = new Config(PATH.join(__dirname, '../'));
 		this._conf.loadSync();
-		this._initializeResource();
 
 		this._twins = [];
 		this._focusedTwin = null;
@@ -37,68 +33,31 @@ class Main {
 		app.on('activate', () => { if (this._twins.length === 0) this._createNewWindow(); });
 		app.on('window-all-closed', () => {
 			this._conf.saveSync();
-			if (IS_MAC) Menu.setApplicationMenu(this._createNav().menu());
+			if (IS_MAC) Menu.setApplicationMenu(this._createNav());
 			else app.quit();
 		});
-		app.on('browser-window-focus', (ev, win) => { this._onBrowserWindowFocus(ev, win); });
-	}
-
-	_initializeResource() {
-		ipcMain.on('getResource', (ev, arg) => {
-			const lang = arg;
-			const resFp = PATH.join(__dirname, '/res/lang.' + lang + '.json');
-			const conFp = PATH.join(__dirname, '/res/resource.json');
-
-			const resData = JSON.parse(FS.readFileSync(resFp), 'utf-8');
-			const conData = JSON.parse(FS.readFileSync(conFp), 'utf-8');
-			this._res = Object.assign(resData, conData);
-
-			for (let t of this._twins) {
-				t._res = this._res;
-				t.setNav(this._createNav());
+		app.on('browser-window-focus', (ev, win) => {
+			if (IS_MAC && this._twins.length === 0) {
+				Menu.setApplicationMenu(this._createNav());
+			} else {
+				this._focusedTwin = this._twins.find(t => t.isOwnerOf(win));
+				if (IS_MAC) Menu.setApplicationMenu(this._focusedTwin.menu());
 			}
-			ev.returnValue = this._res;
 		});
 	}
 
 	_createNewWindow() {
-		new Twin(this, this._res, this._conf);
+		const t = new Twin(this, this._conf);
+		t.setMenu(this._createNav());
 	}
-
-	_onBrowserWindowFocus(ev, win) {
-		if (IS_MAC && this._twins.length === 0) {
-			Menu.setApplicationMenu(this._createNav().menu());
-		} else {
-			this._focusedTwin = this._twins.find(t => t.isOwnerOf(win));
-			if (IS_MAC) Menu.setApplicationMenu(this._focusedTwin.nav().menu());
-		}
-	}
-
-
-	// -------------------------------------------------------------------------
-
 
 	_createNav() {
-		const rm = this._res.menu;
-		const fileMenu = [
-			{ label: rm.newWindow, accelerator: 'CmdOrCtrl+Shift+N', click: this._createNewWindow.bind(this) },
-			{ label: '', accelerator: 'CmdOrCtrl+F12',       click: this._createTwinCaller('toggleFieldDevTools'), visible: false },
-			{ label: '', accelerator: 'CmdOrCtrl+Shift+F12', click: this._createTwinCaller('toggleStudyDevTools'), visible: false },
-		];
-		if (IS_MAC) {
-			const appMenu = [{ label: rm.about }, { label: rm.exit, accelerator: 'Cmd+Q', role: 'quit' }];
-			return new NavMenu([{ label: this._res.appTitle, submenu: appMenu }, { label: rm.file, submenu: fileMenu }]);
-		}
-		return new NavMenu([{ label: rm.file, submenu: fileMenu }]);
+		return Menu.buildFromTemplate([{ label: 'File', submenu: [
+			{ label: 'New Window', accelerator: 'CmdOrCtrl+Shift+N',   click: this._createNewWindow.bind(this) },
+			{ label: '',           accelerator: 'CmdOrCtrl+F12',       click: () => { this._focusedTwin['toggleFieldDevTools'](); }, visible: false },
+			{ label: '',           accelerator: 'CmdOrCtrl+Shift+F12', click: () => { this._focusedTwin['toggleStudyDevTools'](); }, visible: false },
+		] }]);
 	}
-
-	_createTwinCaller(method) {
-		return () => { this._focusedTwin[method](); }
-	}
-
-
-	// -------------------------------------------------------------------------
-
 
 	onTwinCreated(t) {  // Called By Twin
 		this._twins.push(t);

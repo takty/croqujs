@@ -2,7 +2,6 @@
     "menu": {
         "file": "ファイル",
             "new": "新規",
-            "newWindow": "新規ウィンドウ",
             "open": "開く...",
             "close": "閉じる",
             "save": "保存",
@@ -26,7 +25,6 @@
             "copyAsImage": "画像としてコピー",
         "code": "コード",
             "run": "実行",
-            "runInFullScreen": "フルスクリーンで実行",
             "stop": "停止",
             "runWithoutWindow": "ウィンドウなしで実行",
         "view": "表示",

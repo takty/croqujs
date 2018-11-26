@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-22
+ * @version 2018-11-26
  *
  */
 
@@ -12,24 +12,26 @@
 
 const electron = require('electron');
 const {ipcMain, BrowserWindow, dialog, clipboard, nativeImage} = electron;
-const FS   = require('fs');
-const PATH = require('path');
-const OS   = require('os');
 
+const FS       = require('fs');
+const PATH     = require('path');
+const OS       = require('os');
 const Backup   = require('./lib/backup.js');
 const WinState = require('./lib/winstate.js');
 const Exporter = require('./exporter.js');
 
+const DEFAULT_EXT = '.js';
+const FILE_FILTERS = [{ name: 'JavaScript', extensions: ['js'] }, { name: 'All Files', extensions: ['*'] }];
+
 
 class Twin {
 
-	constructor(main, res, conf) {
+	constructor(main, conf) {
 		Twin._count += 1;
 		this._id   = Twin._count;
 		this._main = main;
-		this._res  = res;
 		this._conf = conf;
-		this._nav  = null;
+		this._menu  = null;
 
 		this._fieldWin       = null;
 		this._fieldWinBounds = null;
@@ -78,28 +80,28 @@ class Twin {
 			this._studyWinState._onClose();
 			this.callStudyMethod('executeCommand', 'close');
 		});
-		if (this._nav) this._studyWin.setMenu(this._nav.menu());
-		this._studyWinState = new WinState(this._studyWin, false, prevTwin ? true : false, this._conf);
+		if (this._menu) this._studyWin.setMenu(this._menu);
+		this._studyWinState = new WinState(this._studyWin, false, false, this._conf);
 	}
 
 
 	// -------------------------------------------------------------------------
 
 
-	nav() {  // Called By Main
-		return this._nav;
+	menu() {  // Called By Main
+		return this._menu;
 	}
 
-	setNav(nav) {  // Called By Main
-		this._nav = nav;
-		this._studyWin.setMenu(this._nav.menu());
+	setMenu(nav) {  // Called By Main
+		this._menu = nav;
+		this._studyWin.setMenu(this._menu);
 	}
 
 	isOwnerOf(win) {  // Called By Main
 		return win === this._studyWin || win === this._fieldWin;
 	}
 
-	tileWin() {  // Called By Main
+	tileWin() {  // Called By Study
 		const d = electron.screen.getPrimaryDisplay();
 		const w = 0 | (d.workAreaSize.width / 2), h = d.workAreaSize.height;
 		if (this._studyWin.isMaximized()) {
@@ -132,15 +134,19 @@ class Twin {
 		this._studyWin.setTitle(title);
 	}
 
-	onStudyRequestPageCapture(ev, bcr) {
+	onStudyRequestPageCapture(bcr) {
 		if (this._studyWin === null) return;  // When window is closed while capturing
-		this._studyWin.capturePage(bcr, (ni) => { ev.returnValue = ni.toDataURL(); });
+		const scaleFactor = electron.screen.getPrimaryDisplay().scaleFactor;
+		this._studyWin.capturePage(bcr, (ni) => {
+			const url = ni.toDataURL();
+			this.callStudyMethod('capturedImageReceived', url, scaleFactor);
+		});
 	}
 
 	onStudyCapturedImageCreated(dataUrl) {
 		const ni = nativeImage.createFromDataURL(dataUrl);
 		clipboard.writeImage(ni);
-		setTimeout(() => { this.callStudyMethod('showAlert', this._res.msg.copiedAsImage, 'success'); }, 0);
+		setTimeout(() => { this.callStudyMethod('showServerAlert', 'copiedAsImage', 'success'); }, 0);
 	}
 
 	onStudyErrorOccurred(info) {
@@ -172,7 +178,10 @@ class Twin {
 		const name     = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
 		const baseName = filePath ? PATH.basename(filePath) : '';
 		const dirName  = filePath ? PATH.dirname(filePath) : '';
-		this.callStudyMethod('initializeDocument', text, filePath, name, baseName, dirName, readOnly);
+
+		setTimeout(() => {
+			this.callStudyMethod('initializeDocument', text, filePath, name, baseName, dirName, readOnly);
+		}, 100);
 
 		this._filePath   = filePath;
 		this._isReadOnly = readOnly;
@@ -187,7 +196,7 @@ class Twin {
 
 
 	doOpen(defaultPath = this._filePath) {
-		const fp = dialog.showOpenDialog(this._studyWin, { defaultPath: defaultPath, filters: this._res.fileFilters });
+		const fp = dialog.showOpenDialog(this._studyWin, { defaultPath: defaultPath, filters: FILE_FILTERS });
 		if (fp) this._openFile(fp[0]);
 	}
 
@@ -229,7 +238,7 @@ class Twin {
 	}
 
 	doSaveAs(text) {
-		const fp = dialog.showSaveDialog(this._studyWin, { defaultPath: this._filePath, filters: this._res.fileFilters });
+		const fp = dialog.showSaveDialog(this._studyWin, { defaultPath: this._filePath, filters: FILE_FILTERS });
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
@@ -254,7 +263,7 @@ class Twin {
 	}
 
 	_saveFile(fp, text) {
-		if (fp.indexOf('.') === -1) fp += this._res.defaultExt;
+		if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
 		this._filePath = fp;
 		this._backup.setFilePath(fp);
 
@@ -278,7 +287,7 @@ class Twin {
 		let i = err.indexOf("'");
 		if (i === -1) i = err.length;
 		err = err.substr(0, i).trim();
-		this.callStudyMethod('showAlert', this._res.msg.error + '\n' + dir + '\n' + err, 'error');
+		this.callStudyMethod('showServerAlert', 'error', 'error', '\n' + dir + '\n' + err);
 	}
 
 	doClose(text) {
@@ -299,7 +308,7 @@ class Twin {
 
 		try {
 			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure);
-			this.callStudyMethod('showAlert', this._res.msg.exportedAsLibrary, 'success');
+			this.callStudyMethod('showServerAlert', 'exportedAsLibrary', 'success');
 		} catch (e) {
 			this._outputError(e, expDir);
 		}
@@ -313,7 +322,7 @@ class Twin {
 			FS.mkdirSync(expDir);
 
 			this._exporter.exportAsWebPage(text, this._filePath, expDir);
-			this.callStudyMethod('showAlert', this._res.msg.exportedAsWebPage, 'success');
+			this.callStudyMethod('showServerAlert', 'exportedAsWebPage', 'success');
 		} catch (e) {
 			this._outputError(e, expDir);
 		}
@@ -415,7 +424,7 @@ class Twin {
 	_createFieldWindow() {
 		const opt = Object.assign({show: false}, this._fieldWinBounds || {});
 		this._fieldWin = new BrowserWindow(opt);
-		this._fieldWin.setTitle(this._res.appTitle);
+		this._fieldWin.setTitle('Croqujs');
 		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => {this._fieldWin = null;});
 		this._fieldWin.setMenu(null);

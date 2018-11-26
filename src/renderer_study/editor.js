@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-15
+ * @version 2018-11-26
  *
  */
 
@@ -31,16 +31,16 @@ class Editor {
 		this.initHideMouseCursorWhenEditing();
 		this.initWheelZoom();
 		this.initGutterSelection();
-		this.initAutoComplete();
 		this.initCodeStructureView();
+
+		loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'lib/tern/underscore.json'], (ret) => {
+			this.initAutoComplete(ret);
+		});
 
 		this.rulerEnabled(true);
 		this.functionLineNumberEnabled(false);
 
-		// this._comp.on('copy',    () => { this._owner.onEditorClipboardChanged(); });
-		// this._comp.on('cut',     () => { this._owner.onEditorClipboardChanged(); });
 		this._comp.on('refresh', () => { this._updateCodeStructureView(); });
-
 		this._comp.on('renderLine', (cm, line, elt) => {
 			if (!cm.getOption('lineWrapping')) return;
 			const charWidth = this._comp.defaultCharWidth(), basePadding = 2;
@@ -338,19 +338,10 @@ class Editor {
 		}
 	}
 
-	initAutoComplete() {
-		const FS     = require('fs');
-		const PATH   = require('path');
-		const remote = require('electron').remote;
-		const app    = remote.require('electron').app;
-
-		const code       = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/ecmascript.json'), 'utf-8'));
-		const browser    = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/browser.json'),    'utf-8'));
-		const underscore = JSON.parse(FS.readFileSync(PATH.join(app.getAppPath(), 'dist/renderer_study/lib/tern/underscore.json'), 'utf-8'));
-
-		const server = new CodeMirror.TernServer({defs: [code, browser, underscore]});
-		this._comp.on('cursorActivity', (cm) => {server.updateArgHints(cm);});
-		this._comp.setOption('extraKeys', {'Ctrl-Tab': (cm) => {this._complete(cm, server);}});
+	initAutoComplete(defs) {
+		const server = new CodeMirror.TernServer({ defs: defs });
+		this._comp.on('cursorActivity', (cm) => { server.updateArgHints(cm); });
+		this._comp.setOption('extraKeys', { 'Ctrl-Tab': (cm) => { this._complete(cm, server); } });
 		const reg = /\w|\./;
 		let autoComp = null;
 		this._comp.on('keypress', (cm, e) => {

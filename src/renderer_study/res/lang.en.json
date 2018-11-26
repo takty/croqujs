@@ -2,7 +2,6 @@
     "menu": {
         "file": "File",
             "new": "New",
-            "newWindow": "New Window",
             "open": "Open...",
             "close": "Close",
             "save": "Save",
@@ -26,7 +25,6 @@
             "copyAsImage": "Copy As Image",
         "code": "Code",
             "run": "Run",
-            "runInFullScreen": "Run In Full Screen",
             "stop": "Stop",
             "runWithoutWindow": "Run Without Window",
         "view": "View",
