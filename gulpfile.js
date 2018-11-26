@@ -23,6 +23,8 @@ const PATH_STUDY_LIB = './dist/renderer_study/lib/';
 
 gulp.task('copy-acorn', (done) => {
 	copySync('./node_modules/acorn/dist', PATH_STUDY_LIB + 'acorn');
+	copySync('./node_modules/acorn-loose/dist', PATH_STUDY_LIB + 'acorn');
+	copySync('./node_modules/acorn-walk/dist', PATH_STUDY_LIB + 'acorn');
 	done();
 });
 
@@ -77,13 +79,7 @@ gulp.task('copy-src', (done) => {
 	done();
 });
 
-gulp.task('copy-res', (done) => {
-	copySync('./res/*.json', './dist/res/');
-	copySync('./res/*.txt', './dist/res/');
-	done();
-});
-
-gulp.task('copy', gulp.series('copy-src', 'copy-lib', 'copy-res'));
+gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
 
 gulp.task('sass', () => {
 	return gulp.src(['src/**/scss/**/[^_]*.scss'])

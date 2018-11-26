@@ -3,7 +3,7 @@
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-20
+ * @version 2018-11-26
  *
  */
 
@@ -11,7 +11,7 @@
 'use strict';
 
 importScripts('lib/acorn/acorn.js');
-importScripts('lib/acorn/acorn_loose.js');
+importScripts('lib/acorn/acorn-loose.js');
 importScripts('lib/acorn/walk.js');
 
 

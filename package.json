@@ -23,7 +23,9 @@
   },
   "homepage": "https://github.com/takty/croqujs#readme",
   "dependencies": {
-    "acorn": "5.7.3",
+    "acorn": "6.0.4",
+    "acorn-loose": "^6.0.0",
+    "acorn-walk": "^6.1.1",
     "codemirror": "^5.42.0",
     "font-awesome": "^4.7.0",
     "js-beautify": "^1.8.8",
