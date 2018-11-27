@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-26
+ * @version 2018-11-27
  *
  */
 
@@ -11,7 +11,7 @@
 'use strict';
 
 const electron = require('electron');
-const {ipcMain, BrowserWindow, dialog, clipboard, nativeImage} = electron;
+const { ipcMain, BrowserWindow, dialog, clipboard, nativeImage } = electron;
 
 const FS       = require('fs');
 const PATH     = require('path');
@@ -26,12 +26,10 @@ const FILE_FILTERS = [{ name: 'JavaScript', extensions: ['js'] }, { name: 'All F
 
 class Twin {
 
-	constructor(main, conf) {
-		Twin._count += 1;
-		this._id   = Twin._count;
+	constructor(main, conf, id) {
+		this._id   = id;
 		this._main = main;
 		this._conf = conf;
-		this._menu  = null;
 
 		this._fieldWin       = null;
 		this._fieldWinBounds = null;
@@ -46,18 +44,7 @@ class Twin {
 		this._codeCache = '';
 
 		ipcMain.on('fromRenderer_' + this._id, (ev, msg, ...args) => {
-			if (this[msg]) {
-				this[msg](...args);
-			} else {
-				this._main[msg](this, ...args);
-			}
-		});
-		ipcMain.on('fromRendererSync_' + this._id, (ev, msg, ...args) => {
-			if (this[msg]) {
-				this[msg](ev, ...args);
-			} else {
-				this._main[msg](this, ...args);
-			}
+			if (this[msg]) this[msg](...args);
 		});
 
 		this._createStudyWindow();
@@ -80,22 +67,13 @@ class Twin {
 			this._studyWinState._onClose();
 			this.callStudyMethod('executeCommand', 'close');
 		});
-		if (this._menu) this._studyWin.setMenu(this._menu);
+		this._studyWin.setMenu(null);
 		this._studyWinState = new WinState(this._studyWin, false, false, this._conf);
 	}
 
 
 	// -------------------------------------------------------------------------
 
-
-	menu() {  // Called By Main
-		return this._menu;
-	}
-
-	setMenu(nav) {  // Called By Main
-		this._menu = nav;
-		this._studyWin.setMenu(this._menu);
-	}
 
 	isOwnerOf(win) {  // Called By Main
 		return win === this._studyWin || win === this._fieldWin;
@@ -174,7 +152,6 @@ class Twin {
 
 	_initializeDocument(text = '', filePath = null) {
 		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
-
 		const name     = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
 		const baseName = filePath ? PATH.basename(filePath) : '';
 		const dirName  = filePath ? PATH.dirname(filePath) : '';
@@ -365,7 +342,7 @@ class Twin {
 				this._fieldWin.show();
 				this._execute(text);
 			});
-			this._fieldWin.once('show', () => {this._ensureWindowTop(this._studyWin);});
+			this._fieldWin.once('show', () => { this._ensureWindowTop(this._studyWin); });
 		} else {
 			if (!this._fieldWin.isVisible()) this._fieldWin.show();
 			this._ensureWindowsFocused(this._studyWin, this._fieldWin);
@@ -379,7 +356,7 @@ class Twin {
 
 		if (!this._fieldWin) {
 			this._createFieldWindow();
-			this._fieldWin.once('ready-to-show', () => {this._execute(text);});
+			this._fieldWin.once('ready-to-show', () => { this._execute(text); });
 		} else {
 			this._fieldWin.hide();
 			this._execute(text);
@@ -422,11 +399,11 @@ class Twin {
 	}
 
 	_createFieldWindow() {
-		const opt = Object.assign({show: false}, this._fieldWinBounds || {});
+		const opt = Object.assign({ show: false }, this._fieldWinBounds || {});
 		this._fieldWin = new BrowserWindow(opt);
 		this._fieldWin.setTitle('Croqujs');
 		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
-		this._fieldWin.on('closed', () => {this._fieldWin = null;});
+		this._fieldWin.on('closed', () => { this._fieldWin = null; });
 		this._fieldWin.setMenu(null);
 		this._fieldWinState = new WinState(this._fieldWin, false, this._fieldWinBounds ? true : false, this._conf, 'fieldWindowState');
 	}
@@ -445,5 +422,4 @@ class Twin {
 
 }
 
-Twin._count = 0;
 module.exports = Twin;
