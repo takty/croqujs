@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-08-28
+ * @version 2018-11-27
  *
  */
 
@@ -30,10 +30,12 @@ class Exporter {
 
 	readLibrarySources(codeStr, filePath) {
 		const bp = (filePath) ? PATH.dirname(filePath) : null;
-		const ps = this._extractImportPaths(codeStr.split('\n'));
+		// const ps = this._extractImportPaths(codeStr.split('\n'));
+		const uses = this._extractUseDeclarations(codeStr.split('\n'));
 		const libs = [];
 
-		for (let p of ps) {
+		for (let p of uses) {
+			p = Array.isArray(p) ? p[0] : p;
 			if (p.indexOf('http') === 0) {
 				libs.push({desc: p});
 			} else {
@@ -60,7 +62,8 @@ class Exporter {
 
 	exportAsWebPage(codeText, filePath, dirPath, injection = false) {
 		const lines = codeText.split('\n');
-		const res = this._extractImportPaths(lines), libs = [];
+		// const res = this._extractImportPaths(lines), libs = [];
+		const uses = this._extractUseDeclarations(lines), libs = [];
 		const pushTag = (src) => {libs.push('<script src="' + src + '"></script>');};
 		let title = 'Croqujs';
 
@@ -70,7 +73,8 @@ class Exporter {
 		}
 		if (filePath) {
 			const bp = PATH.dirname(filePath);
-			for (let p of res) {
+			for (let p of uses) {
+				p = Array.isArray(p) ? p[0] : p;
 				if (p.indexOf('http') !== 0) {
 					const ret = this._copyFile(PATH.join(bp, p), PATH.join(dirPath, p));
 					if (!ret) this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
@@ -80,7 +84,8 @@ class Exporter {
 			title = PATH.basename(filePath, '.js');
 			title = title.charAt(0).toUpperCase() + title.slice(1);
 		} else {
-			for (let p of res) {
+			for (let p of uses) {
+				p = Array.isArray(p) ? p[0] : p;
 				if (p.indexOf('http') !== 0) {
 					this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
 				}
@@ -96,26 +101,66 @@ class Exporter {
 		return expPath;
 	}
 
-	_extractImportPaths(lines) {
+	// _extractImportPaths(lines) {
+	// 	const COMMENT = '//', IMP = '@import';
+	// 	const res = [];
+
+	// 	for (let line of lines) {
+	// 		line = line.trim();
+	// 		const ss = line.indexOf(COMMENT);
+	// 		if (ss === -1) continue;
+	// 		const is = line.indexOf(IMP, ss + COMMENT.length);
+	// 		if (is === -1) continue;
+	// 		let tmp = line.substr(is + IMP.length).trim();
+	// 		if (tmp[tmp.length - 1] === ';') {
+	// 			tmp = tmp.substr(0, tmp.length - 1).trim();
+	// 		}
+	// 		for (let item of this._splitSpaceSeparatedLine(tmp)) {
+	// 			item = this._unwrapQuote(item);
+	// 			if (item.indexOf('.js') === -1) item += '.js';
+	// 			res.push(item);
+	// 		}
+	// 	}
+	// 	return res;
+	// }
+
+	_extractUseDeclarations(lines) {
+		const COMMENT = '//', USE = '@use', IMP = '@import', AS = 'as', EXT = '.js';
 		const res = [];
 
 		for (let line of lines) {
 			line = line.trim();
-			const ss = line.indexOf('//');
-			if (ss === -1) continue;
-			const is = line.indexOf('@import', ss + 2);
-			if (is === -1) continue;
-			let tmp = line.substr(is + 7).trim();
-			if (tmp[tmp.length - 1] === ';') {
-				tmp = tmp.substr(0, tmp.length - 1).trim();
+			const posC = line.indexOf(COMMENT);
+			if (posC === -1) continue;
+			line = line.substr(posC + COMMENT.length).trim();
+
+			const posU = line.indexOf(USE);
+			if (posU !== -1) {
+				line = line.substr(posU + USE.length).trim();
+			} else {
+				const posI = line.indexOf(IMP);
+				if (posI === -1) continue;
+				line = line.substr(posI + IMP.length).trim();
 			}
-			for (let item of this._splitSpaceSeparatedLine(tmp)) {
-				if (item[0] === "'" && item[item.length - 1] === "'") {
-					item = item.substr(1, item.length - 2);
-				} else if (item[0] === '"' && item[item.length - 1] === '"') {
-					item = item.substr(1, item.length - 2);
+
+			if (line[line.length - 1] === ';') {
+				line = line.substr(0, line.length - 1).trim();
+			}
+			const items = this._splitSpaceSeparatedLine(line);
+			for (let i = 0; i < items.length; i += 1) {
+				let item = items[i];
+				if (item === AS) {
+					if (0 < i && i + 1 < items.length) {
+						const lastRes = res[res.length - 1];
+						const lastItem = Array.isArray(lastRes) ? lastRes[0] : lastRes;
+						res[res.length - 1] = [lastItem, items[i + 1]];
+						i += 1;
+					}
+					continue;
+				} else {
+					item = this._unwrapQuote(item);
+					if (item.indexOf(EXT) === -1) item += EXT;
 				}
-				if (item.indexOf('.js') === -1) item += '.js';
 				res.push(item);
 			}
 		}
@@ -146,6 +191,16 @@ class Exporter {
 		}
 		if (inQt === '' && cur.length > 0) ret.push(cur);
 		return ret;
+	}
+
+	_unwrapQuote(str) {
+		if (str[0] === "'" && str[str.length - 1] === "'") {
+			return str.substr(1, str.length - 2);
+		}
+		if (str[0] === '"' && str[str.length - 1] === '"') {
+			return str.substr(1, str.length - 2);
+		}
+		return str;
 	}
 
 	_copyFile(from, to) {
