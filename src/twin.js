@@ -56,7 +56,7 @@ class Twin {
 
 
 	_createStudyWindow() {
-		this._studyWin = new BrowserWindow({ 'show': false });
+		this._studyWin = new BrowserWindow({ show: false });
 		this._studyWin.loadURL(`file://${__dirname}/renderer_study/study.html#${this._id}`);
 		this._studyWin.once('ready-to-show', () => {
 			this._initializeDocument();

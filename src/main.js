@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-27
+ * @version 2018-11-28
  *
  */
 
@@ -12,9 +12,10 @@
 
 const { app, globalShortcut } = require('electron');
 
-const PATH   = require('path');
-const Config = require('./lib/config.js');
-const Twin   = require('./twin.js');
+const PATH    = require('path');
+const PROCESS = require('process');
+const Config  = require('./lib/config.js');
+const Twin    = require('./twin.js');
 
 
 class Main {
@@ -25,8 +26,10 @@ class Main {
 
 		this._conf = new Config(PATH.join(__dirname, '../'));
 		this._conf.loadSync();
-
-		app.setName('Croqujs');  // for Mac
+		if (PROCESS.platform === 'darwin') {
+			app.setName('Croqujs');  // for Mac
+			app.dock.setIcon(__dirname + '/res/icon.png');  // for Mac
+		}
 		app.on('ready', () => {
 			this._createNewWindow();
 			globalShortcut.register('CmdOrCtrl+F12',       () => { this._focusedTwin.toggleFieldDevTools(); });
