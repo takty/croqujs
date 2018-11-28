@@ -429,115 +429,117 @@ class Study {
 
 	executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
-		const conf = this._config;
 
-		// File Command
+		setTimeout(() => {
+			const conf = this._config;
 
-		if (cmd === 'new') {
-			this._checkCanDiscard(this._res.msg.confirmNew, '_initializeDocument');
-		} else if (cmd === 'open') {
-			this._checkCanDiscard(this._res.msg.confirmOpen, 'doOpen');
-		} else if (cmd === 'save') {
-			this._twinMessage('doSave', this._editor.value());
-		} else if (cmd === 'saveAs') {
-			this._twinMessage('doSaveAs', this._editor.value());
-		} else if (cmd === 'close') {
-			this._checkCanDiscard(this._res.msg.confirmExit, 'doClose', this._editor.value());
+			// File Command
 
-		} else if (cmd === 'exportAsLibrary') {
-			const cs = JSON.stringify(this._codeStructure);
-			this._showPrompt(this._res.msg.enterLibraryName, 'input', this._res.msg.libraryName, this._name, 'doExportAsLibrary', this._editor.value(), cs);
-		} else if (cmd === 'exportAsWebPage') {
-			this._twinMessage('doExportAsWebPage', this._editor.value());
+			if (cmd === 'new') {
+				this._checkCanDiscard(this._res.msg.confirmNew, '_initializeDocument');
+			} else if (cmd === 'open') {
+				this._checkCanDiscard(this._res.msg.confirmOpen, 'doOpen');
+			} else if (cmd === 'save') {
+				this._twinMessage('doSave', this._editor.value());
+			} else if (cmd === 'saveAs') {
+				this._twinMessage('doSaveAs', this._editor.value());
+			} else if (cmd === 'close') {
+				this._checkCanDiscard(this._res.msg.confirmExit, 'doClose', this._editor.value());
 
-		} else if (cmd === 'setLanguageJa') {
-			conf.setItem('language', 'ja');
-			this._showAlert(this._res.msg.alertNextTime, 'info');
-		} else if (cmd === 'setLanguageEn') {
-			conf.setItem('language', 'en');
-			this._showAlert(this._res.msg.alertNextTime, 'info');
-		}
+			} else if (cmd === 'exportAsLibrary') {
+				const cs = JSON.stringify(this._codeStructure);
+				this._showPrompt(this._res.msg.enterLibraryName, 'input', this._res.msg.libraryName, this._name, 'doExportAsLibrary', this._editor.value(), cs);
+			} else if (cmd === 'exportAsWebPage') {
+				this._twinMessage('doExportAsWebPage', this._editor.value());
 
-		// Edit Command
+			} else if (cmd === 'setLanguageJa') {
+				conf.setItem('language', 'ja');
+				this._showAlert(this._res.msg.alertNextTime, 'info');
+			} else if (cmd === 'setLanguageEn') {
+				conf.setItem('language', 'en');
+				this._showAlert(this._res.msg.alertNextTime, 'info');
+			}
 
-		if (cmd === 'undo') {
-			this._editor.undo();
-		} else if (cmd === 'redo') {
-			this._editor.redo();
+			// Edit Command
 
-		} else if (cmd === 'cut') {
-			this._editor.cut();
-		} else if (cmd === 'copy') {
-			this._editor.copy();
-		} else if (cmd === 'paste') {
-			this._editor.paste();
-		} else if (cmd === 'selectAll') {
-			this._editor.selectAll();
+			if (cmd === 'undo') {
+				this._editor.undo();
+			} else if (cmd === 'redo') {
+				this._editor.redo();
 
-		} else if (cmd === 'toggleComment') {
-			this._editor.toggleComment();
-		} else if (cmd === 'format') {
-			this._editor.format();
+			} else if (cmd === 'cut') {
+				this._editor.cut();
+			} else if (cmd === 'copy') {
+				this._editor.copy();
+			} else if (cmd === 'paste') {
+				this._editor.paste();
+			} else if (cmd === 'selectAll') {
+				this._editor.selectAll();
 
-		} else if (cmd === 'find') {
-			this._editor.find();
-		} else if (cmd === 'findNext') {
-			this._editor.findNext();
-		} else if (cmd === 'replace') {
-			this._editor.replace();
+			} else if (cmd === 'toggleComment') {
+				this._editor.toggleComment();
+			} else if (cmd === 'format') {
+				this._editor.format();
 
-		} else if (cmd === 'copyAsImage') {
-			this.sendBackCapturedImages();
-		}
+			} else if (cmd === 'find') {
+				this._editor.find();
+			} else if (cmd === 'findNext') {
+				this._editor.findNext();
+			} else if (cmd === 'replace') {
+				this._editor.replace();
 
-		// Code Command
+			} else if (cmd === 'copyAsImage') {
+				this.sendBackCapturedImages();
+			}
 
-		if (cmd === 'run') {
-			this._prepareExecution('doRun');
-		} else if (cmd === 'stop') {
-			this._callFieldMethod('closeProgram');
-			this._twinMessage('stop');
-		} else if (cmd === 'runWithoutWindow') {
-			this._prepareExecution('doRunWithoutWindow');
-		}
+			// Code Command
 
-		// View Command
+			if (cmd === 'run') {
+				this._prepareExecution('doRun');
+			} else if (cmd === 'stop') {
+				this._callFieldMethod('closeProgram');
+				this._twinMessage('stop');
+			} else if (cmd === 'runWithoutWindow') {
+				this._prepareExecution('doRunWithoutWindow');
+			}
 
-		if (cmd === 'tileWin') {
-			this._twinMessage('tileWin');
+			// View Command
 
-		} else if (cmd === 'fontSizePlus') {
-			const size = Math.min(64, Math.max(10, conf.getItem('fontSize') + 2));
-			conf.setItem('fontSize', size);
-		} else if (cmd === 'fontSizeMinus') {
-			const size = Math.min(64, Math.max(10, conf.getItem('fontSize') - 2));
-			conf.setItem('fontSize', size);
-		} else if (cmd === 'fontSizeReset') {
-			conf.setItem('fontSize', 16);
+			if (cmd === 'tileWin') {
+				this._twinMessage('tileWin');
 
-		} else if (cmd === 'lineHeightPlus') {
-			const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') + 15));
-			conf.setItem('lineHeight', lh);
-		} else if (cmd === 'lineHeightMinus') {
-			const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') - 15));
-			conf.setItem('lineHeight', lh);
-		} else if (cmd === 'lineHeightReset') {
-			conf.setItem('lineHeight', 165);
+			} else if (cmd === 'fontSizePlus') {
+				const size = Math.min(64, Math.max(10, conf.getItem('fontSize') + 2));
+				conf.setItem('fontSize', size);
+			} else if (cmd === 'fontSizeMinus') {
+				const size = Math.min(64, Math.max(10, conf.getItem('fontSize') - 2));
+				conf.setItem('fontSize', size);
+			} else if (cmd === 'fontSizeReset') {
+				conf.setItem('fontSize', 16);
 
-		} else if (cmd === 'toggleSoftWrap') {
-			conf.setItem('softWrap', !conf.getItem('softWrap'));
-		} else if (cmd === 'toggleFunctionLineNumber') {
-			conf.setItem('functionLineNumber', !conf.getItem('functionLineNumber'));
-		} else if (cmd === 'toggleOutputPane') {
-			this._outputPane.toggle();
-		}
+			} else if (cmd === 'lineHeightPlus') {
+				const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') + 15));
+				conf.setItem('lineHeight', lh);
+			} else if (cmd === 'lineHeightMinus') {
+				const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') - 15));
+				conf.setItem('lineHeight', lh);
+			} else if (cmd === 'lineHeightReset') {
+				conf.setItem('lineHeight', 165);
 
-		// Help Command
+			} else if (cmd === 'toggleSoftWrap') {
+				conf.setItem('softWrap', !conf.getItem('softWrap'));
+			} else if (cmd === 'toggleFunctionLineNumber') {
+				conf.setItem('functionLineNumber', !conf.getItem('functionLineNumber'));
+			} else if (cmd === 'toggleOutputPane') {
+				this._outputPane.toggle();
+			}
 
-		if (cmd === 'showAbout') {
-			this._showAlert(this._res.about.join('\n'), 'info');
-		}
+			// Help Command
 
+			if (cmd === 'showAbout') {
+				this._showAlert(this._res.about.join('\n'), 'info');
+			}
+		}, 0);
 	}
 
 }
