@@ -77,9 +77,10 @@ class Exporter {
 				if (Array.isArray(dec)) {
 					const p = dec[0];
 					if (p.startsWith('http')) return [false, p];
-					const res = this._createLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, p));
+					const destFn = PATH.basename(p, PATH.extname(p)) + '.lib.js';
+					const res = this._createLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, destFn));
 					if (!res) return [false, p];
-					pushTag(p);
+					pushTag(destFn);
 				} else {
 					const p = dec;
 					if (!p.startsWith('http')) {
