@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-26
+ * @version 2018-11-28
  *
  */
 
@@ -18,6 +18,7 @@ class Editor {
 		this._isEnabled = true;
 		this._isReadOnly = false;
 		this._isFunctionLineNumberEnabled = false;
+		this._isLineSelModeEnabled = false;
 		this._codeStructure = {};
 
 		CodeMirror.keyMap.pcDefault['Shift-Ctrl-R'] = false;  // Directly Change the Key Map!
@@ -244,13 +245,13 @@ class Editor {
 	initGutterSelection() {
 		const doc = this._comp.getDoc();
 		const guts = document.querySelector('.CodeMirror-gutters');
-		let downLine = -1, fromLine = -1, dragging = false, lineSelMode = false;
+		let downLine = -1, fromLine = -1, dragging = false;
 
 		this._comp.on('gutterClick', (cm, line, gut, e) => {
 			if (!isGutter(e)) {
 				downLine = -1;
 				fromLine = -1;
-				setLineSelectionMode(false);
+				this.setLineSelectionMode(false);
 				doc.setCursor(getLine(e), 0);
 			}
 		});
@@ -262,8 +263,8 @@ class Editor {
 				if (e.shiftKey) {
 					if (fromLine === -1) fromLine = this._comp.getCursor().line;
 					this._select(fromLine, downLine);
-					setLineSelectionMode(false);
-				} else if (lineSelMode) {
+					this.setLineSelectionMode(false);
+				} else if (this._isLineSelModeEnabled) {
 					this._select(fromLine, downLine);
 				} else {
 					fromLine = downLine;
@@ -282,10 +283,10 @@ class Editor {
 		this._elem.addEventListener('mouseup', (e) => {
 			if (dragging && isGutter(e)) {
 				if (e.shiftKey) {
-				} else if (lineSelMode) {
+				} else if (this._isLineSelModeEnabled) {
 				} else {
 					if (getLine(e) === downLine) {
-						setLineSelectionMode(true);
+						this.setLineSelectionMode(true);
 						fromLine = downLine;
 					}
 				}
@@ -294,26 +295,27 @@ class Editor {
 		});
 		this._comp.on('cursorActivity', () => {
 			if (doc.getSelection() === '') {
-				setLineSelectionMode(false);
+				this.setLineSelectionMode(false);
 			}
 		});
 		const isGutter = (e) => {
 			const s = window.getComputedStyle(guts);
 			return !(guts.offsetWidth - parseInt(s.borderRightWidth) - 1 < e.clientX);
-		}
+		};
 		const getLine = (e) => {
 			const { line } = this._comp.coordsChar({ left: e.clientX, top: e.clientY });
 			return line;
 		};
-		const setLineSelectionMode = (f) => {
-			if (f) {
-				lineSelMode = true;
-				this._elem.classList.add('line-selection-mode');
-			} else {
-				lineSelMode = false;
-				this._elem.classList.remove('line-selection-mode');
-			}
-		};
+	}
+
+	setLineSelectionMode(enabled) {
+		if (enabled) {
+			this._isLineSelModeEnabled = true;
+			this._elem.classList.add('line-selection-mode');
+		} else {
+			this._isLineSelModeEnabled = false;
+			this._elem.classList.remove('line-selection-mode');
+		}
 	}
 
 	_select(fromLine, toLine = false) {

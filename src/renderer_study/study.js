@@ -429,6 +429,7 @@ class Study {
 
 	executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
+		this._editor.setLineSelectionMode(false);
 
 		setTimeout(() => {
 			const conf = this._config;
