@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-27
+ * @version 2018-11-28
  *
  */
 
@@ -13,6 +13,9 @@
 const FS   = require('fs');
 const PATH = require('path');
 
+global.acorn      = require('./renderer_study/lib/acorn/acorn.js');
+global.acorn.walk = require('./renderer_study/lib/acorn/walk.js');
+const analyze     = require('./renderer_study/analyzer.js');
 
 const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
 const HTML_HEAD2  = '</head><body><script>';
@@ -30,20 +33,19 @@ class Exporter {
 
 	readLibrarySources(codeStr, filePath) {
 		const bp = (filePath) ? PATH.dirname(filePath) : null;
-		// const ps = this._extractImportPaths(codeStr.split('\n'));
-		const uses = this._extractUseDeclarations(codeStr.split('\n'));
+		const decs = this._extractUseDeclarations(codeStr.split('\n'));
 		const libs = [];
 
-		for (let p of uses) {
-			p = Array.isArray(p) ? p[0] : p;
+		for (let dec of decs) {
+			const p = Array.isArray(dec) ? dec[0] : dec;
 			if (p.indexOf('http') === 0) {
-				libs.push({desc: p});
+				libs.push({ desc: p });
 			} else {
 				let cont = null;
 				if (bp) cont = this._readFile(PATH.join(bp, p));
 				if (cont === null) cont = this._readFile(PATH.join(__dirname, EXP_LIB_DIR, p));
 				if (cont === null) return p;  // Error
-				libs.push({desc: p, source: cont});
+				libs.push({ desc: p, source: cont });
 			}
 		}
 		return libs;
@@ -58,13 +60,13 @@ class Exporter {
 		const srcStr = codeText.split('\n').map(l => ('\t' + l)).join(EXP_EOL);
 
 		FS.writeFileSync(filePath, [header, srcStr, footer].join(EXP_EOL));
+		return FS.existsSync(filePath);
 	}
 
 	exportAsWebPage(codeText, filePath, dirPath, injection = false) {
 		const lines = codeText.split('\n');
-		// const res = this._extractImportPaths(lines), libs = [];
-		const uses = this._extractUseDeclarations(lines), libs = [];
-		const pushTag = (src) => {libs.push('<script src="' + src + '"></script>');};
+		const decs = this._extractUseDeclarations(lines), libs = [];
+		const pushTag = (src) => { libs.push('<script src="' + src + '"></script>'); };
 		let title = 'Croqujs';
 
 		if (injection) {
@@ -73,19 +75,27 @@ class Exporter {
 		}
 		if (filePath) {
 			const bp = PATH.dirname(filePath);
-			for (let p of uses) {
-				p = Array.isArray(p) ? p[0] : p;
-				if (p.indexOf('http') !== 0) {
-					const ret = this._copyFile(PATH.join(bp, p), PATH.join(dirPath, p));
-					if (!ret) this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+			for (let dec of decs) {
+				if (Array.isArray(dec)) {
+					const p = dec[0];
+					if (p.indexOf('http') !== 0) {
+						const res = this._createLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, p));
+						if (res) pushTag(p);
+					}
+				} else {
+					const p = dec;
+					if (p.indexOf('http') !== 0) {
+						const ret = this._copyFile(PATH.join(bp, p), PATH.join(dirPath, p));
+						if (!ret) this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+					}
+					pushTag(p);
 				}
-				pushTag(p);
 			}
 			title = PATH.basename(filePath, '.js');
 			title = title.charAt(0).toUpperCase() + title.slice(1);
 		} else {
-			for (let p of uses) {
-				p = Array.isArray(p) ? p[0] : p;
+			for (let dec of decs) {
+				const p = Array.isArray(dec) ? dec[0] : dec;
 				if (p.indexOf('http') !== 0) {
 					this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
 				}
@@ -101,70 +111,65 @@ class Exporter {
 		return expPath;
 	}
 
-	// _extractImportPaths(lines) {
-	// 	const COMMENT = '//', IMP = '@import';
-	// 	const res = [];
 
-	// 	for (let line of lines) {
-	// 		line = line.trim();
-	// 		const ss = line.indexOf(COMMENT);
-	// 		if (ss === -1) continue;
-	// 		const is = line.indexOf(IMP, ss + COMMENT.length);
-	// 		if (is === -1) continue;
-	// 		let tmp = line.substr(is + IMP.length).trim();
-	// 		if (tmp[tmp.length - 1] === ';') {
-	// 			tmp = tmp.substr(0, tmp.length - 1).trim();
-	// 		}
-	// 		for (let item of this._splitSpaceSeparatedLine(tmp)) {
-	// 			item = this._unwrapQuote(item);
-	// 			if (item.indexOf('.js') === -1) item += '.js';
-	// 			res.push(item);
-	// 		}
-	// 	}
-	// 	return res;
-	// }
+	// -------------------------------------------------------------------------
+
 
 	_extractUseDeclarations(lines) {
-		const COMMENT = '//', USE = '@use', IMP = '@import', AS = 'as', EXT = '.js';
+		const USE = '@use', NEED = '@need', IMPORT = '@import', AS = 'as', EXT = '.js';
 		const res = [];
 
 		for (let line of lines) {
-			line = line.trim();
-			const posC = line.indexOf(COMMENT);
-			if (posC === -1) continue;
-			line = line.substr(posC + COMMENT.length).trim();
+			const ret = this._isSpecialComment(line);
+			if (ret === false) continue;
+			const [type, params] = ret;
+			const items = this._splitSpaceSeparatedLine(params).map(this._unwrapQuote);
 
-			const posU = line.indexOf(USE);
-			if (posU !== -1) {
-				line = line.substr(posU + USE.length).trim();
-			} else {
-				const posI = line.indexOf(IMP);
-				if (posI === -1) continue;
-				line = line.substr(posI + IMP.length).trim();
-			}
-
-			if (line[line.length - 1] === ';') {
-				line = line.substr(0, line.length - 1).trim();
-			}
-			const items = this._splitSpaceSeparatedLine(line);
-			for (let i = 0; i < items.length; i += 1) {
-				let item = items[i];
-				if (item === AS) {
-					if (0 < i && i + 1 < items.length) {
-						const lastRes = res[res.length - 1];
-						const lastItem = Array.isArray(lastRes) ? lastRes[0] : lastRes;
-						res[res.length - 1] = [lastItem, items[i + 1]];
-						i += 1;
-					}
-					continue;
-				} else {
-					item = this._unwrapQuote(item);
+			if (type === NEED || type === IMPORT) {
+				for (let item of items) {
 					if (item.indexOf(EXT) === -1) item += EXT;
+					res.push(item);
 				}
-				res.push(item);
+			} else if (type === USE) {
+				let last = null;
+				for (let i = 0; i < items.length; i += 1) {
+					let item = items[i];
+					if (item === AS) {
+						if (last !== null && i + 1 < items.length) {
+							last[1] = items[i + 1];
+							i += 1;
+						}
+					} else {
+						if (!item.endsWith(EXT)) item += EXT;
+						last = [item, ''];
+						res.push(last);
+					}
+				}
+				for (let r of res) {
+					if (r[1] === '') r[1] = this._pathToLibName(r[0]);
+				}
 			}
 		}
 		return res;
+	}
+
+	_isSpecialComment(line) {
+		const COMMENT = '//', SP_CHAR = '@';
+
+		line = line.trim();
+		if (!line.startsWith(COMMENT)) return false;
+		line = line.substr(COMMENT.length).trim();
+
+		if (line[0] !== SP_CHAR) return false;
+		const pos = line.search(/\s/);
+		if (pos === -1) return false;
+
+		const type = line.substr(0, pos);
+		line = line.substr(pos).trim();
+		if (line[line.length - 1] === ';') {
+			line = line.substr(0, line.length - 1).trim();
+		}
+		return [type, line];
 	}
 
 	_splitSpaceSeparatedLine(line) {
@@ -202,6 +207,38 @@ class Exporter {
 		}
 		return str;
 	}
+
+	_pathToLibName(path) {
+		path = path.replace('/', '\\');
+		let val = path;
+		const ps = path.split('\\');
+		for (let i = ps.length - 1; 0 <= i; i -= 1) {
+			const pst = ps[i].trim();
+			if (pst === '') continue;
+			const pos = pst.indexOf('.');
+			val = pst.substr(0, pos).toUpperCase();
+		}
+		return val.replace(/[ -+\\.]/, '_');
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	_createLibraryImmediately(origPath, nameSpace, destPath) {
+		try {
+			const cont = FS.readFileSync(origPath, 'utf-8');
+			const codeStructure = analyze(cont);
+			return this.exportAsLibrary(cont, destPath, nameSpace, codeStructure);
+		} catch (e) {
+			console.error(e);
+		}
+		return false;
+	}
+
+
+	// -------------------------------------------------------------------------
+
 
 	_copyFile(from, to) {
 		let cont;

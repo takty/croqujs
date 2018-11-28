@@ -3,19 +3,15 @@
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-26
+ * @version 2018-11-28
  *
  */
 
 
 'use strict';
 
-importScripts('lib/acorn/acorn.js');
-importScripts('lib/acorn/acorn-loose.js');
-importScripts('lib/acorn/walk.js');
 
-
-self.addEventListener('message', function (e) {
+function analyze(code) {
 	function walk(node, visitors, base, state, override) {
 		if (!base) {
 			base = acorn.walk.base;
@@ -37,7 +33,7 @@ self.addEventListener('message', function (e) {
 	const ifNodes = [];
 
 	try {
-		const ast = acorn.parse(e.data, {locations: true});
+		const ast = acorn.parse(code, { locations: true });
 		walk(ast, {
 			ClassDeclaration: (node, state, c) => {
 				fnNames.push(node.id.name);
@@ -95,6 +91,11 @@ self.addEventListener('message', function (e) {
 			},
 		});
 	} catch(e) {
+		console.error(e);
 	}
-	self.postMessage({ fnLocs: fnLocs, ifLocs: ifLocs, forLocs: forLocs, fnNames: fnNames });
-}, false);
+	return { fnLocs: fnLocs, ifLocs: ifLocs, forLocs: forLocs, fnNames: fnNames };
+}
+
+if (typeof module === 'object') {
+	module.exports = analyze;
+}

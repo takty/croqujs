@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-26
+ * @version 2018-11-28
  *
  */
 
@@ -93,7 +93,7 @@ class Study {
 		this._editor.rulerEnabled(true);
 		const ec = this._editor.getComponent();
 
-		const w = new Worker('analyzer.js');
+		const w = new Worker('worker-analyzer.js');
 		w.addEventListener('message', (e) => {
 			this._codeStructure = e.data;
 			this._editor.setCodeStructureData(this._codeStructure);
