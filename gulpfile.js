@@ -76,6 +76,7 @@ gulp.task('copy-lib', gulp.parallel(
 gulp.task('copy-src', (done) => {
 	copySync('./src', './dist');
 	fs.removeSync('./dist/renderer_study/scss/');
+	copySync('./res/icon/icon.*', './dist/res/');
 	done();
 });
 
