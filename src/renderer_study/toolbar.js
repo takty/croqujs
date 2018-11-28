@@ -3,7 +3,7 @@
  * Toolbar
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-15
+ * @version 2018-11-28
  *
  */
 
@@ -77,7 +77,6 @@ class Toolbar {
 	}
 
 	reflectState(state) {
-		this._setEnabled('exportAsLibrary', state.isFileOpened);
 		this._setEnabled('undo', state.canUndo);
 	}
 
