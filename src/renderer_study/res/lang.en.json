@@ -53,7 +53,7 @@
         "exportedAsLibrary": "Exported as a library.",
         "enterLibraryName": "Enter a library name to which export.",
         "libraryName": "A library name...",
-        "cannotImport": "The file '%s' cannot be imported.",
+        "cannotReadLibrary": "The file '%s' cannot be read.",
         "copyingAsImage": "Copying as an image now...",
         "copiedAsImage": "Copied as an image."
     },

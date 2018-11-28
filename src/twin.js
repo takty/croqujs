@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-27
+ * @version 2018-11-28
  *
  */
 
@@ -364,9 +364,9 @@ class Twin {
 	}
 
 	_execute(codeStr) {
-		const ret = this._exporter.readLibrarySources(codeStr, this._filePath);
-		if (!Array.isArray(ret)) {
-			const info = { msg: ret, import: true, isUserCode: false };
+		const ret = this._exporter.checkLibraryReadable(codeStr, this._filePath);
+		if (ret !== true) {
+			const info = { msg: ret, library: true, isUserCode: false };
 			this._backup.backupErrorLog(info, this._codeCache);
 			this.callStudyMethod('addErrorMessage', info);
 			return;
@@ -376,7 +376,13 @@ class Twin {
 		try {
 			this._rmdirSync(expDir);
 			FS.mkdirSync(expDir);
-			const expPath = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
+			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
+			if (!success) {
+				const info = { msg: expPath, library: true, isUserCode: false };
+				this._backup.backupErrorLog(info, this._codeCache);
+				this.callStudyMethod('addErrorMessage', info);
+				return;
+			}
 			const baseUrl = 'file:///' + expPath.replace(/\\/g, '/');
 			const url = baseUrl + '#' + this._id + ',' + this._exporter._userCodeOffset;
 			this.callStudyMethod('openProgram', url);

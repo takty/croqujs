@@ -276,8 +276,8 @@ class Study {
 
 	addErrorMessage(info) {  // Called By Twin
 		let msg;
-		if (info.import) {
-			msg = this._res.msg.cannotImport.replace('%s', info.msg);
+		if (info.library) {
+			msg = this._res.msg.cannotReadLibrary.replace('%s', info.msg);
 		} else {
 			const file = info.isUserCode ? '' : `(${info.fileName}) `;
 			const transMsg = new ErrorTranslator(this._lang).translate(info.msg);

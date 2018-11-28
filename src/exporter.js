@@ -31,10 +31,9 @@ class Exporter {
 		this._userCodeOffset = 0;
 	}
 
-	readLibrarySources(codeStr, filePath) {
+	checkLibraryReadable(codeStr, filePath) {
 		const bp = (filePath) ? PATH.dirname(filePath) : null;
 		const decs = this._extractUseDeclarations(codeStr.split('\n'));
-		const libs = [];
 
 		for (let dec of decs) {
 			const p = Array.isArray(dec) ? dec[0] : dec;
@@ -45,10 +44,9 @@ class Exporter {
 				if (bp) cont = this._readFile(PATH.join(bp, p));
 				if (cont === null) cont = this._readFile(PATH.join(__dirname, EXP_LIB_DIR, p));
 				if (cont === null) return p;  // Error
-				libs.push({ desc: p, source: cont });
 			}
 		}
-		return libs;
+		return true;
 	}
 
 	exportAsLibrary(codeText, filePath, nameSpace, codeStructure) {
@@ -78,15 +76,16 @@ class Exporter {
 			for (let dec of decs) {
 				if (Array.isArray(dec)) {
 					const p = dec[0];
-					if (p.indexOf('http') !== 0) {
-						const res = this._createLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, p));
-						if (res) pushTag(p);
-					}
+					if (p.startsWith('http')) return [false, p];
+					const res = this._createLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, p));
+					if (!res) return [false, p];
+					pushTag(p);
 				} else {
 					const p = dec;
-					if (p.indexOf('http') !== 0) {
-						const ret = this._copyFile(PATH.join(bp, p), PATH.join(dirPath, p));
-						if (!ret) this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+					if (!p.startsWith('http')) {
+						let res = this._copyFile(PATH.join(bp, p), PATH.join(dirPath, p));
+						if (!res) res = this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+						if (!res) return [false, p];
 					}
 					pushTag(p);
 				}
@@ -96,8 +95,9 @@ class Exporter {
 		} else {
 			for (let dec of decs) {
 				const p = Array.isArray(dec) ? dec[0] : dec;
-				if (p.indexOf('http') !== 0) {
-					this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+				if (!p.startsWith('http')) {
+					const res = this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+					if (!res) return [false, p];
 				}
 				pushTag(p);
 			}
@@ -108,7 +108,7 @@ class Exporter {
 		this._userCodeOffset = HTML_HEAD1.length + libTagStr.length + HTML_HEAD2.length;
 
 		FS.writeFileSync(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
-		return expPath;
+		return [true, expPath];
 	}
 
 
@@ -226,14 +226,11 @@ class Exporter {
 
 
 	_createLibraryImmediately(origPath, nameSpace, destPath) {
-		try {
-			const cont = FS.readFileSync(origPath, 'utf-8');
-			const codeStructure = analyze(cont);
-			return this.exportAsLibrary(cont, destPath, nameSpace, codeStructure);
-		} catch (e) {
-			console.error(e);
-		}
-		return false;
+		const cont = this._readFile(origPath);
+		if (cont === null) return false;
+
+		const cs = analyze(cont);
+		return this.exportAsLibrary(cont, destPath, nameSpace, cs);
 	}
 
 

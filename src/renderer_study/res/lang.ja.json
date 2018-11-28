@@ -53,7 +53,7 @@
         "exportedAsLibrary": "ライブラリとしてエクスポートされました。",
         "enterLibraryName": "エクスポートするライブラリ名を入力してください。",
         "libraryName": "ライブラリ名...",
-        "cannotImport": "ファイル「%s」をインポートできませんでした。",
+        "cannotReadLibrary": "ファイル「%s」を読みこめませんでした。",
         "copyingAsImage": "画像としてコピー中...",
         "copiedAsImage": "画像としてコピーしました。"
     },
