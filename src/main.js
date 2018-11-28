@@ -13,7 +13,6 @@
 const { app, globalShortcut } = require('electron');
 
 const PATH    = require('path');
-const PROCESS = require('process');
 const Config  = require('./lib/config.js');
 const Twin    = require('./twin.js');
 
@@ -26,10 +25,7 @@ class Main {
 
 		this._conf = new Config(PATH.join(__dirname, '../'));
 		this._conf.loadSync();
-		if (PROCESS.platform === 'darwin') {
-			app.setName('Croqujs');  // for Mac
-			app.dock.setIcon(__dirname + '/res/icon.png');  // for Mac
-		}
+		app.setName('Croqujs');  // for Mac
 		app.on('ready', () => {
 			this._createNewWindow();
 			globalShortcut.register('CmdOrCtrl+F12',       () => { this._focusedTwin.toggleFieldDevTools(); });
