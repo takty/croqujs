@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-15
+ * @version 2018-12-19
  *
  */
 
@@ -89,6 +89,21 @@
 	border-left: 0;
 	height: 100%;
 	cursor: text;
+
+	pointer-events: none;
+	&::after {
+		content: '';
+		display: block;
+		position: absolute;
+		top: 0;
+		right: -16px;
+		width: 16px;
+		height: 100%;
+		pointer-events: auto;
+	}
+	&:hover::after {
+		background-color: rgba($L-Purple, 0.45);
+	}
 }
 
 .CodeMirror-gutter {
@@ -130,6 +145,23 @@
 	color: $L-DarkGray;
 }
 
+.CodeMirror-linenumber {
+	pointer-events: none;
+	&::before {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		display: block;
+		left: -200px;
+		right: -4px;
+		height: 100%;
+		pointer-events: auto;
+	}
+	&:hover::before {
+		background-color: rgba($L-Purple, 0.25);
+	}
+}
+
 
 // Function Number Gutter ------------------------------------------------------
 
@@ -165,8 +197,41 @@
 }
 
 .CodeMirror-function-even {
-	background-color: $L-LightGray;
+	&::after {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		display: block;
+		top: 0;
+		left: -200px;
+		right: 0;
+		height: 100%;
+		background-color: rgba($L-LightGray, 0.75);
+	}
 	height: 100%;
+}
+
+.CodeMirror-function-linenumber,
+.CodeMirror-function-number {
+	pointer-events: none;
+	&::before {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		display: block;
+		left: -200px;
+		right: 0;
+		height: 100%;
+		pointer-events: auto;
+	}
+	&:hover::before {
+		background-color: rgba($L-Purple, 0.25);
+	}
+	&.CodeMirror-function-even {
+		&:hover::before {
+			background-color: rgba($L-Purple, 0.65);
+		}
+	}
 }
 
 
