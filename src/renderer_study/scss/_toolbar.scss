@@ -3,9 +3,12 @@
  * Toolbar Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-12
+ * @version 2018-12-19
  *
  */
+
+
+$size-toolbar-button: 40px;
 
 
 .toolbar {
@@ -13,7 +16,7 @@
 
 	position: relative;
 	width: 100%;
-	height: 45px;
+	height: $size-toolbar-button;
 	z-index: 999;
 
 	transition: 0.25s;
@@ -23,36 +26,32 @@
 		box-sizing: border-box;
 		cursor: default;
 
-		margin: 0 12px 2px 12px;
-		padding: 0;
-		width: 46px;
-		height: 46px;
+		margin: 0 0 2px 0;
+		padding: 0 12px;
+		width: calc(#{$size-toolbar-button} + 12px * 2);
+		height: $size-toolbar-button;
 
 		i {
 			color: $L-Gray;
 			transition: 0.25s;
 		}
+	}
+	
+	.btn:not(.disabled) {
 		&:hover,
 		&:active {
 			i { color: $L-DarkGray; }
 		}
 		&:hover {
-			margin: 0 12px 2px 12px;
+			margin: 0 0 2px 0;
 			text-shadow: 0   0 2px rgba(#000, 0.15),
 			             0 2px 4px rgba(#000, 0.25);
 		}
-		&:active { margin: 2px 12px 0 12px; }
+		&:active { margin: 2px 0 0 0; }
 	}
-	
+
 	.btn.disabled {
 		pointer-events: none;
-
-		&:hover,
-		&:active {
-			margin: 0 12px 2px 12px;
-			text-shadow: none;
-			i { color: $L-LightGray; }
-		}
 		i { color: $L-LightGray; }
 	}
 
@@ -66,8 +65,8 @@
 
 	margin: 0;
 	padding: 0;
-	width: 46px;
-	height: 46px;
+	width: $size-toolbar-button;
+	height: $size-toolbar-button;
 }
 
 .toolbar-shadow {

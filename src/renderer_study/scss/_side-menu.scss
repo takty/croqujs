@@ -3,7 +3,7 @@
  * Side Menu Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-27
+ * @version 2018-12-19
  *
  */
 
@@ -14,7 +14,7 @@ $menu-padding-v: 10px;
 .side-menu {
 	display: none;
 	position: absolute;
-	top: 45px;
+	top: $size-toolbar-button;
 	left: 0;
 	bottom: 0;
 	z-index: 9999;
