@@ -7,7 +7,7 @@
  *
  */
 
- 
+
 .CodeMirror {
 	background-color: $color-editor;
 	color: $color-text;
@@ -121,7 +121,7 @@
 	.CodeMirror-gutter-elt,
 	.CodeMirror-linenumber,
 	.CodeMirror-function-linenumber {
-		cursor: url(right-cursor.svg) 22 8, pointer;
+		cursor: url(cursor-right.svg) 22 8, pointer;
 	}
 }
 
@@ -130,7 +130,7 @@
 	.CodeMirror-gutter-elt,
 	.CodeMirror-linenumber,
 	.CodeMirror-function-linenumber {
-		cursor: url(line-cursor.svg) 22 8, pointer;
+		cursor: url(cursor-line.svg) 22 8, pointer;
 	}
 }
 
@@ -293,8 +293,8 @@
 div.CodeMirror span.CodeMirror-matchingbracket {
 	text-shadow: $L-Red    0       0 0.45em,
 				 $L-Red-35 0 -0.15em 1.5em,
-				 $L-Red-35 0  -0.3em 1.5em, 
-				 $L-Red-35 0  0.15em 1.5em, 
+				 $L-Red-35 0  -0.3em 1.5em,
+				 $L-Red-35 0  0.15em 1.5em,
 				 $L-Red-35 0   0.3em 1.5em;
 	color: inherit;
 }
