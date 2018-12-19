@@ -9,7 +9,6 @@
 	<link rel="stylesheet" href="lib/codemirror/addon/dialog/dialog.css">
 	<link rel="stylesheet" href="lib/codemirror/addon/hint/show-hint.css">
 	<link rel="stylesheet" href="lib/codemirror/addon/tern/tern.css">
-	<link rel="stylesheet" href="lib/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="lib/sweetalert2/sweetalert2.min.css">
 
 	<link rel="stylesheet" href="css/study.min.css">
@@ -59,15 +58,15 @@
 	<div id="splitter">
 		<div class="main">
 			<div class="toolbar toolbar-shadow">
-				<div class="btn menu"><div><i class="fa fa-bars fa-2x"></i></div></div>
-				<div class="btn" data-cmd="save"><div><i class="fa fa-download fa-2x"></i></div></div>
+				<div class="btn menu" data-icon="menu"></div>
+				<div class="btn" data-cmd="save" data-icon="save"></div>
 				<div class="filler"></div>
-				<div class="btn" data-cmd="undo"><div><i class="fa fa-undo fa-2x"></i></div></div>
-				<div class="btn" data-cmd="copy"><div><i class="fa fa-copy fa-2x"></i></div></div>
-				<div class="btn" data-cmd="paste"><div><i class="fa fa-paste fa-2x"></i></div></div>
+				<div class="btn" data-cmd="undo" data-icon="undo"></div>
+				<div class="btn" data-cmd="copy" data-icon="copy"></div>
+				<div class="btn" data-cmd="paste" data-icon="paste"></div>
 				<div class="filler"></div>
-				<div class="btn" data-cmd="tileWin"><div><i class="fa fa-columns fa-2x"></i></div></div>
-				<div class="btn" data-cmd="run"><div><i class="fa fa-play fa-2x"></i></div></div>
+				<div class="btn" data-cmd="tileWin" data-icon="columns"></div>
+				<div class="btn" data-cmd="run" data-icon="play"></div>
 				<div class="overwrap"></div>
 			</div>
 			<div id="editor"></div>
@@ -81,24 +80,24 @@
 			<ul class="menu">
 				<li class="mi" data-cmd="new" data-acc="CC+N"></li>
 				<li class="mi" data-cmd="open" data-acc="CC+O"></li>
-				<li class="mi" data-cmd="save" data-acc="CC+S"><i class="fa fa-download fa-lg"></i></li>
+				<li class="mi" data-cmd="save" data-acc="CC+S" data-icon="save"></li>
 				<li class="mi" data-cmd="saveAs" data-acc="CC+Shift+S"></li>
 				<li class="separator"></li>
 				<li class="menu-sub"><span data-res="export"></span><ul>
-					<li class="icon" data-cmd="exportAsLibrary"><i class="fa fa-book fa-lg"></i></li>
-					<li class="icon" data-cmd="exportAsWebPage"><i class="fa fa-file fa-lg"></i></li>
+					<li class="icon" data-cmd="exportAsLibrary" data-icon="book"></li>
+					<li class="icon" data-cmd="exportAsWebPage" data-icon="webpage"></li>
 				</ul></li>
 			</ul>
 			<div class="caption" data-res="edit"></div>
 			<ul class="menu">
 				<li class="menu-sub"><span></span><ul>
-					<li class="icon" data-cmd="undo" data-acc="CC+Z"><i class="fa fa-undo fa-lg"></i></li>
-					<li class="icon" data-cmd="redo" data-acc="CC+Shift+Z"><i class="fa fa-undo fa-lg fa-flip-horizontal"></i></li>
+					<li class="icon" data-cmd="undo" data-acc="CC+Z" data-icon="undo"></li>
+					<li class="icon" data-cmd="redo" data-acc="CC+Shift+Z" data-icon="redo"></li>
 				</ul></li>
 				<li class="menu-sub"><span data-res="edit"></span><ul>
-					<li class="icon" data-cmd="cut" data-acc="*CC+X"><i class="fa fa-cut fa-lg"></i></li>
-					<li class="icon" data-cmd="copy" data-acc="*CC+C"><i class="fa fa-copy fa-lg"></i></li>
-					<li class="icon" data-cmd="paste" data-acc="*CC+V"><i class="fa fa-paste fa-lg"></i></li>
+					<li class="icon" data-cmd="cut" data-acc="*CC+X" data-icon="cut"></li>
+					<li class="icon" data-cmd="copy" data-acc="*CC+C" data-icon="copy"></li>
+					<li class="icon" data-cmd="paste" data-acc="*CC+V" data-icon="paste"></li>
 				</ul></li>
 				<li class="mi" data-cmd="selectAll" data-acc="*CC+A"></li>
 				<li class="separator"></li>
@@ -113,7 +112,7 @@
 			</ul>
 			<div class="caption" data-res="code"></div>
 			<ul class="menu">
-				<li class="mi" data-cmd="run" data-acc="CC+R"><i class="fa fa-play fa-lg"></i></li>
+				<li class="mi" data-cmd="run" data-acc="CC+R" data-icon="play"></li>
 				<li class="mi" data-cmd="stop" data-acc="CC+T"></li>
 				<li class="separator"></li>
 				<li class="mi" data-cmd="runWithoutWindow" data-acc="CC+Shift+R"></li>
@@ -121,14 +120,14 @@
 			<div class="caption" data-res="view"></div>
 			<ul class="menu">
 				<li class="menu-sub"><span data-res="font"></span><ul>
-					<li class="icon stay" data-cmd="fontSizeMinus" data-acc="CC+-"><i class="fa fa-minus-circle fa-lg"></i></li>
-					<li class="icon stay" data-cmd="fontSizeReset" data-acc="CC+0"><i class="fa fa-circle-thin fa-lg"></i></li>
-					<li class="icon stay" data-cmd="fontSizePlus" data-acc="CC+Plus CC+= CC+;"><i class="fa fa-plus-circle fa-lg"></i></li>
+					<li class="icon stay" data-cmd="fontSizeMinus" data-acc="CC+-" data-icon="minus"></li>
+					<li class="icon stay" data-cmd="fontSizeReset" data-acc="CC+0" data-icon="reset"></li>
+					<li class="icon stay" data-cmd="fontSizePlus" data-acc="CC+Plus CC+= CC+;" data-icon="plus"></li>
 				</ul></li>
 				<li class="menu-sub"><span data-res="lineHeight"></span><ul>
-					<li class="icon stay" data-cmd="lineHeightMinus"><i class="fa fa-minus-circle fa-lg"></i></li>
-					<li class="icon stay" data-cmd="lineHeightReset"><i class="fa fa-circle-thin fa-lg"></i></li>
-					<li class="icon stay" data-cmd="lineHeightPlus"><i class="fa fa-plus-circle fa-lg"></i></li>
+					<li class="icon stay" data-cmd="lineHeightMinus" data-icon="minus"></li>
+					<li class="icon stay" data-cmd="lineHeightReset" data-icon="reset"></li>
+					<li class="icon stay" data-cmd="lineHeightPlus" data-icon="plus"></li>
 				</ul></li>
 				<li class="mi" data-cmd="toggleSoftWrap"></li>
 				<li class="separator"></li>

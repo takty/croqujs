@@ -3,7 +3,7 @@
  * Toolbar
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-28
+ * @version 2018-12-19
  *
  */
 
@@ -21,9 +21,13 @@ class Toolbar {
 		this._elm.addEventListener('mousedown', (e) => { e.preventDefault(); });
 		this._elm.addEventListener('mouseup',   (e) => { e.preventDefault(); });
 
-		const bs = this._elm.querySelectorAll('*[data-cmd]');
-		for (let i = 0; i < bs.length; i += 1) {
-			this._setBtn(bs[i]);
+		const cbs = this._elm.querySelectorAll('*[data-cmd]');
+		for (let i = 0; i < cbs.length; i += 1) {
+			this._setBtn(cbs[i]);
+		}
+		const ibs = this._elm.querySelectorAll('.btn');
+		for (let i = 0; i < ibs.length; i += 1) {
+			this._setIcon(ibs[i]);
 		}
 	}
 
@@ -35,6 +39,15 @@ class Toolbar {
 			e.preventDefault();
 			this._study.executeCommand(cmd);
 		});
+	}
+
+	_setIcon(btn) {
+		const icon = btn.dataset.icon;
+		if (icon) {
+			const img = document.createElement('img');
+			img.src = 'css/icon-' + icon + '.svg';
+			btn.appendChild(img);
+		}
 	}
 
 	_setEnabled(cmd, flag) {

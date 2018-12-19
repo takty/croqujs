@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-28
+ * @version 2018-12-19
  *
  */
 
@@ -65,6 +65,12 @@ class SideMenu {
 			e.preventDefault();
 			this._study.executeCommand(cmd, doClose);
 		});
+		const icon = mi.dataset.icon;
+		if (icon) {
+			const img = document.createElement('img');
+			img.src = 'css/icon-' + icon + '.svg';
+			mi.appendChild(img);
+		}
 	}
 
 	_addAccelerator(mi) {

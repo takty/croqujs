@@ -68,11 +68,12 @@ $menu-padding-v: 10px;
 			}
 
 			position: relative;
-			> i {  // Icon
+			> img {  // Icon
 				position: absolute;
 				display: inline-block;
-				margin-left: -28px;
-				color: $L-DarkGray;
+				width: 28px;
+				height: 28px;
+				margin-left: -32px;
 				top: 50%;
 				transform: translateY(-50%);
 			}
@@ -100,7 +101,17 @@ $menu-padding-v: 10px;
 				}
 
 				> li.icon {
-					max-width: 18px;
+					max-width: 28px;
+					max-height: 28px;
+					padding: 4px 6px;
+
+					img {
+						width: 28px;
+						height: 28px;
+					}
+					&.disabled img {
+						opacity: 0.25;
+					}
 				}
 
 				.checked {
@@ -119,16 +130,14 @@ $menu-padding-v: 10px;
 		> [data-cmd].checked {
 			position: relative;
 			&::before {
-				content: '\f00c';
+				content: '';
 				position: absolute;
 				display: inline-block;
-				margin-left: -24px;
-
-				color: $L-DarkGray;
-				font: normal normal normal 14px/1 FontAwesome;
-				font-size: inherit;
-				text-rendering: auto;
-				-webkit-font-smoothing: antialiased;
+				margin-left: -32px;
+				width: 28px;
+				height: 28px;
+				background-image: url('icon-check.svg');
+				background-position: center center;
 			}
 		}
 		[data-cmd].disabled {

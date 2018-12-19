@@ -31,38 +31,30 @@ $size-toolbar-button: 40px;
 		width: calc(#{$size-toolbar-button} + 12px * 2);
 		height: $size-toolbar-button;
 
-		i {
-			color: $L-Gray;
+		img {
+			opacity: 0.65;
 			transition: 0.25s;
 		}
 	}
-	
+
 	.btn:not(.disabled) {
 		&:hover,
 		&:active {
-			i { color: $L-DarkGray; }
+			img { opacity: 1; }
 		}
-		&:hover {
-			margin: 0 0 2px 0;
-			text-shadow: 0   0 2px rgba(#000, 0.15),
-			             0 2px 4px rgba(#000, 0.25);
-		}
+		&:hover { margin: 0 0 2px 0; }
 		&:active { margin: 2px 0 0 0; }
 	}
 
 	.btn.disabled {
 		pointer-events: none;
-		i { color: $L-LightGray; }
+		img { opacity: 0.25; }
 	}
 
 	.filler { flex: 1 1 auto; }
 }
 
-.toolbar .btn div {  // Icon wrapper
-	display: flex;
-	justify-content: center;
-	align-items: center;
-
+.toolbar .btn img {  // Icon wrapper
 	margin: 0;
 	padding: 0;
 	width: $size-toolbar-button;
