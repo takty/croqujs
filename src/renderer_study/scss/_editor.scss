@@ -100,9 +100,11 @@
 		width: 16px;
 		height: 100%;
 		pointer-events: auto;
+		transition: 0.25s;
 	}
 	&:hover::after {
 		background-color: rgba($L-Purple, 0.45);
+		transition: 0.25s;
 	}
 }
 
