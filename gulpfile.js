@@ -4,7 +4,7 @@ const fs = require('fs-extra');
 const glob = require('glob');
 const path = require('path');
 const gulp = require('gulp');
-const $ = require('gulp-load-plugins')({pattern:['gulp-*']});
+const $ = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
 
 function copySync(from, to) {
 	const isToDir = to.endsWith('/');
@@ -35,12 +35,6 @@ gulp.task('copy-codemirror', (done) => {
 	done();
 });
 
-gulp.task('copy-font-awesome', (done) => {
-	copySync('./node_modules/font-awesome/css/font-awesome.min.css', PATH_STUDY_LIB + 'font-awesome/css/');
-	copySync('./node_modules/font-awesome/fonts/fontawesome-webfont.woff2', PATH_STUDY_LIB + 'font-awesome/fonts/');
-	done();
-});
-
 gulp.task('copy-js-beautify', (done) => {
 	copySync('./node_modules/js-beautify/js/lib/beautify.js', PATH_STUDY_LIB + 'js-beautify/');
 	done();
@@ -66,7 +60,6 @@ gulp.task('copy-tern', (done) => {
 gulp.task('copy-lib', gulp.parallel(
 	'copy-acorn',
 	'copy-codemirror',
-	'copy-font-awesome',
 	'copy-js-beautify',
 	'copy-jshint',
 	'copy-sweetalert2',
@@ -85,9 +78,9 @@ gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
 gulp.task('sass', () => {
 	return gulp.src(['src/**/scss/**/[^_]*.scss'])
 		.pipe($.plumber())
-		.pipe($.sass({outputStyle: 'compressed'}))
-		.pipe($.autoprefixer({browsers: ['ie >= 11'], remove: false}))
-		.pipe($.rename({extname: '.min.css'}))
+		.pipe($.sass({ outputStyle: 'compressed' }))
+		.pipe($.autoprefixer({ browsers: ['ie >= 11'], remove: false }))
+		.pipe($.rename({ extname: '.min.css' }))
 		.pipe($.rename((p) => {
 			p.dirname = p.dirname.replace(path.sep + 'scss' + path.sep, path.sep + 'css' + path.sep);
 			p.dirname = p.dirname.replace(path.sep + 'scss', path.sep + 'css');

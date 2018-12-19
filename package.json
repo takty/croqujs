@@ -27,7 +27,6 @@
     "acorn-loose": "^6.0.0",
     "acorn-walk": "^6.1.1",
     "codemirror": "^5.42.0",
-    "font-awesome": "^4.7.0",
     "js-beautify": "^1.8.9",
     "jshint": "^2.9.7",
     "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
