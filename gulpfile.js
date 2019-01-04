@@ -3,6 +3,7 @@
 const fs = require('fs-extra');
 const glob = require('glob');
 const path = require('path');
+const jsonMerger = require('json-merger');
 const gulp = require('gulp');
 const $ = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
 
@@ -69,11 +70,19 @@ gulp.task('copy-lib', gulp.parallel(
 gulp.task('copy-src', (done) => {
 	copySync('./src', './dist');
 	fs.removeSync('./dist/renderer_study/scss/');
+	fs.removeSync('./dist/renderer_study/def/');
 	copySync('./res/icon/icon.*', './dist/res/');
 	done();
 });
 
 gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
+
+gulp.task('compile-json', (done) => {
+	const files = glob.sync('./src/renderer_study/def/*');
+	const res = jsonMerger.mergeFiles(files);
+	fs.writeFileSync('./dist/renderer_study/libl.json', JSON.stringify(res, null, '\t'));
+	done();
+});
 
 gulp.task('sass', () => {
 	return gulp.src(['src/**/scss/**/[^_]*.scss'])
@@ -98,4 +107,4 @@ gulp.task('sass-misc', () => {
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', gulp.series('copy', 'sass', 'sass-misc'));
+gulp.task('default', gulp.series('copy', 'compile-json', 'sass', 'sass-misc'));
