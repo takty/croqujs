@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-28
+ * @version 2019-01-04
  *
  */
 
@@ -34,7 +34,7 @@ class Editor {
 		this.initGutterSelection();
 		this.initCodeStructureView();
 
-		loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'lib/tern/underscore.json'], (ret) => {
+		loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'libl.json'], (ret) => {
 			this.initAutoComplete(ret);
 		});
 
@@ -366,15 +366,15 @@ class Editor {
 		const fn = (cm, c) => this._hint(server, cm, c);
 		fn.async = true;
 		cm.showHint({ hint: fn, completeSingle: false, customKeys: {
-			Up:       function (cm, handle) { handle.moveFocus(-1); },
-			Down:     function (cm, handle) { handle.moveFocus(1); },
-			PageUp:   function (cm, handle) { handle.moveFocus(-handle.menuSize() + 1, true); },
+			Up      : function (cm, handle) { handle.moveFocus(-1); },
+			Down    : function (cm, handle) { handle.moveFocus(1); },
+			PageUp  : function (cm, handle) { handle.moveFocus(-handle.menuSize() + 1, true); },
 			PageDown: function (cm, handle) { handle.moveFocus(handle.menuSize() - 1, true); },
-			Home:     function (cm, handle) { handle.setFocus(0); },
-			End:      function (cm, handle) { handle.setFocus(handle.length - 1); },
-			Enter:    function (cm, handle) { handle.pick(); },
-			Tab:      function (cm, handle) { handle.pick(); },
-			Esc:      function (cm, handle) { handle.close(); }
+			Home    : function (cm, handle) { handle.setFocus(0); },
+			End     : function (cm, handle) { handle.setFocus(handle.length - 1); },
+			Enter   : function (cm, handle) { handle.pick(); },
+			Tab     : function (cm, handle) { handle.pick(); },
+			Esc     : function (cm, handle) { handle.close(); }
 		} });
 	}
 
@@ -384,7 +384,7 @@ class Editor {
 			const from = data.start, to = data.end;
 			if (this._autoCompActivated) {
 				this._autoCompActivated = false;
-				if (to.ch - from.ch === 1) {
+				if (from.line === to.line && to.ch - from.ch === 1) {
 					const pc = this._comp.getDoc().getRange(CodeMirror.Pos(from.line, from.ch - 1), CodeMirror.Pos(to.line, to.ch - 1));
 					if (pc !== '.') return;
 				}
