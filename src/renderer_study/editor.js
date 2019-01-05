@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-04
+ * @version 2019-01-05
  *
  */
 
@@ -379,7 +379,7 @@ class Editor {
 	}
 
 	_hint(ts, cm, c) {
-		ts.request(cm, {type: 'completions', types: true, docs: false, urls: false, includeKeywords: true, caseInsensitive: true}, (error, data) => {
+		ts.request(cm, { type: 'completions', types: true, includeKeywords: true }, (error, data) => {
 			if (error) return;
 			const from = data.start, to = data.end;
 			if (this._autoCompActivated) {
@@ -393,9 +393,9 @@ class Editor {
 			for (let completion of data.completions) {
 				let className = this._typeToIcon(completion.type);
 				if (data.guess) className += ' ' + 'CodeMirror-Tern-' + 'guess';
-				completions.push({text: completion.name, displayText: completion.displayName || completion.name, className: className, data: completion});
+				completions.push({ text: completion.name, displayText: completion.displayName || completion.name, className: className, data: completion });
 			}
-			c({from: from, to: to, list: completions});
+			c({ from: from, to: to, list: completions });
 		});
 	}
 
