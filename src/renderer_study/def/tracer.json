@@ -1,12 +1,9 @@
 {
 	"!name": "libl",
-	"TURTLE": {
-		"Turtle": {
-			"!type": "fn(context: ?, normalDeg: number)",
+	"TRACER": {
+		"Tracer": {
+			"!type": "fn()",
 			"prototype": {
-				"makeChild": {
-					"!type": "fn() -> +TURTLE.Turtle"
-				},
 				"save": {
 					"!type": "fn(step: number) -> !this"
 				},
@@ -118,76 +115,25 @@
 				"towards": {
 					"!type": "fn(x: number, y: number) -> number"
 				},
-				"getDirectionOfHome": {
-					"!type": "fn() -> number"
+				"doLater": {
+					"!type": "fn(func: fn(?), args_array?: [?]) -> !this"
 				},
-				"getDistanceTo": {
-					"!type": "fn(x: number, y: number) -> number"
-				},
-				"getDistanceToHome": {
-					"!type": "fn() -> number"
-				},
-				"visible": {
-					"!type": "fn(val: bool) -> !this|bool"
+				"doNow": {
+					"!type": "fn(func: fn(?), args_array?: [?]) -> !this"
 				},
 				"stepNext": {
 					"!type": "fn(num: number)"
 				},
-				"resetAnimation": {
-					"!type": "fn()"
+				"update": {
+					"!type": "fn(x: number, y: number, dir: number, unitTime: number) -> [number]"
 				},
-				"dot": {
+				"cancel": {
 					"!type": "fn() -> !this"
 				},
-				"circle": {
-					"!type": "fn(r: ?, deg?: ?, anticlockwise?: bool) -> !this"
-				},
-				"image": {
-					"!type": "fn(image: ?, cx: number, cy: number, scale?: number)"
-				},
-				"penUp": {
+				"stop": {
 					"!type": "fn() -> !this"
-				},
-				"penDown": {
-					"!type": "fn() -> !this"
-				},
-				"pu": {
-					"!type": "fn() -> !this"
-				},
-				"pd": {
-					"!type": "fn() -> !this"
-				},
-				"up": {
-					"!type": "fn() -> !this"
-				},
-				"down": {
-					"!type": "fn() -> !this"
-				},
-				"pen": {
-					"!type": "fn(val?: bool) -> !this|bool"
-				},
-				"mode": {
-					"!type": "fn(val?: string) -> !this|string"
-				},
-				"stroke": {
-					"!type": "fn(stroke?: +STYLE.Stroke) -> !this|+STYLE.Stroke"
-				},
-				"fill": {
-					"!type": "fn(fill?: +STYLE.Fill) -> !this|+STYLE.Fill"
-				},
-				"context": {
-					"!type": "fn() -> ?"
-				},
-				"localize": {
-					"!type": "fn()"
-				},
-				"scale": {
-					"!type": "fn(rate: number)"
 				}
 			}
-		},
-		"makeStamp": {
-			"!type": "fn(width: number, height: number, cx: number, cy: number, scale: number, func: fn(?)) -> fn(t: TURTLE.Turtle, var_args: ?)"
 		}
 	}
 }

@@ -1,0 +1,100 @@
+{
+	"!name": "libl",
+	"WIDGET": {
+		"Widget": {
+			"!type": "fn(width?: number, height?: number)",
+			"prototype": {
+				"domElement": {
+					"!type": "fn() -> ?"
+				},
+				"setFillWidth": {
+					"!type": "fn(flag: bool)"
+				},
+				"setVisible": {
+					"!type": "fn(flag: bool)"
+				}
+			}
+		},
+		"Switch": {
+			"!type": "fn(num_or_names?: number|[string], cur?: number)",
+			"prototype": {
+				"!proto": "WIDGET.Widget.prototype",
+				"value": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"onPushed": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				}
+			}
+		},
+		"Toggle": {
+			"!type": "fn(caption_s?: string|[string], state_s?: bool|[bool])",
+			"prototype": {
+				"!proto": "WIDGET.Widget.prototype",
+				"value": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"onPushed": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				}
+			}
+		},
+		"Output": {
+			"!type": "fn(width: number, height?: number, nowrap?: bool)",
+			"prototype": {
+				"!proto": "WIDGET.Widget.prototype",
+				"string": {
+					"!type": "fn(val?: string) -> !this|string"
+				}
+			}
+		},
+		"Chart": {
+			"!type": "fn(width?: number, height?: number)",
+			"prototype": {
+				"!proto": "WIDGET.Widget.prototype",
+				"setLegendWidth": {
+					"!type": "fn(px: number)"
+				},
+				"setDigits": {
+					"!type": "fn(num: number)"
+				},
+				"setItems": {
+					"!type": "fn(items: obj)"
+				},
+				"addData": {
+					"!type": "fn(data: obj)"
+				}
+			}
+		},
+		"SliderBase": {
+			"!type": "fn()",
+			"prototype": {
+				"!proto": "WIDGET.Widget.prototype",
+				"min": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"max": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"value": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"onChanged": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				}
+			}
+		},
+		"Slider": {
+			"!type": "fn(min?: number, max?: number, value?: number, opt?: obj)",
+			"prototype": {
+				"!proto": "WIDGET.SliderBase.prototype"
+			}
+		},
+		"Thermometer": {
+			"!type": "fn(min?: number, max?: number, value?: number, opt?: obj)",
+			"prototype": {
+				"!proto": "WIDGET.SliderBase.prototype"
+			}
+		}
+	}
+}

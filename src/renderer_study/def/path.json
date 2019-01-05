@@ -1,0 +1,52 @@
+{
+	"!name": "libl",
+	"PATH": {
+		"Liner": {
+			"!type": "fn(handler: fn(?), normalDir?: number)",
+			"prototype": {
+				"edge": {
+					"!type": "fn(func?: fn(?)) -> !this|fn(?)"
+				},
+				"line": {
+					"!type": "fn(x0: number, y0: number, dir: number, dist: number, limit?: number, retArea?: [?])"
+				},
+				"quadCurve": {
+					"!type": "fn(x0: number, y0: number, dir: number, dist0: number, deg0: number, dist1: number, limit?: number, retArea?: [?])"
+				},
+				"bezierCurve": {
+					"!type": "fn(x0: number, y0: number, dir: number, dist0: number, deg0: number, dist1: number, deg1: number, dist2: number, limit?: number, retArea?: [?])"
+				},
+				"arc": {
+					"!type": "fn(cx: number, cy: number, dir: number, w: number, h: number, deg0: number, deg1: number, anticlockwise?: bool, limit?: number, retArea?: [?])"
+				}
+			}
+		},
+		"makeDefaultHandler": {
+			"!type": "fn(ctx: ?)"
+		},
+		"normalEdge": {
+			"!type": "fn()"
+		},
+		"sineEdge": {
+			"!type": "fn(length?: number, amplitude?: number, opt?: obj) -> fn(?)"
+		},
+		"squareEdge": {
+			"!type": "fn(length?: number, amplitude?: number, opt?: obj) -> fn(?)"
+		},
+		"triangleEdge": {
+			"!type": "fn(length?: number, amplitude?: number, opt?: obj) -> fn(?)"
+		},
+		"sawtoothEdge": {
+			"!type": "fn(length?: number, amplitude?: number, opt?: obj) -> fn(?)"
+		},
+		"absSineEdge": {
+			"!type": "fn(length?: number, amplitude?: number, opt?: obj) -> fn(?)"
+		},
+		"arrangeArcParams": {
+			"!type": "fn(r: number, deg: number, step: number) -> obj"
+		},
+		"eclipse": {
+			"!type": "fn(ctx: ?, cx: number, cy: number, w: number, h: number, dr: number, r0: number, r1: number, ac: bool)"
+		}
+	}
+}

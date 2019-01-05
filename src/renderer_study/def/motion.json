@@ -1,0 +1,45 @@
+{
+	"!name": "libl",
+	"MOTION": {
+		"AxisMotion": {
+			"!type": "fn(speedX?: number, speedY?: number)",
+			"prototype": {
+				"speedX": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"speedY": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"setRangeX": {
+					"!type": "fn(min: number, max: number, isLoop: bool)"
+				},
+				"setRangeY": {
+					"!type": "fn(min: number, max: number, isLoop: bool)"
+				},
+				"update": {
+					"!type": "fn(x: number, y: number, dir: number, unitTime: number) -> [number]"
+				}
+			}
+		},
+		"PolarMotion": {
+			"!type": "fn(speedA?: number, speedR?: number, proportionalAngularSpeed?: bool)",
+			"prototype": {
+				"speedA": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"speedR": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"setRangeR": {
+					"!type": "fn(min: number, max: number, isLoop: bool)"
+				},
+				"proportionalAngularSpeed": {
+					"!type": "fn(val?: bool) -> !this|bool"
+				},
+				"update": {
+					"!type": "fn(x: number, y: number, dir: number, unitTime: number) -> [number]"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,112 @@
+{
+	"!name": "libl",
+	"SPRITE": {
+		"Element": {
+			"!type": "fn(motion?: ?)",
+			"prototype": {
+				"x": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"y": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"direction": {
+					"!type": "fn(deg?: number) -> !this|number"
+				},
+				"moveTo": {
+					"!type": "fn(x: number, y: number, dir?: number) -> !this"
+				},
+				"scale": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"alpha": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"angle": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"angleX": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"angleZ": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"fixedHeading": {
+					"!type": "fn(val?: bool) -> !this|bool"
+				},
+				"speed": {
+					"!type": "fn(val?: number) -> !this|bool"
+				},
+				"angleSpeed": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"angleSpeedX": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"angleSpeedZ": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"setRangeX": {
+					"!type": "fn(min: number, max: number, isLoop: bool)"
+				},
+				"setRangeY": {
+					"!type": "fn(min: number, max: number, isLoop: bool)"
+				},
+				"setOnUpdate": {
+					"!type": "fn(func: fn(?), args_array: [?])"
+				},
+				"setOnUpdated": {
+					"!type": "fn(func: fn(?), args_array: [?])"
+				},
+				"motion": {
+					"!type": "fn(val?: ?) -> !this|?"
+				}
+			}
+		},
+		"Sprite": {
+			"!type": "fn(drawFunction: fn(?), args_array?: [?], motion?: ?)",
+			"prototype": {
+				"!proto": "SPRITE.Element.prototype",
+				"draw": {
+					"!type": "fn(ctx: ?, args_array: [?])"
+				}
+			}
+		},
+		"Stage": {
+			"!type": "fn(motion?: ?)",
+			"prototype": {
+				"!proto": "SPRITE.Element.prototype",
+				"makeSprite": {
+					"!type": "fn(drawFunction: fn(?), args_array?: [?], motion?: ?) -> +SPRITE.Sprite"
+				},
+				"makeStage": {
+					"!type": "fn() -> +SPRITE.Stage"
+				},
+				"add": {
+					"!type": "fn(child: +SPRITE.Element)"
+				},
+				"get": {
+					"!type": "fn(index: number) -> +SPRITE.Element"
+				},
+				"size": {
+					"!type": "fn() -> number"
+				},
+				"forEach": {
+					"!type": "fn(callback: fn(?), thisArg: ?)"
+				},
+				"localize": {
+					"!type": "fn(descendant: +SPRITE.Element, suppressRotation?: bool)"
+				},
+				"getPositionOnContext": {
+					"!type": "fn(descendant: +SPRITE.Element) -> [number]"
+				},
+				"draw": {
+					"!type": "fn(ctx: ?, args_array: [?])"
+				}
+			}
+		},
+		"makePlotFunction": {
+			"!type": "fn(descendant: +SPRITE.Element, ancestorStage: +SPRITE.Stage, ctx: ?)"
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"!name": "libl",
+	"DRAWING": {
+		"drawCircle": {
+			"!type": "fn(ctx: ?, cx: number, cy: number, r: number, dir?: number, deg?: number, anticlockwise?: bool, edge?: fn(?), area?: ?)"
+		},
+		"drawLine": {
+			"!type": "fn(ctx: ?, fromX: number, fromY: number, toX: number, toY: number, edge?: fn(?), area?: ?)"
+		},
+		"drawRect": {
+			"!type": "fn(ctx: ?, x: number, y: number, width: number, height: number, edge?: fn(?))"
+		},
+		"augment": {
+			"!type": "fn(ctx: ?)"
+		}
+	}
+}

@@ -1,9 +1,114 @@
 {
 	"!name": "libl",
 	"STYLE": {
-		"StyleBase": {},
-		"Shadow": {},
-		"Fill": {},
-		"Stroke": {}
+		"StyleBase": {
+			"!type": "fn(base: +STYLE.StyleBase)",
+			"prototype": {
+				"reset": {
+					"!type": "fn(color: string) -> !this"
+				},
+				"color": {
+					"!type": "fn(color: string, alpha?: number) -> !this|string"
+				},
+				"rgb": {
+					"!type": "fn(r: number, g: number, b: number, alpha?: number) -> !this|[number]"
+				},
+				"hsl": {
+					"!type": "fn(h: number, s: number, l: number, alpha?: number) -> !this|[number]"
+				},
+				"lighten": {
+					"!type": "fn(rate?: number) -> !this"
+				},
+				"darken": {
+					"!type": "fn(rate?: number) -> !this"
+				},
+				"gradation": {
+					"!type": "fn(type: string, xy1_dir?: [number, number], xy2_rs?: [number, number], xy2?: [number, number]) -> !this|[?]"
+				},
+				"addColor": {
+					"!type": "fn(color: string, alpha?: number) -> !this"
+				},
+				"addRgb": {
+					"!type": "fn(r: number, g: number, b: number, alpha?: number) -> !this"
+				},
+				"addHsl": {
+					"!type": "fn(h: number, s: number, l: number, alpha?: number) -> !this"
+				},
+				"alpha": {
+					"!type": "fn(alpha: number, op: string) -> !this|number"
+				},
+				"composition": {
+					"!type": "fn(composition: ?) -> !this|?"
+				},
+				"shadow": {
+					"!type": "fn(blur: number, color: string, x: number, y: number) -> !this|?"
+				}
+			}
+		},
+		"Shadow": {
+			"!type": "fn(shadow: +STYLE.Shadow)",
+			"prototype": {
+				"get": {
+					"!type": "fn() -> [?]"
+				},
+				"set": {
+					"!type": "fn(blur: number, color: string, x: number, y: number)"
+				},
+				"clear": {
+					"!type": "fn()"
+				},
+				"assign": {
+					"!type": "fn(ctx: ?)"
+				}
+			}
+		},
+		"Fill": {
+			"!type": "fn(base: +STYLE.Fill)",
+			"prototype": {
+				"!proto": "STYLE.StyleBase.prototype",
+				"reset": {
+					"!type": "fn(color: string) -> !this"
+				},
+				"assign": {
+					"!type": "fn(ctx: ?, gradArea: [?])"
+				},
+				"draw": {
+					"!type": "fn(ctx: ?, gradArea: [?])"
+				}
+			}
+		},
+		"Stroke": {
+			"!type": "fn(base: +STYLE.Stroke)",
+			"prototype": {
+				"!proto": "STYLE.StyleBase.prototype",
+				"reset": {
+					"!type": "fn(color: string) -> !this"
+				},
+				"width": {
+					"!type": "fn(width?: number) -> !this|number"
+				},
+				"cap": {
+					"!type": "fn(cap?: ?) -> !this|?"
+				},
+				"join": {
+					"!type": "fn(join?: ?) -> !this|?"
+				},
+				"miterLimit": {
+					"!type": "fn(miterLimit?: number) -> !this|number"
+				},
+				"dash": {
+					"!type": "fn(dash?: [number]) -> !this|[number]"
+				},
+				"dashOffset": {
+					"!type": "fn(dashOffset?: number) -> !this|number"
+				},
+				"assign": {
+					"!type": "fn(ctx: ?, gradArea: [?])"
+				},
+				"draw": {
+					"!type": "fn(ctx: ?, gradArea: [?])"
+				}
+			}
+		}
 	}
 }

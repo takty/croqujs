@@ -5,7 +5,7 @@
 			"!type": "fn(seed: number) -> fn()"
 		},
 		"Dice": {
-			"!type": "fn() -> dice",
+			"!type": "fn()",
 			"prototype": {
 				"reset": {
 					"!type": "fn()"

@@ -1,0 +1,100 @@
+{
+	"!name": "libl",
+	"CROQUJS": {
+		"Paper": {
+			"!type": "fn(width?: number, height?: number, isVisible?: bool)",
+			"prototype": {
+				"width": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"height": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"frame": {
+					"!type": "fn() -> number"
+				},
+				"fps": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"frameLength": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"gridVisible": {
+					"!type": "fn(val?: number) -> !this|number"
+				},
+				"setSize": {
+					"!type": "fn(width: number, height: number)"
+				},
+				"clear": {
+					"!type": "fn(style?: string, alpha?: number)"
+				},
+				"animate": {
+					"!type": "fn(callback: fn(?), args_array: [?])"
+				},
+				"stop": {
+					"!type": "fn()"
+				},
+				"makePage": {
+					"!type": "fn(pageName: string) -> +CROQUJS.Paper"
+				},
+				"getPage": {
+					"!type": "fn(pageName: string) -> +CROQUJS.Paper"
+				},
+				"addChild": {
+					"!type": "fn(paper: +CROQUJS.Paper)"
+				},
+				"removeChild": {
+					"!type": "fn(paper: +CROQUJS.Paper)"
+				},
+				"drawGrid": {
+					"!type": "fn()"
+				},
+				"saveImage": {
+					"!type": "fn(fileName?: string)"
+				},
+				"onKeyDown": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				},
+				"onKeyUp": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				},
+				"onMouseDown": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				},
+				"onMouseMove": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				},
+				"onMouseUp": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				},
+				"onMouseClick": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				},
+				"onMouseWheel": {
+					"!type": "fn(handler?: fn(?)) -> !this|fn(?)"
+				},
+				"mouseX": {
+					"!type": "fn() -> number"
+				},
+				"mouseY": {
+					"!type": "fn() -> number"
+				},
+				"mouseLeft": {
+					"!type": "fn() -> bool"
+				},
+				"mouseRight": {
+					"!type": "fn() -> bool"
+				},
+				"mouseMiddle": {
+					"!type": "fn() -> bool"
+				}
+			}
+		},
+		"getTime": {
+			"!type": "fn()"
+		},
+		"removeAll": {
+			"!type": "fn(?)"
+		}
+	}
+}
