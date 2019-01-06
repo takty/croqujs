@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-06
+ * @version 2019-01-07
  *
  */
 
@@ -47,14 +47,20 @@ class Study {
 	_constructorSecond() {
 		this._initEditor();
 
-		this._toolbar = new Toolbar(this, this._res);
-		this._sideMenu = new SideMenu(this, this._res);
-		this._dialogBox = new DialogBox(this, this._res);
+		this._toolbar    = new Toolbar(this, this._res);
+		this._sideMenu   = new SideMenu(this, this._res);
+		this._dialogBox  = new DialogBox(this, this._res);
 		this._outputPane = new OutputPane();
 
-		this._initWindowResizing(this._editor);
+		this._filePath    = null;
+		this._name        = null;
+		this._baseName    = null;
+		this._dirName     = null;
+		this._isReadOnly  = false;
+		this._isModified  = false;
+		this._historySize = { undo: 0, redo: 0 };
 
-		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
+		this._initWindowResizing(this._editor);
 
 		window.addEventListener('storage', (e) => {
 			if ('study_' + this._id === e.key) {
@@ -71,14 +77,8 @@ class Study {
 		window.addEventListener('focus', (e) => {
 			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
 		});
-
-		this._filePath = null;
-		this._name = null;
-		this._baseName = null;
-		this._dirName = null;
-		this._isReadOnly = false;
-		this._isModified = false;
-		this._historySize = { undo: 0, redo: 0 };
+		setTimeout(() => { navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText)); }, 200);
+		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 
 		this._config.notify();
 	}
