@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-28
+ * @version 2019-01-06
  *
  */
 
@@ -325,7 +325,7 @@ class Study {
 		const topDelta = lineHeight * 10;
 
 		const bcr = this._editor._elem.getBoundingClientRect();
-		const r = {x: bcr.left, y: bcr.top, width: bcr.width, height: bcr.height};
+		const r = {x: bcr.left | 0, y: bcr.top | 0, width: bcr.width | 0, height: bcr.height | 0};
 
 		this._editor._comp.scrollTo(0, 0);
 		this._editor._comp.refresh();
