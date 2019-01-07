@@ -449,7 +449,7 @@ class Study {
 
 			} else if (cmd === 'exportAsLibrary') {
 				const cs = JSON.stringify(this._codeStructure);
-				this._showPrompt(this._res.msg.enterLibraryName, 'input', this._res.msg.libraryName, this._name, 'doExportAsLibrary', this._editor.value(), cs);
+				this._showPrompt(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, 'doExportAsLibrary', this._editor.value(), cs);
 			} else if (cmd === 'exportAsWebPage') {
 				this._twinMessage('doExportAsWebPage', this._editor.value());
 
