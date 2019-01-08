@@ -49,15 +49,27 @@ class Exporter {
 		return true;
 	}
 
-	exportAsLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded) {
-		const fns = codeStructure.fnNames;
-		const fnsStr = fns.map(e => (e + ': ' + e)).join(', ');
-
-		const header = 'var ' + nameSpace + ' = (function () {';
-		const footer = ['\treturn {' + fnsStr + '};', '}());'].join(EXP_EOL);
-		const srcStr = codeText.split('\n').map(l => ('\t' + l)).join(EXP_EOL);
-
-		FS.writeFileSync(filePath, [header, srcStr, footer].join(EXP_EOL));
+	exportAsLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded = false) {
+		let inc = '';
+		const exportedSymbols = codeStructure.fnNames.slice(0);
+		if (isUseDecIncluded) {
+			const lines = codeText.split('\n');
+			const decs = this._extractUseDeclarations(lines);
+			const bp = PATH.dirname(filePath);
+			const libCodes = [];
+			for (let dec of decs) {
+				if (!Array.isArray(dec)) continue;
+				const libPath = PATH.join(bp, dec[0]), libNs = dec[1];
+				const libCode = this._readAsLibraryCode(libPath, libNs, 1);
+				if (libCode !== false) {
+					libCodes.push(libCode);
+					exportedSymbols.push(libNs);
+				}
+			}
+			inc = libCodes.join(EXP_EOL);
+		}
+		const libCode = this._createLibraryCode(codeText, exportedSymbols, nameSpace, 0, inc);
+		FS.writeFileSync(filePath, libCode);
 		return FS.existsSync(filePath);
 	}
 
@@ -78,7 +90,7 @@ class Exporter {
 					const p = dec[0];
 					if (p.startsWith('http')) return [false, p];
 					const destFn = PATH.basename(p, PATH.extname(p)) + '.lib.js';
-					const res = this._createLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, destFn));
+					const res = this._writeLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, destFn));
 					if (!res) return [false, p];
 					pushTag(destFn);
 				} else {
@@ -226,12 +238,31 @@ class Exporter {
 	// -------------------------------------------------------------------------
 
 
-	_createLibraryImmediately(origPath, nameSpace, destPath) {
-		const cont = this._readFile(origPath);
-		if (cont === null) return false;
+	_writeLibraryImmediately(origPath, nameSpace, destPath) {
+		const libCode = this._readAsLibraryCode(origPath, nameSpace);
+		if (libCode === false) return false;
+		FS.writeFileSync(destPath, libCode);
+		return FS.existsSync(destPath);
+	}
 
-		const cs = analyze(cont);
-		return this.exportAsLibrary(cont, destPath, nameSpace, cs);
+	_readAsLibraryCode(origPath, nameSpace, indent = 0) {
+		const ct = this._readFile(origPath);
+		if (ct === null) return false;
+		const cs = analyze(ct);
+		return this._createLibraryCode(ct, cs.fnNames, nameSpace, indent);
+	}
+
+	_createLibraryCode(codeText, exportedSymbols, nameSpace, indent = 0, inc = '') {
+		const ess = exportedSymbols.map(e => (e + ': ' + e)).join(', ');
+		const ind = '\t'.repeat(indent);
+
+		const head = ind + 'var ' + nameSpace + ' = (function () {';
+		const src  = codeText.split('\n').map(l => (ind + '\t' + l.replace(/\s+$/, ''))).join(EXP_EOL);
+		const ret  = ind + '\treturn {' + ess + '};';
+		const foot = ind + '}());';
+
+		if (0 < inc.length) return [head, inc, src, ret, foot].join(EXP_EOL);
+		return [head, src, ret, foot].join(EXP_EOL);
 	}
 
 
