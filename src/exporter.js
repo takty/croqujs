@@ -61,16 +61,15 @@ class Exporter {
 				if (!Array.isArray(dec)) continue;
 				const libPath = PATH.join(bp, dec[0]), libNs = dec[1];
 				const libCode = this._readAsLibraryCode(libPath, libNs, 1);
-				if (libCode !== false) {
-					libCodes.push(libCode);
-					exportedSymbols.push(libNs);
-				}
+				if (libCode === false) return [false, dec[0]];
+				libCodes.push(libCode);
+				exportedSymbols.push(libNs);
 			}
 			inc = libCodes.join(EXP_EOL);
 		}
 		const libCode = this._createLibraryCode(codeText, exportedSymbols, nameSpace, 0, inc);
 		FS.writeFileSync(filePath, libCode);
-		return FS.existsSync(filePath);
+		return [FS.existsSync(filePath), filePath];
 	}
 
 	exportAsWebPage(codeText, filePath, dirPath, injection = false) {
