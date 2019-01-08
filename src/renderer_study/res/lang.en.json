@@ -52,6 +52,7 @@
         "exportedAsWebPage": "Exported as a web page.",
         "exportedAsLibrary": "Exported as a library.",
         "enterLibraryName": "Enter a library name to which export.",
+        "includeUsedLibraries": "Include '@use'd libraries",
         "libraryName": "A library name...",
         "cannotReadLibrary": "The file '%s' cannot be read.",
         "copyingAsImage": "Copying as an image now...",

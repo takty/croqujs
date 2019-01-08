@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-10
+ * @version 2019-01-08
  *
  */
 
@@ -58,8 +58,34 @@ class DialogBox {
 			title: '',
 			html: this._formatText(text),
 			type: type,
-			animation: 'slide-from-top',
 			allowOutsideClick: false,
+		});
+	}
+
+	showPromptWithOption(text, type, placeholder, value, optText, fn) {
+		this._disableBackground();
+		swal({
+			title: '',
+			type: type,
+			allowOutsideClick: false,
+			confirmButtonText: 'OK',
+			showCancelButton: true,
+			cancelButtonText: this._textCancel,
+			customClass: 'prompt-with-option',
+			focusConfirm: false,
+			html: '<div style="display: inline-block;">' + this._formatText(text) + '</div>' +
+				'<input id="swal-input" class="swal2-input" placeholder="' + placeholder + '" type="text" value="' + value + '">' + 
+				'<label class="swal2-checkbox-opt"><input type="checkbox" id="swal-checkbox">' + 
+				'<span class="swal2-label">' + this._formatText(optText) + '</span></label>',
+			preConfirm: () => {
+				return [
+					document.getElementById('swal-input').value,
+					document.getElementById('swal-checkbox').checked
+				];
+			},
+		}).then((res) => {
+			this._enableBackground();
+			if (fn && res.value[0]) fn(res.value[0], res.value[1]);
 		});
 	}
 

@@ -52,6 +52,7 @@
         "exportedAsWebPage": "ウェブページとしてエクスポートされました。",
         "exportedAsLibrary": "ライブラリとしてエクスポートされました。",
         "enterLibraryName": "エクスポートするライブラリ名を入力してください。",
+        "includeUsedLibraries": "'@use'されたライブラリを含める",
         "libraryName": "ライブラリ名...",
         "cannotReadLibrary": "ファイル「%s」を読みこめませんでした。",
         "copyingAsImage": "画像としてコピー中...",

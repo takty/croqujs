@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-28
+ * @version 2019-01-08
  *
  */
 
@@ -278,13 +278,13 @@ class Twin {
 		this._clearTempPath();
 	}
 
-	doExportAsLibrary(val, text, jsonCodeStructure) {
+	doExportAsLibrary(libName, isUseDecIncluded, text, jsonCodeStructure) {
 		const codeStructure = JSON.parse(jsonCodeStructure);
-		const name = val.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
+		const name = libName.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
 		const expDir = PATH.join(PATH.dirname(this._filePath), name + '.lib.js');
 
 		try {
-			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure);
+			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure, isUseDecIncluded);
 			this.callStudyMethod('showServerAlert', 'exportedAsLibrary', 'success');
 		} catch (e) {
 			this._outputError(e, expDir);

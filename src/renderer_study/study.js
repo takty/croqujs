@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-07
+ * @version 2019-01-08
  *
  */
 
@@ -396,10 +396,10 @@ class Study {
 		});
 	}
 
-	_showPrompt(text, type, placeholder, value, messageForMain, ...args) {
+	_showPrompt(text, type, placeholder, value, optText, messageForMain, ...args) {
 		window.focus();
-		this._dialogBox.showPrompt(text, type, placeholder, value, (resVal) => {
-			if (messageForMain) this._twinMessage(messageForMain, resVal, ...args);
+		this._dialogBox.showPromptWithOption(text, type, placeholder, value, optText, (resVal, resOpt) => {
+			if (messageForMain) this._twinMessage(messageForMain, resVal, resOpt, ...args);
 		});
 	}
 
@@ -449,7 +449,7 @@ class Study {
 
 			} else if (cmd === 'exportAsLibrary') {
 				const cs = JSON.stringify(this._codeStructure);
-				this._showPrompt(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, 'doExportAsLibrary', this._editor.value(), cs);
+				this._showPrompt(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries, 'doExportAsLibrary', this._editor.value(), cs);
 			} else if (cmd === 'exportAsWebPage') {
 				this._twinMessage('doExportAsWebPage', this._editor.value());
 

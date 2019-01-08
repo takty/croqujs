@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-28
+ * @version 2019-01-08
  *
  */
 
@@ -49,7 +49,7 @@ class Exporter {
 		return true;
 	}
 
-	exportAsLibrary(codeText, filePath, nameSpace, codeStructure) {
+	exportAsLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded) {
 		const fns = codeStructure.fnNames;
 		const fnsStr = fns.map(e => (e + ': ' + e)).join(', ');
 
