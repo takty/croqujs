@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-05
+ * @version 2019-01-11
  *
  */
 
@@ -562,6 +562,25 @@ class Editor {
 			text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
 			doc.replaceRange(text, start, end);
 			doc.setCursor(curPos);
+		} catch (e) {
+		}
+	}
+
+	formatLine(line) {
+		if (!this._isEnabled) return;
+		const doc = this._comp.getDoc();
+		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
+		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
+		Object.assign(opts, {indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab});
+
+		const bgn = { line: line, ch: 0 };
+		const end = { line: line, ch: doc.getLine(line).length };
+
+		let text = doc.getRange(bgn, end);
+		try {
+			text = js_beautify(text, opts);
+			text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
+			doc.replaceRange(text, bgn, end);
 		} catch (e) {
 		}
 	}
