@@ -33,6 +33,7 @@ class Editor {
 		this.initWheelZoom();
 		this.initGutterSelection();
 		this.initCodeStructureView();
+		this.initAutoFormat();
 
 		loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'libl.json'], (ret) => {
 			this.initAutoComplete(ret);
@@ -409,6 +410,53 @@ class Editor {
 		return 'CodeMirror-Tern-' + 'completion ' + 'CodeMirror-Tern-' + 'completion-' + suffix;
 	}
 
+	// -------------------------------------------------------------------------
+
+	initAutoFormat() {
+		const doc = this._comp.getDoc();
+		let changedLine = -1;
+
+		this._comp.on('change', () => {
+			const { line, ch } = doc.getCursor('head');
+			if (changedLine !== -1 && changedLine !== line) {
+				this._formatLine(changedLine);
+				changedLine = -1;
+			} else {
+				changedLine = line;
+			}
+		});
+		this._comp.on('cursorActivity', () => {
+			const { line, ch } = doc.getCursor('head');
+			if (changedLine !== -1 && changedLine !== line) {
+				this._formatLine(changedLine);
+				changedLine = -1;
+			}
+		});
+	}
+
+	_formatLine(line) {
+		if (!this._isEnabled) return;
+		const doc = this._comp.getDoc();
+		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
+		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
+		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
+
+		const str = doc.getLine(line);
+		if (!str) return;
+
+		const bgn = { line: line, ch: 0 };
+		const end = { line: line, ch: str.length };
+
+		let text = doc.getRange(bgn, end);
+		try {
+			text = js_beautify(text, opts);
+			text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
+			if (2 < text.split('\n').length) return;
+			doc.replaceRange(text, bgn, end);
+		} catch (e) {
+		}
+	}
+
 
 	// =========================================================================
 
@@ -562,25 +610,6 @@ class Editor {
 			text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
 			doc.replaceRange(text, start, end);
 			doc.setCursor(curPos);
-		} catch (e) {
-		}
-	}
-
-	formatLine(line) {
-		if (!this._isEnabled) return;
-		const doc = this._comp.getDoc();
-		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
-		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
-		Object.assign(opts, {indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab});
-
-		const bgn = { line: line, ch: 0 };
-		const end = { line: line, ch: doc.getLine(line).length };
-
-		let text = doc.getRange(bgn, end);
-		try {
-			text = js_beautify(text, opts);
-			text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
-			doc.replaceRange(text, bgn, end);
 		} catch (e) {
 		}
 	}
