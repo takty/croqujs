@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-11
+ * @version 2019-01-12
  *
  */
 
@@ -427,7 +427,7 @@ class Editor {
 		});
 		this._comp.on('cursorActivity', () => {
 			const { line, ch } = doc.getCursor('head');
-			if (changedLine !== -1 && changedLine !== line) {
+			if (!doc.somethingSelected() && changedLine !== -1 && changedLine !== line) {
 				this._formatLine(changedLine);
 				changedLine = -1;
 			}
