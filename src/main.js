@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-28
+ * @version 2019-01-14
  *
  */
 
@@ -13,6 +13,7 @@
 const { app, globalShortcut } = require('electron');
 
 const PATH    = require('path');
+const PROCESS = require('process');
 const Config  = require('./lib/config.js');
 const Twin    = require('./twin.js');
 
