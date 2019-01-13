@@ -20,7 +20,8 @@
         "brace_style": "collapse",
         "keep_array_indentation": false,
         "space_before_conditional": true,
-        "unescape_strings": true
+        "unescape_strings": true,
+        "space_after_anon_function": true
     },
     "about": ["Croqujs 5",
         "/krō-ˈkē/",

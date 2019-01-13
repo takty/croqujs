@@ -471,7 +471,6 @@ class Editor {
 		try {
 			text = js_beautify(text, opts);
 			text = text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
-			text = text.replace(/function\(/gm, 'function (');  // Make the blank before the comment two blanks
 			return text;
 		} catch (e) {
 		}
