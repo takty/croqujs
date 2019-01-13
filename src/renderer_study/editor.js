@@ -470,7 +470,9 @@ class Editor {
 		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
 		try {
 			text = js_beautify(text, opts);
-			return text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
+			text = text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
+			text = text.replace(/function\(/gm, 'function (');  // Make the blank before the comment two blanks
+			return text;
 		} catch (e) {
 		}
 		return false;
