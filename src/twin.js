@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-08
+ * @version 2019-01-13
  *
  */
 
@@ -178,16 +178,14 @@ class Twin {
 	}
 
 	doFileDropped(path) {
-		this._droppedFilePath = path;
-		let isDir = false;
 		try {
-			isDir = FS.statSync(this._droppedFilePath).isDirectory();
+			const isDir = FS.statSync(path).isDirectory();
 			if (!isDir) {
-				this._openFile(this._droppedFilePath);
+				this._openFile(path);
 				return;
 			}
-			const fns = FS.readdirSync(this._droppedFilePath);
-			const fps = fns.map(e => PATH.join(this._droppedFilePath, e)).filter((fp) => {
+			const fns = FS.readdirSync(path);
+			const fps = fns.map(e => PATH.join(path, e)).filter((fp) => {
 				try {
 					return FS.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
 				} catch (e) {
@@ -197,7 +195,7 @@ class Twin {
 			if (fps.length === 1) {
 				this._openFile(fps[0]);
 			} else if (fps.length > 1) {
-				this.doOpen(this._droppedFilePath);
+				this.doOpen(path);
 			}
 		} catch (e) {
 			if (e.code !== 'ENOENT' && e.code !== 'EPERM') throw e;
