@@ -123,13 +123,15 @@ class Editor {
 			if (!this._isEnabled || !isCtrl) return;
 			this._owner.executeCommand(e.deltaY > 0 ? 'fontSizeMinus' : 'fontSizePlus');
 			e.preventDefault();
-		}, {passive: true});
-		this._elem.addEventListener('keydown', (e) => {if (e.which === 17) {isCtrl = (e.type === 'keydown');}});
-		this._elem.addEventListener('keyup',   (e) => {if (e.which === 17) {isCtrl = (e.type === 'keydown');}});
-		this._comp.on('blur', () => {isCtrl = false;});
+		}, { passive: true });
+		this._elem.addEventListener('keydown', (e) => { if (e.which === 17) { isCtrl = (e.type === 'keydown'); } });
+		this._elem.addEventListener('keyup',   (e) => { if (e.which === 17) { isCtrl = (e.type === 'keydown'); } });
+		this._comp.on('blur', () => { isCtrl = false; });
 	}
 
+
 	// -------------------------------------------------------------------------
+
 
 	initCodeStructureView() {
 		this._canvas = document.createElement('canvas');
@@ -192,12 +194,12 @@ class Editor {
 
 	_drawSyntaxRange(ctx, pos) {
 		const bgn = pos[0], end = pos[1];
-		const scc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column}, 'local');
-		const ecc = this._comp.charCoords({line: end.line - 1, ch: end.column}, 'local');
+		const scc = this._comp.charCoords({ line: bgn.line - 1, ch: bgn.column }, 'local');
+		const ecc = this._comp.charCoords({ line: end.line - 1, ch: end.column }, 'local');
 		scc.left += 4;
 
 		const lh = this._comp.defaultTextHeight();
-		const tcc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column + 3}, 'local');
+		const tcc = this._comp.charCoords({ line: bgn.line - 1, ch: bgn.column + 3 }, 'local');
 		const iw = tcc.right - scc.left - 3;
 		const w = ctx.canvas.width / 2;
 
@@ -207,7 +209,7 @@ class Editor {
 			this._fillRightRoundedRect(ctx, scc.left + iw, ecc.top, w, lh - 3, lh / 1.5);
 		}
 
-		const elsecc = this._comp.charCoords({line: bgn.line - 1, ch: bgn.column + 4}, 'local');
+		const elsecc = this._comp.charCoords({ line: bgn.line - 1, ch: bgn.column + 4 }, 'local');
 		const elsew = elsecc.right - scc.left - 4;
 
 		for (let i = 2; i < pos.length; i += 1) {
@@ -242,7 +244,9 @@ class Editor {
 		ctx.fill();
 	}
 
+
 	// -------------------------------------------------------------------------
+
 
 	initGutterSelection() {
 		const doc = this._comp.getDoc();
@@ -327,20 +331,24 @@ class Editor {
 			doc.setSelection({ line: fromLine, ch: 0 }, this._getTailPos(doc, fromLine));
 		} else {
 			if (fromLine <= toLine) {
-				doc.setSelection({line: fromLine, ch: 0}, this._getTailPos(doc, toLine));
+				doc.setSelection({ line: fromLine, ch: 0 }, this._getTailPos(doc, toLine));
 			} else {
-				doc.setSelection(this._getTailPos(doc, fromLine), {line: toLine, ch: 0});
+				doc.setSelection(this._getTailPos(doc, fromLine), { line: toLine, ch: 0 });
 			}
 		}
 	}
 
 	_getTailPos(doc, line) {
 		if (doc.lineCount() - 1 === line) {
-			return {line: line, ch: doc.getLine(line).length};
+			return { line: line, ch: doc.getLine(line).length };
 		} else {
-			return {line: line + 1, ch: 0};
+			return { line: line + 1, ch: 0 };
 		}
 	}
+
+
+	// -------------------------------------------------------------------------
+
 
 	initAutoComplete(defs) {
 		const server = new CodeMirror.TernServer({ defs: defs });
@@ -411,7 +419,9 @@ class Editor {
 		return 'CodeMirror-Tern-' + 'completion ' + 'CodeMirror-Tern-' + 'completion-' + suffix;
 	}
 
+
 	// -------------------------------------------------------------------------
+
 
 	initAutoFormat() {
 		const doc = this._comp.getDoc();
@@ -507,7 +517,7 @@ class Editor {
 	rulerEnabled(flag) {
 		if (flag === undefined) return this._comp.getOption('rulers') !== null;
 		if (flag) {
-			this._comp.setOption('rulers', [...Array(3).keys()].map(i => ({column: (i + 1) * 4, color: '#f6b0c5', lineStyle: 'dashed'})));
+			this._comp.setOption('rulers', [...Array(3).keys()].map(i => ({ column: (i + 1) * 4, color: '#f6b0c5', lineStyle: 'dashed' })));
 		} else {
 			this._comp.setOption('rulers', null);
 		}
@@ -581,7 +591,7 @@ class Editor {
 		const doc = this._comp.getDoc();
 		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
 		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
-		Object.assign(opts, {indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab});
+		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
 
 		let start, end;
 		if (doc.somethingSelected()) {
@@ -589,11 +599,11 @@ class Editor {
 			end = doc.getCursor('to');
 		} else {
 			let li = doc.lineCount() - 1;
-			start = {line: 0, ch: 0};
-			end = {line: li, ch: doc.getLine(li).length};
+			start = { line: 0, ch: 0 };
+			end = { line: li, ch: doc.getLine(li).length };
 		}
 		let curPos;
-		const {line, ch} = doc.getCursor('head');
+		const { line, ch } = doc.getCursor('head');
 		if (start.line !== end.line) {
 			if (Math.abs(start.line - line) < Math.abs(end.line - line)) curPos = Object.assign({}, start);
 			else curPos = Object.assign({}, end);
@@ -609,11 +619,14 @@ class Editor {
 		let text = doc.getRange(start, end);
 		try {
 			text = js_beautify(text, opts);
-			text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
+		} catch (e) {
+			return;
+		}
+		text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
+		this._comp.operation(() => {
 			doc.replaceRange(text, start, end);
 			doc.setCursor(curPos);
-		} catch (e) {
-		}
+		});
 	}
 
 	find() {
