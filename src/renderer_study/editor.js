@@ -448,9 +448,6 @@ class Editor {
 	_formatLine(line) {
 		if (!this._isEnabled) return;
 		const doc = this._comp.getDoc();
-		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
-		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
-		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
 
 		const str = doc.getLine(line);
 		if (!str) return;
@@ -458,18 +455,25 @@ class Editor {
 		const bgn = { line: line, ch: 0 };
 		const end = { line: line, ch: str.length };
 
-		let text = doc.getRange(bgn, end);
-		try {
-			text = js_beautify(text, opts);
-		} catch (e) {
-			return;
-		}
-		text = text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
+		const text = this._doFormat(doc.getRange(bgn, end))
+		if (text === false) return;
 		if (2 < text.split('\n').length) return;
 		this._comp.operation(() => {
 			doc.replaceRange(text, bgn, end);
 			this._comp.indentLine(line);
 		});
+	}
+
+	_doFormat(text) {
+		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
+		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
+		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
+		try {
+			text = js_beautify(text, opts);
+			return text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
+		} catch (e) {
+		}
+		return false;
 	}
 
 
@@ -592,43 +596,26 @@ class Editor {
 	format() {
 		if (!this._isEnabled) return;
 		const doc = this._comp.getDoc();
-		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
-		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
-		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
-
-		let start, end;
-		if (doc.somethingSelected()) {
-			start = doc.getCursor('from');
-			end = doc.getCursor('to');
-		} else {
-			let li = doc.lineCount() - 1;
-			start = { line: 0, ch: 0 };
-			end = { line: li, ch: doc.getLine(li).length };
-		}
-		let curPos;
 		const { line, ch } = doc.getCursor('head');
-		if (start.line !== end.line) {
-			if (Math.abs(start.line - line) < Math.abs(end.line - line)) curPos = Object.assign({}, start);
-			else curPos = Object.assign({}, end);
+
+		let bgn, end, curPos;
+		if (doc.somethingSelected()) {
+			bgn = doc.getCursor('from');
+			end = doc.getCursor('to');
+			curPos = Object.assign({}, end);
+			if (bgn.line < end.line && end.ch === 0) end.line = Math.max(bgn.line, end.line - 1);
+			bgn.ch = 0;
+			end.ch = doc.getLine(end.line).length;
 		} else {
-			if (Math.abs(start.ch - ch) < Math.abs(end.ch - ch)) curPos = Object.assign({}, start);
-			else curPos = Object.assign({}, end);
+			curPos = { line, ch };
+			bgn = { line: line, ch: 0 };
+			end = { line: line, ch: doc.getLine(line).length };
 		}
-		if (start.line < end.line && end.ch === 0) end.line = Math.max(start.line, end.line - 1);
-
-		start.ch = 0;
-		end.ch = doc.getLine(end.line).length;
-
-		let text = doc.getRange(start, end);
-		try {
-			text = js_beautify(text, opts);
-		} catch (e) {
-			return;
-		}
-		text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
+		const text = this._doFormat(doc.getRange(bgn, end))
+		if (text === false) return;
 		this._comp.operation(() => {
-			doc.replaceRange(text, start, end);
-			doc.setCursor(curPos);
+			doc.replaceRange(text, bgn, end);
+			if (curPos !== false) doc.setCursor(curPos);
 		});
 	}
 
