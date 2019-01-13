@@ -466,7 +466,10 @@ class Editor {
 		}
 		text = text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
 		if (2 < text.split('\n').length) return;
-		this._comp.operation(() => { doc.replaceRange(text, bgn, end); });
+		this._comp.operation(() => {
+			doc.replaceRange(text, bgn, end);
+			this._comp.indentLine(line);
+		});
 	}
 
 
