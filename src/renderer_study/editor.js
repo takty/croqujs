@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-12
+ * @version 2019-01-13
  *
  */
 
@@ -60,7 +60,7 @@ class Editor {
 			indentUnit: 4,
 			indentWithTabs: true,
 			gutters: ['CodeMirror-lint-markers', 'CodeMirror-function-linenumbers', 'CodeMirror-linenumbers'],
-			extraKeys: {'Ctrl-\\': 'autocomplete', 'Shift-Tab': 'indentLess'},
+			extraKeys: { 'Ctrl-\\': 'autocomplete', 'Shift-Tab': 'indentLess' },
 			highlightSelectionMatches: true,
 			matchBrackets: true,
 			showCursorWhenSelecting: true,
@@ -71,7 +71,7 @@ class Editor {
 			theme: 'laccolla',
 			inputStyle: 'textarea',
 			lineWiseCopyCut: false,
-			lint: {options: jsHintOpt},
+			lint: { options: jsHintOpt },
 			autofocus: true,
 			styleSelectedText: true,
 			specialChars: / /,
@@ -81,6 +81,7 @@ class Editor {
 				e.className = 'cm-space';
 				return e;
 			},
+			historyEventDelay: 200,
 		};
 	}
 
@@ -416,8 +417,8 @@ class Editor {
 		const doc = this._comp.getDoc();
 		let changedLine = -1;
 
-		this._comp.on('change', () => {
-			const { line, ch } = doc.getCursor('head');
+		this._comp.on('inputRead', () => {
+			const { line } = doc.getCursor('head');
 			if (changedLine !== -1 && changedLine !== line) {
 				this._formatLine(changedLine);
 				changedLine = -1;
@@ -426,7 +427,7 @@ class Editor {
 			}
 		});
 		this._comp.on('cursorActivity', () => {
-			const { line, ch } = doc.getCursor('head');
+			const { line } = doc.getCursor('head');
 			if (!doc.somethingSelected() && changedLine !== -1 && changedLine !== line) {
 				this._formatLine(changedLine);
 				changedLine = -1;
@@ -450,11 +451,12 @@ class Editor {
 		let text = doc.getRange(bgn, end);
 		try {
 			text = js_beautify(text, opts);
-			text = text.replace(/(.); \/\//gm, '$1;  //');  // コメントの前の空白を二つにする
-			if (2 < text.split('\n').length) return;
-			doc.replaceRange(text, bgn, end);
 		} catch (e) {
+			return;
 		}
+		text = text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
+		if (2 < text.split('\n').length) return;
+		this._comp.operation(() => { doc.replaceRange(text, bgn, end); });
 	}
 
 
