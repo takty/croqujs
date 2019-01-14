@@ -162,13 +162,13 @@ gulp.task('package-win', (done) => {
 	}, done);
 });
 
-gulp.task('package-mac', () => {
+gulp.task('package-mac', (done) => {
 	return packageElectron({
 		platform: 'darwin',
 		arch: 'x64',
 		icon: 'dist/res/icon.icns',
 	}, () => {
-		return gulp.src(['package/Croqujs-darwin-x64/' + config.productName + '.app/Contents/Info.plist'], { base: '.' })
+		gulp.src(['package/Croqujs-darwin-x64/' + config.productName + '.app/Contents/Info.plist'], { base: '.' })
 			.pipe($.plist({
 				CFBundleDocumentTypes: [
 					{
@@ -181,6 +181,7 @@ gulp.task('package-mac', () => {
 				]
 			}))
 			.pipe(gulp.dest('.'));
+		return done();
 	});
 });
 
