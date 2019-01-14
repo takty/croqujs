@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-14
+ * @version 2019-01-15
  *
  */
 
@@ -23,6 +23,9 @@ const Twin    = require('./twin.js');
 class Main {
 
 	constructor() {
+		const gotTheLock = app.requestSingleInstanceLock()
+		if (!gotTheLock) app.quit();
+
 		this._twins = [];
 		this._focusedTwin = null;
 		let path = this._getArgPath();
@@ -42,6 +45,10 @@ class Main {
 			globalShortcut.register('CmdOrCtrl+F12',       () => { this._focusedTwin.toggleFieldDevTools(); });
 			globalShortcut.register('CmdOrCtrl+Shift+F12', () => { this._focusedTwin.toggleStudyDevTools(); });
 		});
+		app.on('second-instance', (ev, argv, workDir) => {
+			const path = (argv.length === 1) ? null : this._checkArgPath(argv[argv.length - 1]);
+			this._createNewWindow(path);
+		})
 		app.on('browser-window-focus', (ev, win) => { this._focusedTwin = this._twins.find(t => t.isOwnerOf(win)); });
 		app.on('window-all-closed', () => {
 			this._conf.saveSync();
