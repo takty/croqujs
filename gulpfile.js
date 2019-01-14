@@ -1,11 +1,11 @@
 'use strict';
 
-const fs = require('fs-extra');
-const glob = require('glob');
-const path = require('path');
+const fs         = require('fs-extra');
+const glob       = require('glob');
+const path       = require('path');
 const jsonMerger = require('json-merger');
-const gulp = require('gulp');
-const $ = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
+const gulp       = require('gulp');
+const $          = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
 
 function copySync(from, to) {
 	const isToDir = to.endsWith('/');
@@ -108,3 +108,92 @@ gulp.task('sass-misc', () => {
 });
 
 gulp.task('default', gulp.series('copy', 'compile-json', 'sass', 'sass-misc'));
+
+
+// -----------------------------------------------------------------------------
+
+
+const packager = require('electron-packager');
+const config = require('./package.json');
+
+const packageOpts = {
+	asar         : true,
+	prune        : true,
+	overwrite    : true,
+	dir          : '.',
+	out          : 'package',
+	name         : config.productName,
+	version      : config.devDependencies['electron'],
+	appCopyright : 'Takuto Yanagida @ Space-Time Inc.',
+	appVersion   : config.version,
+	appBundleId  : 'croqujs',
+	win32metadata: {
+		CompanyName     : 'Takuto Yanagida @ Space-Time Inc.',
+		FileDescription : config.productName,
+		OriginalFilename: config.productName + '.exe',
+		ProductName     : config.productName,
+		InternalName    : config.productName,
+	},
+	ignore: [
+		'^/node_modules',
+		'^/src',
+		'^/res', 
+		'^/.gitignore', 
+		'^/config.json',  
+		'^/npm-debug.log', 
+		'^/gulpfile.js'
+	],
+};
+
+function packageElectron(opts = {}, done) {
+	const defOpts = Object.assign({}, packageOpts);
+	packager(Object.assign(defOpts, opts)).then(() => {
+		if (done != null) done();
+	}).catch((err) => {
+		throw err;
+	});
+};
+
+gulp.task('package-win', (done) => {
+	return packageElectron({
+		platform: 'win32',
+		arch: 'ia32,x64',
+		icon: 'dist/res/icon.ico',
+	}, done);
+});
+
+gulp.task('package-mac', () => {
+	return packageElectron({
+		platform: 'darwin',
+		arch: 'x64',
+		icon: 'dist/res/icon.icns',
+	}, () => {
+		return gulp.src(['package/Croqujs-darwin-x64/' + config.productName + '.app/Contents/Info.plist'], { base: '.' })
+			.pipe($.plist({
+				CFBundleDocumentTypes: [
+					{
+						CFBundleTypeExtensions: ['js'],
+						CFBundleTypeIconFile: '',
+						CFBundleTypeName: 'JavaScript',
+						CFBundleTypeRole: 'Editor',
+						LSHandlerRank: 'Default'
+					}
+				]
+			}))
+			.pipe(gulp.dest('.'));
+	});
+});
+
+gulp.task('archive-win32', () => {
+	return gulp.src(['package/Croqujs-win32-ia32/**/*'])
+		.pipe($.zip('Croqujs-win32.zip'))
+		.pipe(gulp.dest('package'));
+});
+
+gulp.task('archive-win64', () => {
+	return gulp.src(['package/Croqujs-win32-x64/**/*'])
+		.pipe($.zip('Croqujs-win64.zip'))
+		.pipe(gulp.dest('package'));
+});
+
+gulp.task('archive-win', gulp.series('package-win', gulp.parallel('archive-win32', 'archive-win64')));

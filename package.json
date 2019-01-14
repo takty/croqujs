@@ -2,6 +2,7 @@
   "name": "croqujs",
   "version": "5.0.0",
   "description": "The Playground for JavaScript",
+  "productName": "Croqujs",
   "main": "dist/main.js",
   "scripts": {
     "start": "./node_modules/.bin/electron .",
@@ -18,9 +19,6 @@
   },
   "author": "Takuto Yanagida",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/takty/croqujs/issues"
-  },
   "homepage": "https://github.com/takty/croqujs#readme",
   "dependencies": {
     "acorn": "6.0.4",
@@ -41,9 +39,11 @@
     "gulp": "^4.0.0",
     "gulp-autoprefixer": "^6.0.0",
     "gulp-load-plugins": "^1.5.0",
+    "gulp-plist": "^0.1.0",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.0.2",
+    "gulp-zip": "^4.2.0",
     "json-merger": "^1.0.1"
   }
 }
