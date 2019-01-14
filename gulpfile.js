@@ -205,10 +205,11 @@ gulp.task('archive-win64', () => {
 		.pipe(gulp.dest('package'));
 });
 
-gulp.task('archive-mac', gulp.series('package-mac', () => {
+gulp.task('archive-mac', () => {
 	return gulp.src(['package/Croqujs-darwin-x64/**/*'])
 		.pipe($.zip('Croqujs-mac.zip'))
 		.pipe(gulp.dest('package'));
-}));
+});
 
-gulp.task('archive-win', gulp.series('package-win', gulp.parallel('archive-win32', 'archive-win64')));
+gulp.task('build-mac', gulp.series('package-mac', 'archive-mac'));
+gulp.task('build-win', gulp.series('package-win', gulp.parallel('archive-win32', 'archive-win64')));
