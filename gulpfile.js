@@ -154,15 +154,23 @@ function packageElectron(opts = {}, done) {
 	});
 };
 
-gulp.task('package-win', (done) => {
+gulp.task('remove-lv', (done) => {
+	let files = glob.sync('./package/Croqujs-*/LICENSE*');
+	for (let f of files) fs.removeSync(f);
+	files = glob.sync('./package/Croqujs-*/version');
+	for (let f of files) fs.removeSync(f);
+	return done();
+});
+
+gulp.task('package-win', gulp.series((done) => {
 	return packageElectron({
 		platform: 'win32',
 		arch: 'ia32,x64',
 		icon: 'dist/res/icon.ico',
 	}, done);
-});
+}, 'remove-lv'));
 
-gulp.task('package-mac', (done) => {
+gulp.task('package-mac', gulp.series((done) => {
 	return packageElectron({
 		platform: 'darwin',
 		arch: 'x64',
@@ -183,7 +191,7 @@ gulp.task('package-mac', (done) => {
 			.pipe(gulp.dest('.'));
 		return done();
 	});
-});
+}, 'remove-lv'));
 
 gulp.task('archive-win32', () => {
 	return gulp.src(['package/Croqujs-win32-ia32/**/*'])
