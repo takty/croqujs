@@ -148,7 +148,7 @@ const packageOpts = {
 function packageElectron(opts = {}, done) {
 	const defOpts = Object.assign({}, packageOpts);
 	packager(Object.assign(defOpts, opts)).then(() => {
-		if (done != null) done();
+		if (done != null) return done();
 	}).catch((err) => {
 		throw err;
 	});
