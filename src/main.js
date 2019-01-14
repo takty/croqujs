@@ -11,10 +11,11 @@
 'use strict';
 
 const { app, globalShortcut } = require('electron');
+const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
-const FS      = require('fs');
-const PATH    = require('path');
-const PROCESS = require('process');
+const FS      = require_('fs');
+const PATH    = require_('path');
+const PROCESS = require_('process');
 const Config  = require('./lib/config.js');
 const Twin    = require('./twin.js');
 
@@ -26,7 +27,7 @@ class Main {
 		this._focusedTwin = null;
 		let path = this._getArgPath();
 
-		this._conf = new Config(PATH.join(__dirname, '../'));
+		this._conf = new Config(PATH().join(__dirname, '../'));
 		this._conf.loadSync();
 		app.setName('Croqujs');  // for Mac
 		app.on('activate', () => { if (this._twins.length === 0) this._createNewWindow(); });  // for Mac
@@ -50,15 +51,15 @@ class Main {
 	}
 
 	_getArgPath() {
-		const argv = PROCESS.argv;
+		const argv = PROCESS().argv;
 		if (argv.length === 1) return null;
 		return this._checkArgPath(argv[argv.length - 1]);
 	}
 
 	_checkArgPath(path) {
 		try {
-			if (!FS.existsSync(path)) return null;
-			if (FS.statSync(path).isDirectory()) return null;
+			if (!FS().existsSync(path)) return null;
+			if (FS().statSync(path).isDirectory()) return null;
 		} catch (e) {
 			return null;
 		}

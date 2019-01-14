@@ -12,10 +12,11 @@
 
 const electron = require('electron');
 const { ipcMain, BrowserWindow, dialog, clipboard, nativeImage } = electron;
+const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
-const FS       = require('fs');
-const PATH     = require('path');
-const OS       = require('os');
+const FS       = require_('fs');
+const PATH     = require_('path');
+const OS       = require_('os');
 const Backup   = require('./lib/backup.js');
 const WinState = require('./lib/winstate.js');
 const Exporter = require('./exporter.js');
@@ -154,10 +155,10 @@ class Twin {
 	}
 
 	_initializeDocument(text = '', filePath = null) {
-		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
-		const name     = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
-		const baseName = filePath ? PATH.basename(filePath) : '';
-		const dirName  = filePath ? PATH.dirname(filePath) : '';
+		const readOnly = filePath ? ((FS().statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
+		const name     = filePath ? PATH().basename(filePath, PATH().extname(filePath)) : '';
+		const baseName = filePath ? PATH().basename(filePath) : '';
+		const dirName  = filePath ? PATH().dirname(filePath) : '';
 
 		setTimeout(() => {
 			this.callStudyMethod('initializeDocument', text, filePath, name, baseName, dirName, readOnly);
@@ -182,15 +183,15 @@ class Twin {
 
 	doFileDropped(path) {
 		try {
-			const isDir = FS.statSync(path).isDirectory();
+			const isDir = FS().statSync(path).isDirectory();
 			if (!isDir) {
 				this._openFile(path);
 				return;
 			}
-			const fns = FS.readdirSync(path);
-			const fps = fns.map(e => PATH.join(path, e)).filter((fp) => {
+			const fns = FS().readdirSync(path);
+			const fps = fns.map(e => PATH().join(path, e)).filter((fp) => {
 				try {
-					return FS.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
+					return FS().statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
 				} catch (e) {
 					return false;
 				}
@@ -206,7 +207,7 @@ class Twin {
 	}
 
 	_openFile(filePath) {
-		FS.readFile(filePath, 'utf-8', (error, contents) => {
+		FS().readFile(filePath, 'utf-8', (error, contents) => {
 			if (contents === null) {
 				this._outputError('', filePath);
 				return;
@@ -220,7 +221,7 @@ class Twin {
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
-			writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
+			writable = ((FS().statSync(fp).mode & 0x0080) !== 0);  // check write flag
 		} catch (e) {
 			if (e.code !== 'ENOENT') throw e;
 		}
@@ -247,11 +248,11 @@ class Twin {
 
 		this._backup.backupExistingFile(text, this._filePath);
 		try {
-			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
+			FS().writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 
-			const name     = PATH.basename(this._filePath, PATH.extname(this._filePath));
-			const baseName = PATH.basename(this._filePath);
-			const dirName  = PATH.dirname(this._filePath);
+			const name     = PATH().basename(this._filePath, PATH().extname(this._filePath));
+			const baseName = PATH().basename(this._filePath);
+			const dirName  = PATH().dirname(this._filePath);
 			this.callStudyMethod('setDocumentFilePath', this._filePath, name, baseName, dirName, false);
 
 			this._isModified = false;
@@ -282,7 +283,7 @@ class Twin {
 	doExportAsLibrary(libName, isUseDecIncluded, text, jsonCodeStructure) {
 		const codeStructure = JSON.parse(jsonCodeStructure);
 		const name = libName.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
-		const expDir = PATH.join(PATH.dirname(this._filePath), name + '.lib.js');
+		const expDir = PATH().join(PATH().dirname(this._filePath), name + '.lib.js');
 
 		try {
 			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure, isUseDecIncluded);
@@ -297,7 +298,7 @@ class Twin {
 		const expDir = this._makeExportPath(this._filePath);
 		try {
 			this._rmdirSync(expDir);
-			FS.mkdirSync(expDir);
+			FS().mkdirSync(expDir);
 
 			this._exporter.exportAsWebPage(text, this._filePath, expDir);
 			this.callStudyMethod('showServerAlert', 'exportedAsWebPage', 'success');
@@ -307,21 +308,21 @@ class Twin {
 	}
 
 	_makeExportPath(fp) {
-		const name = PATH.basename(fp, PATH.extname(fp));
-		return PATH.join(PATH.dirname(fp), name + '.export');
+		const name = PATH().basename(fp, PATH().extname(fp));
+		return PATH().join(PATH().dirname(fp), name + '.export');
 	}
 
 	_rmdirSync(dirPath) {
-		if (!FS.existsSync(dirPath)) return;
-		for (let fp of FS.readdirSync(dirPath)) {
-			fp = PATH.join(dirPath, fp);
-			if (FS.lstatSync(fp).isDirectory()) {
+		if (!FS().existsSync(dirPath)) return;
+		for (let fp of FS().readdirSync(dirPath)) {
+			fp = PATH().join(dirPath, fp);
+			if (FS().lstatSync(fp).isDirectory()) {
 				this._rmdirSync(fp);
 			} else {
-				FS.unlinkSync(fp);
+				FS().unlinkSync(fp);
 			}
 		}
-		FS.rmdirSync(dirPath);
+		FS().rmdirSync(dirPath);
 	}
 
 
@@ -376,7 +377,7 @@ class Twin {
 		const expDir = this._getTempPath();
 		try {
 			this._rmdirSync(expDir);
-			FS.mkdirSync(expDir);
+			FS().mkdirSync(expDir);
 			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
 			if (!success) {
 				const info = { msg: expPath, library: true, isUserCode: false };
@@ -393,9 +394,9 @@ class Twin {
 	}
 
 	_getTempPath() {
-		const tmpdir = OS.tmpdir();
+		const tmpdir = OS().tmpdir();
 		const name = 'croqujs-' + Date.now();
-		const path = PATH.join(tmpdir, name);
+		const path = PATH().join(tmpdir, name);
 		this._tempDirs.push(path);
 		return path;
 	}

@@ -3,13 +3,17 @@
  * WinState (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-04-27
+ * @version 2019-01-14
  *
  */
 
 
 'use strict';
 
+const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
+
+const OS       = require_('os');
+const ELECTRON = require_('electron');
 
 class WinState {
 
@@ -21,10 +25,8 @@ class WinState {
 			clearTimeout(resizeTimeout);
 			resizeTimeout = setTimeout(funcOnResize, 500);
 		};
-		this._screen = require('electron').screen;
 
 		this._win = win;
-		this._isMac = (require('os').platform() === 'darwin');
 		this._quitWindow = quitWindow;
 		this._reader = () => { return config.get(key) || null; };
 		this._writer = (state) => { config.set(key, state); };
@@ -83,8 +85,9 @@ class WinState {
 		if (this._state.width !== 0 && this._state.height !== 0) {
 			this._win.setSize(this._state.width, this._state.height);
 		}
-		const { width, height } = this._screen.getPrimaryDisplay().workAreaSize;
-		const minY = this._isMac ? 22 : 0;
+		const screen = ELECTRON().screen;
+		const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+		const minY = (OS().platform() === 'darwin') ? 22 : 0;
 		const x = Math.max(0, Math.min(this._state.x, width));
 		const y = Math.max(minY, Math.min(this._state.y, height));
 		this._win.setPosition(x, y);

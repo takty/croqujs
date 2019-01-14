@@ -3,20 +3,19 @@
  * Backup (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-04
+ * @version 2019-01-14
  *
  */
 
 
 'use strict';
 
-const FS      = require('fs');
-const PATH    = require('path');
-const CRYPTO  = require('crypto');
-const PROCESS = require('process');
+const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
-const IS_WIN = (PROCESS.platform === 'win32');
-const CHILD_PROCESS = IS_WIN ? require('child_process') : null;
+const FS      = require_('fs');
+const PATH    = require_('path');
+const CRYPTO  = require_('crypto');
+const PROCESS = require_('process');
 
 
 class Backup {
@@ -38,14 +37,14 @@ class Backup {
 		const digest = this._getDigest(text);
 		if (digest === this._digest) return false;
 
-		const ext  = PATH.extname(this._filePath);
-		const name = PATH.basename(this._filePath, ext);
+		const ext  = PATH().extname(this._filePath);
+		const name = PATH().basename(this._filePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(this._filePath);
 			this._lastTimeStampStr = this._createTimeStampStr();
-			const to = PATH.join(backupDir, name + this._lastTimeStampStr + ext);
-			FS.writeFile(to, text, (err) => { if (err) console.log(err); });
+			const to = PATH().join(backupDir, name + this._lastTimeStampStr + ext);
+			FS().writeFile(to, text, (err) => { if (err) console.log(err); });
 		} catch (e) {
 			return false;
 		}
@@ -59,13 +58,13 @@ class Backup {
 		this.backupText(text);
 
 		const log  = JSON.stringify(info);
-		const ext  = PATH.extname(this._filePath);
-		const name = PATH.basename(this._filePath, ext);
+		const ext  = PATH().extname(this._filePath);
+		const name = PATH().basename(this._filePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(this._filePath);
-			const to = PATH.join(backupDir, name + this._lastTimeStampStr + '.log');
-			FS.writeFile(to, log, (err) => { if (err) console.log(err); });
+			const to = PATH().join(backupDir, name + this._lastTimeStampStr + '.log');
+			FS().writeFile(to, log, (err) => { if (err) console.log(err); });
 		} catch (e) {
 			return false;
 		}
@@ -73,22 +72,22 @@ class Backup {
 	}
 
 	backupExistingFile(text, existingFilePath) {
-		if (!FS.existsSync(existingFilePath)) return false;
+		if (!FS().existsSync(existingFilePath)) return false;
 
 		text = text.replace(/\n/g, '\r\n');
-		const oldText = FS.readFileSync(existingFilePath, 'utf-8');
+		const oldText = FS().readFileSync(existingFilePath, 'utf-8');
 
 		const digest = this._getDigest(text);
 		if (digest === this._getDigest(oldText)) return false;
 
-		const ext  = PATH.extname(existingFilePath);
-		const name = PATH.basename(existingFilePath, ext);
+		const ext  = PATH().extname(existingFilePath);
+		const name = PATH().basename(existingFilePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(existingFilePath);
 			this._lastTimeStampStr = this._createTimeStampStr();
-			const to = PATH.join(backupDir, name + this._lastTimeStampStr + ext);
-			FS.writeFileSync(to, oldText);
+			const to = PATH().join(backupDir, name + this._lastTimeStampStr + ext);
+			FS().writeFileSync(to, oldText);
 		} catch (e) {
 			return false;
 		}
@@ -97,7 +96,7 @@ class Backup {
 	}
 
 	_getDigest(text) {
-		const hash = CRYPTO.createHash('sha256');
+		const hash = CRYPTO().createHash('sha256');
 		hash.update(text);
 		return hash.digest('hex');
 	}
@@ -109,12 +108,13 @@ class Backup {
 	}
 
 	_ensureBackupDir(fp) {
-		const name = PATH.basename(fp, PATH.extname(fp));
-		const dir = PATH.join(PATH.dirname(fp), '.' + name + '.backup');
+		const name = PATH().basename(fp, PATH().extname(fp));
+		const dir = PATH().join(PATH().dirname(fp), '.' + name + '.backup');
 		try {
-			FS.mkdirSync(dir);  // if the dir exists, an exception is thrown.
-			if (IS_WIN) {
-				CHILD_PROCESS.spawn('attrib', ['+H', dir]);
+			FS().mkdirSync(dir);  // if the dir exists, an exception is thrown.
+			if (PROCESS().platform === 'win32') {
+				const child_process = require('child_process');
+				child_process.spawn('attrib', ['+H', dir]);
 			}
 		} catch (e) {
 			return dir;

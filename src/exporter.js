@@ -3,15 +3,17 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-08
+ * @version 2019-01-14
  *
  */
 
 
 'use strict';
 
-const FS   = require('fs');
-const PATH = require('path');
+const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
+
+const FS   = require_('fs');
+const PATH = require_('path');
 
 global.acorn      = require('./renderer_study/lib/acorn/acorn.js');
 global.acorn.walk = require('./renderer_study/lib/acorn/walk.js');
@@ -32,7 +34,7 @@ class Exporter {
 	}
 
 	checkLibraryReadable(codeStr, filePath) {
-		const bp = (filePath) ? PATH.dirname(filePath) : null;
+		const bp = (filePath) ? PATH().dirname(filePath) : null;
 		const decs = this._extractUseDeclarations(codeStr.split('\n'));
 
 		for (let dec of decs) {
@@ -41,8 +43,8 @@ class Exporter {
 				libs.push({ desc: p });
 			} else {
 				let cont = null;
-				if (bp) cont = this._readFile(PATH.join(bp, p));
-				if (cont === null) cont = this._readFile(PATH.join(__dirname, EXP_LIB_DIR, p));
+				if (bp) cont = this._readFile(PATH().join(bp, p));
+				if (cont === null) cont = this._readFile(PATH().join(__dirname, EXP_LIB_DIR, p));
 				if (cont === null) return p;  // Error
 			}
 		}
@@ -55,11 +57,11 @@ class Exporter {
 		if (isUseDecIncluded) {
 			const lines = codeText.split('\n');
 			const decs = this._extractUseDeclarations(lines);
-			const bp = PATH.dirname(filePath);
+			const bp = PATH().dirname(filePath);
 			const libCodes = [];
 			for (let dec of decs) {
 				if (!Array.isArray(dec)) continue;
-				const libPath = PATH.join(bp, dec[0]), libNs = dec[1];
+				const libPath = PATH().join(bp, dec[0]), libNs = dec[1];
 				const libCode = this._readAsLibraryCode(libPath, libNs, 1);
 				if (libCode === false) return [false, dec[0]];
 				libCodes.push(libCode);
@@ -68,8 +70,8 @@ class Exporter {
 			inc = libCodes.join(EXP_EOL);
 		}
 		const libCode = this._createLibraryCode(codeText, exportedSymbols, nameSpace, 0, inc);
-		FS.writeFileSync(filePath, libCode);
-		return [FS.existsSync(filePath), filePath];
+		FS().writeFileSync(filePath, libCode);
+		return [FS().existsSync(filePath), filePath];
 	}
 
 	exportAsWebPage(codeText, filePath, dirPath, injection = false) {
@@ -79,47 +81,47 @@ class Exporter {
 		let title = 'Croqujs';
 
 		if (injection) {
-			this._copyFile(PATH.join(__dirname, INJECTION), PATH.join(dirPath, INJECTION));
+			this._copyFile(PATH().join(__dirname, INJECTION), PATH().join(dirPath, INJECTION));
 			pushTag(INJECTION);
 		}
 		if (filePath) {
-			const bp = PATH.dirname(filePath);
+			const bp = PATH().dirname(filePath);
 			for (let dec of decs) {
 				if (Array.isArray(dec)) {
 					const p = dec[0];
 					if (p.startsWith('http')) return [false, p];
-					const destFn = PATH.basename(p, PATH.extname(p)) + '.lib.js';
-					const res = this._writeLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, destFn));
+					const destFn = PATH().basename(p, PATH().extname(p)) + '.lib.js';
+					const res = this._writeLibraryImmediately(PATH().join(bp, p), dec[1], PATH().join(dirPath, destFn));
 					if (!res) return [false, p];
 					pushTag(destFn);
 				} else {
 					const p = dec;
 					if (!p.startsWith('http')) {
-						let res = this._copyFile(PATH.join(bp, p), PATH.join(dirPath, p));
-						if (!res) res = this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+						let res = this._copyFile(PATH().join(bp, p), PATH().join(dirPath, p));
+						if (!res) res = this._copyFile(PATH().join(__dirname, EXP_LIB_DIR, p), PATH().join(dirPath, p));
 						if (!res) return [false, p];
 					}
 					pushTag(p);
 				}
 			}
-			title = PATH.basename(filePath, '.js');
+			title = PATH().basename(filePath, '.js');
 			title = title.charAt(0).toUpperCase() + title.slice(1);
 		} else {
 			for (let dec of decs) {
 				const p = Array.isArray(dec) ? dec[0] : dec;
 				if (!p.startsWith('http')) {
-					const res = this._copyFile(PATH.join(__dirname, EXP_LIB_DIR, p), PATH.join(dirPath, p));
+					const res = this._copyFile(PATH().join(__dirname, EXP_LIB_DIR, p), PATH().join(dirPath, p));
 					if (!res) return [false, p];
 				}
 				pushTag(p);
 			}
 		}
 		const head = HTML_HEAD1.replace('%TITLE%', title);
-		const expPath = PATH.join(dirPath, 'index.html');
+		const expPath = PATH().join(dirPath, 'index.html');
 		const libTagStr = libs.join('');
 		this._userCodeOffset = HTML_HEAD1.length + libTagStr.length + HTML_HEAD2.length;
 
-		FS.writeFileSync(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
+		FS().writeFileSync(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
 		return [true, expPath];
 	}
 
@@ -240,8 +242,8 @@ class Exporter {
 	_writeLibraryImmediately(origPath, nameSpace, destPath) {
 		const libCode = this._readAsLibraryCode(origPath, nameSpace);
 		if (libCode === false) return false;
-		FS.writeFileSync(destPath, libCode);
-		return FS.existsSync(destPath);
+		FS().writeFileSync(destPath, libCode);
+		return FS().existsSync(destPath);
 	}
 
 	_readAsLibraryCode(origPath, nameSpace, indent = 0) {
@@ -271,17 +273,17 @@ class Exporter {
 	_copyFile(from, to) {
 		let cont;
 		try {
-			cont = FS.readFileSync(from, 'utf-8');
+			cont = FS().readFileSync(from, 'utf-8');
 		} catch (e) {
 			return false;
 		}
 		try {
-			FS.writeFileSync(to, cont);
+			FS().writeFileSync(to, cont);
 		} catch (e) {
 			if (e.code === 'ENOENT') {
 				this._makeParentDir(to);
 				try {
-					FS.writeFileSync(to, cont);
+					FS().writeFileSync(to, cont);
 					return true;
 				} catch (e1) {}
 			}
@@ -291,15 +293,15 @@ class Exporter {
 	}
 
 	_makeParentDir(dirPath) {
-		const nd = PATH.dirname(dirPath);
+		const nd = PATH().dirname(dirPath);
 		try {
-			FS.mkdirSync(nd);
+			FS().mkdirSync(nd);
 			return true;
 		} catch (e) {
 			if (e.code === 'ENOENT') {
 				this._makeParentDir(nd);
 				try {
-					FS.mkdirSync(nd);
+					FS().mkdirSync(nd);
 					return true;
 				} catch(e1) {}
 			}
@@ -309,7 +311,7 @@ class Exporter {
 
 	_readFile(filePath) {
 		try {
-			return FS.readFileSync(filePath, 'utf-8');
+			return FS().readFileSync(filePath, 'utf-8');
 		} catch (e) {
 			return null;
 		}
