@@ -29,6 +29,7 @@ class Main {
 		this._conf = new Config(PATH.join(__dirname, '../'));
 		this._conf.loadSync();
 		app.setName('Croqujs');  // for Mac
+		app.on('activate', () => { if (this._twins.length === 0) this._createNewWindow(); });  // for Mac
 		app.on('will-finish-launching', () => {  // for Mac
 			app.on('open-file', (ev, p) => {
 				ev.preventDefault();
@@ -40,7 +41,6 @@ class Main {
 			globalShortcut.register('CmdOrCtrl+F12',       () => { this._focusedTwin.toggleFieldDevTools(); });
 			globalShortcut.register('CmdOrCtrl+Shift+F12', () => { this._focusedTwin.toggleStudyDevTools(); });
 		});
-		app.on('activate', () => { if (this._twins.length === 0) this._createNewWindow(); });
 		app.on('browser-window-focus', (ev, win) => { this._focusedTwin = this._twins.find(t => t.isOwnerOf(win)); });
 		app.on('window-all-closed', () => {
 			this._conf.saveSync();
