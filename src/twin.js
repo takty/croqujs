@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-13
+ * @version 2019-01-14
  *
  */
 
@@ -26,7 +26,7 @@ const FILE_FILTERS = [{ name: 'JavaScript', extensions: ['js'] }, { name: 'All F
 
 class Twin {
 
-	constructor(main, conf, id) {
+	constructor(main, conf, id, path) {
 		this._id   = id;
 		this._main = main;
 		this._conf = conf;
@@ -47,7 +47,7 @@ class Twin {
 			if (this[msg]) this[msg](...args);
 		});
 
-		this._createStudyWindow();
+		this._createStudyWindow(path);
 		this._main.onTwinCreated(this);
 	}
 
@@ -55,12 +55,15 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	_createStudyWindow() {
+	_createStudyWindow(path) {
 		this._studyWin = new BrowserWindow({ show: false });
 		this._studyWin.loadURL(`file://${__dirname}/renderer_study/study.html#${this._id}`);
 		this._studyWin.once('ready-to-show', () => {
 			this._initializeDocument();
 			this._studyWin.show();
+			if (path) {
+				setTimeout(() => { this._openFile(path) }, 100);
+			}
 		});
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();
