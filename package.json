@@ -40,6 +40,8 @@
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.0.2",
     "gulp-zip": "^4.2.0",
-    "json-merger": "^1.0.1"
+    "json-merger": "^1.0.1",
+    "lodash": "^4.17.11",
+    "plist": "^3.0.1"
   }
 }
