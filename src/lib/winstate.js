@@ -85,8 +85,7 @@ class WinState {
 		if (this._state.width !== 0 && this._state.height !== 0) {
 			this._win.setSize(this._state.width, this._state.height);
 		}
-		const screen = ELECTRON().screen;
-		const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+		const { width, height } = ELECTRON().screen.getPrimaryDisplay().workAreaSize;
 		const minY = (OS().platform() === 'darwin') ? 22 : 0;
 		const x = Math.max(0, Math.min(this._state.x, width));
 		const y = Math.max(minY, Math.min(this._state.y, height));
