@@ -28,6 +28,7 @@ class Main {
 		if (!gotTheLock) app.quit();
 
 		this._twins = [];
+		this._twinId = 0;
 		this._focusedTwin = null;
 		let path = this._getArgPath();
 
@@ -77,7 +78,8 @@ class Main {
 	}
 
 	_createNewWindow(path = null) {
-		new Twin(this, this._conf, this._twins.length + 1, path);
+		this._twinId += 1;
+		new Twin(this, this._conf, this._twinId, path);
 	}
 
 	onTwinCreated(t) {  // Called By Twin
