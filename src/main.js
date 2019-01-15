@@ -23,6 +23,7 @@ const Twin    = require('./twin.js');
 class Main {
 
 	constructor() {
+		this._isReady = false;
 		const gotTheLock = app.requestSingleInstanceLock()
 		if (!gotTheLock) app.quit();
 
@@ -38,10 +39,12 @@ class Main {
 			app.on('open-file', (ev, p) => {
 				ev.preventDefault();
 				path = this._checkArgPath(p);
+				if (this._isReady) this._createNewWindow(path);
 			});
 		});
 		app.on('ready', () => {
 			this._createNewWindow(path);
+			this._isReady = true;
 			globalShortcut.register('CmdOrCtrl+F12',       () => { this._focusedTwin.toggleFieldDevTools(); });
 			globalShortcut.register('CmdOrCtrl+Shift+F12', () => { this._focusedTwin.toggleStudyDevTools(); });
 		});
