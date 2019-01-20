@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-15
+ * @version 2019-01-20
  *
  */
 
@@ -14,11 +14,10 @@ const electron = require('electron');
 const { ipcMain, BrowserWindow, dialog, clipboard, nativeImage } = electron;
 const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
+const OS       = require_('os');
 const FS       = require_('fs');
 const PATH     = require_('path');
-const OS       = require_('os');
-const Backup   = require('./lib/backup.js');
-const WinState = require('./lib/winstate.js');
+const Backup   = require('./backup.js');
 const Exporter = require('./exporter.js');
 
 const DEFAULT_EXT = '.js';
@@ -27,13 +26,11 @@ const FILE_FILTERS = [{ name: 'JavaScript', extensions: ['js'] }, { name: 'All F
 
 class Twin {
 
-	constructor(main, conf, id, path) {
-		this._id   = id;
-		this._main = main;
-		this._conf = conf;
-
-		this._fieldWin       = null;
-		this._fieldWinBounds = null;
+	constructor(main, id, path) {
+		this._id       = id;
+		this._main     = main;
+		this._studyWin = null;
+		this._fieldWin = null;
 
 		this._filePath   = null;
 		this._isReadOnly = false;
@@ -52,22 +49,16 @@ class Twin {
 		this._main.onTwinCreated(this);
 	}
 
-
-	// -------------------------------------------------------------------------
-
-
 	_createStudyWindow(path) {
 		this._studyWin = new BrowserWindow({ show: false });
 		this._studyWin.loadURL(`file://${__dirname}/renderer_study/study.html#${this._id}`);
 		this._studyWin.once('ready-to-show', () => {
 			this._initializeDocument();
-			this._studyWinState = new WinState(this._studyWin, false, false, this._conf);
 			this._studyWin.show();
 			if (path) setTimeout(() => { this._openFile(path); }, 100);
 		});
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();
-			this._studyWinState._onClose();
 			this.callStudyMethod('executeCommand', 'close');
 		});
 		this._studyWin.setMenu(null);
@@ -81,21 +72,12 @@ class Twin {
 		return win === this._studyWin || win === this._fieldWin;
 	}
 
-	tileWin() {  // Called By Study
-		const d = electron.screen.getPrimaryDisplay();
-		const w = 0 | (d.workAreaSize.width / 2), h = d.workAreaSize.height;
-		if (this._studyWin.isMaximized()) {
-			this._studyWin.unmaximize();
-		}
-		this._studyWin.setBounds({x: 0, y: 0, width: w, height: h});
-		if (this._fieldWin) {
-			if (this._fieldWin.isMaximized()) {
-				this._fieldWin.unmaximize();
-			}
-			this._fieldWin.setBounds({x: w, y: 0, width: w, height: h});
-		} else {
-			this._fieldWinBounds = {x: w, y: 0, width: w, height: h};
-		}
+	toggleFieldDevTools() {  // Called By Main
+		if (this._fieldWin) this._fieldWin.webContents.toggleDevTools();
+	}
+
+	toggleStudyDevTools() {  // Called By Main
+		this._studyWin.webContents.toggleDevTools();
 	}
 
 	callStudyMethod(method, ...args) {
@@ -405,25 +387,11 @@ class Twin {
 	}
 
 	_createFieldWindow() {
-		const opt = Object.assign({ show: false }, this._fieldWinBounds || {});
-		this._fieldWin = new BrowserWindow(opt);
+		this._fieldWin = new BrowserWindow({ show: false });
 		this._fieldWin.setTitle('Croqujs');
 		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => { this._fieldWin = null; });
 		this._fieldWin.setMenu(null);
-		this._fieldWinState = new WinState(this._fieldWin, false, this._fieldWinBounds ? true : false, this._conf, 'fieldWindowState');
-	}
-
-
-	// -------------------------------------------------------------------------
-
-
-	toggleFieldDevTools() {
-		if (this._fieldWin) this._fieldWin.webContents.toggleDevTools();
-	}
-
-	toggleStudyDevTools() {
-		this._studyWin.webContents.toggleDevTools();
 	}
 
 }

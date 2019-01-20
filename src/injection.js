@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-26
+ * @version 2019-01-20
  *
  */
 
@@ -14,7 +14,7 @@
 
 	window.addEventListener('storage', (e) => {
 		if ('injection_' + ID !== e.key) return;
-		window.localStorage.clear();
+		window.localStorage.removeItem(e.key);
 		const ma = JSON.parse(e.newValue);
 
 		if (ma.message === 'window-fullscreen-entered') {

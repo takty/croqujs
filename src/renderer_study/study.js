@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-08
+ * @version 2019-01-20
  *
  */
 
@@ -31,6 +31,7 @@ class Study {
 		}
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
 		this._config.addEventListener((conf) => this._configUpdated(conf));
+		this._winstate = new WinState(window, false, 'winstate_study');
 		this._lang = this._config.getItem('language');
 		if (!this._lang) this._lang = 'ja';
 
@@ -63,15 +64,14 @@ class Study {
 		this._initWindowResizing(this._editor);
 
 		window.addEventListener('storage', (e) => {
-			if ('study_' + this._id === e.key) {
-				window.localStorage.removeItem(e.key);
-				const ma = JSON.parse(e.newValue);
-				if (ma.message === 'error') {
-					this._twinMessage('onStudyErrorOccurred', ma.params);
-					this.addErrorMessage(ma.params);
-				} else if (ma.message === 'output') {
-					this._outputPane.addOutput(ma.params);
-				}
+			if ('study_' + this._id !== e.key) return;
+			window.localStorage.removeItem(e.key);
+			const ma = JSON.parse(e.newValue);
+			if (ma.message === 'error') {
+				this._twinMessage('onStudyErrorOccurred', ma.params);
+				this.addErrorMessage(ma.params);
+			} else if (ma.message === 'output') {
+				this._outputPane.addOutput(ma.params);
 			}
 		});
 		window.addEventListener('focus', (e) => {
@@ -507,8 +507,11 @@ class Study {
 			// View Command
 
 			if (cmd === 'tileWin') {
-				this._twinMessage('tileWin');
-
+				const x = window.screen.availLeft, y = window.screen.availTop;
+				const w = window.screen.availWidth / 2, h = window.screen.availHeight;
+				window.moveTo(x, y);
+				window.resizeTo(w, h);
+				window.localStorage.setItem('winstate_field', JSON.stringify({x: w, y: y, width: w, height: h}));
 			} else if (cmd === 'fontSizePlus') {
 				const size = Math.min(64, Math.max(10, conf.getItem('fontSize') + 2));
 				conf.setItem('fontSize', size);
