@@ -7,5 +7,5 @@ npm install
 ```
 
 ```console
-npm run dev-start
+npm run dev
 ```
