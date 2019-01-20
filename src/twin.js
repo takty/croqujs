@@ -64,6 +64,24 @@ class Twin {
 		this._studyWin.setMenu(null);
 	}
 
+	_initializeDocument(text = '', filePath = null) {
+		const readOnly = filePath ? ((FS().statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
+		const name = filePath ? PATH().basename(filePath, PATH().extname(filePath)) : '';
+		const baseName = filePath ? PATH().basename(filePath) : '';
+		const dirName = filePath ? PATH().dirname(filePath) : '';
+
+		setTimeout(() => {
+			this.callStudyMethod('initializeDocument', text, filePath, name, baseName, dirName, readOnly);
+		}, 100);
+
+		this._filePath = filePath;
+		this._isReadOnly = readOnly;
+		this._isModified = false;
+		this._backup.setFilePath(filePath);
+
+		this.stop();
+	}
+
 
 	// -------------------------------------------------------------------------
 
@@ -113,43 +131,6 @@ class Twin {
 
 	onStudyErrorOccurred(info) {
 		this._backup.backupErrorLog(info, this._codeCache);
-	}
-
-
-	// -------------------------------------------------------------------------
-
-
-	_ensureWindowTop(win) {
-		win.setAlwaysOnTop(true);
-		win.setAlwaysOnTop(false);
-		win.focus();
-	}
-
-	_ensureWindowsFocused(main, sub) {
-		sub.setAlwaysOnTop(true);
-		main.setAlwaysOnTop(true);
-		if (sub.isMinimized()) sub.restore();
-		sub.setAlwaysOnTop(false);
-		main.setAlwaysOnTop(false);
-		main.focus();
-	}
-
-	_initializeDocument(text = '', filePath = null) {
-		const readOnly = filePath ? ((FS().statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
-		const name     = filePath ? PATH().basename(filePath, PATH().extname(filePath)) : '';
-		const baseName = filePath ? PATH().basename(filePath) : '';
-		const dirName  = filePath ? PATH().dirname(filePath) : '';
-
-		setTimeout(() => {
-			this.callStudyMethod('initializeDocument', text, filePath, name, baseName, dirName, readOnly);
-		}, 100);
-
-		this._filePath   = filePath;
-		this._isReadOnly = readOnly;
-		this._isModified = false;
-		this._backup.setFilePath(filePath);
-
-		this.stop();
 	}
 
 
@@ -324,10 +305,8 @@ class Twin {
 				this._fieldWin.show();
 				this._execute(text);
 			});
-			this._fieldWin.once('show', () => { this._ensureWindowTop(this._studyWin); });
 		} else {
 			if (!this._fieldWin.isVisible()) this._fieldWin.show();
-			this._ensureWindowsFocused(this._studyWin, this._fieldWin);
 			this._execute(text);
 		}
 	}
