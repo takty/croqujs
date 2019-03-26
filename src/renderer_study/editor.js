@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-13
+ * @version 2019-03-27
  *
  */
 
@@ -470,7 +470,8 @@ class Editor {
 		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
 		try {
 			text = js_beautify(text, opts);
-			text = text.replace(/(.); \/\//gm, '$1;  //');  // Make the blank before the comment two blanks
+			text = text.replace(/(.);\s*\/\//gm, '$1;  //');  // Make the blank before the comment two blanks
+			text = text.replace(/(.?)}\s*\/\//gm, '$1}  //');  // Make the blank before the comment two blanks
 			return text;
 		} catch (e) {
 		}
