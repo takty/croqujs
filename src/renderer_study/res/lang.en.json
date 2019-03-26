@@ -6,6 +6,7 @@
             "close": "Close",
             "save": "Save",
             "saveAs": "Save As...",
+            "saveCopy": "Save a Copy...",
             "export": "Export",
                 "exportAsWebPage": "Export As Web Page",
                 "exportAsLibrary": "Export As Library",
@@ -60,6 +61,10 @@
     },
     "btn": {
         "cancel": "Cancel"
+    },
+    "dialogTitle": {
+        "saveAs": "Save As",
+        "saveCopy": "Save a Copy"
     },
     "untitled": "Untitled",
     "fileFilters": [

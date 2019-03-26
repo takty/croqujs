@@ -6,6 +6,7 @@
             "close": "閉じる",
             "save": "保存",
             "saveAs": "別名で保存...",
+            "saveCopy": "複製を保存...",
             "export": "エクスポート",
                 "exportAsWebPage": "ウェブページとしてエクスポート",
                 "exportAsLibrary": "ライブラリとしてエクスポート",
@@ -60,6 +61,10 @@
     },
     "btn": {
         "cancel": "キャンセル"
+    },
+    "dialogTitle": {
+        "saveAs": "別名で保存",
+        "saveCopy": "複製を保存"
     },
     "untitled": "名称未設定",
     "fileFilters": [

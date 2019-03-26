@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-20
+ * @version 2019-03-26
  *
  */
 
@@ -177,8 +177,8 @@ class Twin {
 		});
 	}
 
-	doSaveAs(text) {
-		const fp = dialog.showSaveDialog(this._studyWin, { defaultPath: this._filePath, filters: FILE_FILTERS });
+	doSaveAs(text, dlgTitle) {
+		const fp = dialog.showSaveDialog(this._studyWin, { title: dlgTitle, defaultPath: this._filePath, filters: FILE_FILTERS });
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
@@ -194,9 +194,9 @@ class Twin {
 		}
 	}
 
-	doSave(text) {
+	doSave(text, dlgTitle) {
 		if (this._filePath === null || this._isReadOnly) {
-			this.doSaveAs(text);
+			this.doSaveAs(text, dlgTitle);
 		} else {
 			this._saveFile(this._filePath, text);
 		}
@@ -218,6 +218,29 @@ class Twin {
 
 			this._isModified = false;
 		} catch (e) {
+			this._outputError(e, this._filePath);
+		}
+	}
+
+	doSaveCopy(text, dlgTitle) {
+		const fp = dialog.showSaveDialog(this._studyWin, { title: dlgTitle, defaultPath: this._filePath, filters: FILE_FILTERS });
+		if (!fp) return;  // No file is selected.
+		let writable = true;
+		try {
+			writable = ((FS().statSync(fp).mode & 0x0080) !== 0);  // check write flag
+		} catch (e) {
+			if (e.code !== 'ENOENT') throw e;
+		}
+		if (writable) {
+			if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
+			this._backup.backupExistingFile(text, fp);
+			try {
+				FS().writeFileSync(fp, text.replace(/\n/g, '\r\n'));
+			} catch (e) {
+				this._outputError(e, fp);
+			}
+		} else {
+			// In Windows, the save dialog itself does not allow to select read only files.
 			this._outputError(e, this._filePath);
 		}
 	}
