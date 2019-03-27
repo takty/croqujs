@@ -469,9 +469,13 @@ class Editor {
 		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
 		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
 		try {
+			const headSlashSlash = text.match(/^(\s*\/\/)/);
 			text = js_beautify(text, opts);
 			text = text.replace(/(.);\s*\/\//gm, '$1;  //');  // Make the blank before the comment two blanks
 			text = text.replace(/(.?)}\s*\/\//gm, '$1}  //');  // Make the blank before the comment two blanks
+			if (headSlashSlash) {
+				text = text.replace(/^\s*\/\//, headSlashSlash.groups[0]);
+			}
 			return text;
 		} catch (e) {
 		}
