@@ -3,7 +3,7 @@
  * Toolbar Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-12-19
+ * @version 2019-03-27
  *
  */
 
@@ -81,4 +81,5 @@ $size-toolbar-button: 40px;
 	background-color: $color-window;
 	color: $L-DarkGray;
 	font-family: $font-ui;
+	-webkit-text-stroke-width: 0.1px;
 }

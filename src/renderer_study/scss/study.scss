@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-15
+ * @version 2019-03-27
  *
  */
 
@@ -36,7 +36,8 @@ $color-text  : #110;
 $color-window: #f8f8f8;
 $color-handle: #d7d7d7;
 
-$font-ui: "Lucida Grande", "Hiragino Kaku Gothic ProN", Meiryo, "Yu Gothic UI", YuGothic, sans-serif !important;
+$font-ui     : "Lucida Grande", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo UI", YuGothic, Meiryo, sans-serif;
+$font-console: Inconsolata, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', YuGothic, Meiryo, monospace;
 
 
 @import 'editor';
@@ -82,8 +83,8 @@ html, body {
 .sub {
 	overflow-y: scroll;
 	height: 0;
-	font-family: Inconsolata, 'Hiragino Kaku Gothic ProN', Meiryo, 'Yu Gothic', YuGothic, monospace;
-	
+	font-family: $font-console;
+
 	> div > div {  /* Output Pane -> innner -> items */
 		margin: 4px;
 		word-wrap: break-word;
@@ -102,7 +103,7 @@ html, body {
 			padding: 2px 3px;
 		}
 	}
-	
+
 	div.err {
 		color: $L-Red;
 

@@ -3,7 +3,7 @@
  * SweetAlert2 (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-08
+ * @version 2019-03-27
  *
  */
 
@@ -14,18 +14,32 @@
 	transition: 0.25s;
 }
 
-.swal2-modal {
-	font-family: $font-ui;
-	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.25);
+.swal2-popup {
+	box-shadow: 0 0 0.25rem rgba(#000, 0.15), 0 0.25rem 0.75rem rgba(#000, 0.25);
 	user-select: none;
-	
-	input {
-		font-size: 16px !important;
-	}
+
+	font-family: $font-ui;
+	font-size: 1rem;
+	color: rgba(#000, 0.95);
+
 	.swal2-content {
-		font-size: 16px !important;
-		cursor: default;
+		display: inline-block !important;
+
+		font-size: inherit;
+		color: inherit;
+		line-height: 150%;
+
 		text-align: center;
+		-webkit-text-stroke-width: 0.25px;
+	}
+	#swal2-content {
+		display: inline-block !important;
+		text-align: left;
+	}
+	.swal2-input {
+		font-family: $font-console;
+		font-size: inherit;
+		color: inherit;
 	}
 	.swal2-icon {
 		&.swal2-info {
@@ -39,11 +53,36 @@
 		&.swal2-warning {
 			border-color: rgba($L-Orange, 0.2);
 			color: $L-Orange;
+			line-height: 1.25;
 		}
 		&.swal2-success {
 			border-color: $L-YellowGreen;
 			.placeholder { border-color: rgba($L-YellowGreen, 0.2); }
 			.line { background-color: $L-YellowGreen; }
+		}
+	}
+	.swal2-styled {
+		margin: 0.5rem 0.75rem;
+		padding: 0 1rem;
+		min-width: 8rem;
+		min-height: 2.5rem;
+
+		transition: 0.25s;
+
+		font-family: inherit;
+		line-height: 1;
+
+		&.swal2-confirm {
+			background-color: $L-Orange;
+			&:hover { background-color: $L-Orange-b; }
+		}
+		&.swal2-cancel {
+			background-color: $L-Gray;
+			&:hover { background-color: $L-DarkGray; }
+		}
+		&:focus {
+			box-shadow: 0 0.25rem 0.75rem rgba(#000, 0.25);
+			outline: none;
 		}
 	}
 }
@@ -53,40 +92,13 @@
 	100% {border-color: rgba($L-Orange, 0.2);}
 }
 
-.swal2-popup {
-	#swal2-content {
-		display: inline-block !important;
-		text-align: left;
-	}
-	.swal2-styled {
-		min-width: 6em;
-		min-height: 2.5em;
-		margin-left: 0.5em;
-		margin-right: 0.5em;
-		padding: 0 16px;
-		transition: 0.25s;
-	
-		&.swal2-confirm {
-			background-color: $L-Orange !important;
-			&:hover { background-color: $L-Orange-b !important; }
-		}
-		&.swal2-cancel {
-			background-color: $L-Gray !important;
-			&:hover { background-color: $L-DarkGray !important; }
-		}
-		&:focus {
-			box-shadow: 0 4px 6px rgba(#000, 0.25) !important;
-			outline: none;
-		}
-	}
-}
-
 .swal2-popup.prompt-with-option {
 	#swal2-content {
 		width: 100%;
 		text-align: center;
 
 		div:first-child {
+			display: block !important;
 			text-align: left;
 		}
 	}
@@ -94,7 +106,7 @@
 		display: flex;
 	}
 	.swal2-checkbox-opt {
-		margin: 1em auto;
+		margin: 1rem auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;

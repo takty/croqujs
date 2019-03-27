@@ -3,7 +3,7 @@
  * Side Menu Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-12-19
+ * @version 2019-03-27
  *
  */
 
@@ -24,7 +24,8 @@ $menu-padding-v: 10px;
 
 	font-size: 15px;
 	line-height: 1;
-	font-family: 'Yu Gothic UI', sans-serif;
+	font-family: $font-ui;
+	-webkit-text-stroke-width: 0.1px;
 
 	ul {
 		margin: 0;
@@ -138,6 +139,7 @@ $menu-padding-v: 10px;
 				height: 28px;
 				background-image: url('icon-check.svg');
 				background-position: center center;
+				background-size: contain;
 			}
 		}
 		[data-cmd].disabled {
