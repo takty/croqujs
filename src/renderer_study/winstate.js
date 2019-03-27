@@ -3,12 +3,16 @@
  * WinState (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-20
+ * @version 2019-03-28
  *
  */
 
 
 'use strict';
+
+
+const WINSTATE_MIN_WIDTH  = 400;
+const WINSTATE_MIN_HEIGHT = 300;
 
 
 class WinState {
@@ -69,7 +73,10 @@ class WinState {
 	_restore() {
 		if (this._state.width === undefined) return;
 		if (this._state.width !== 0 && this._state.height !== 0) {
-			this._win.resizeTo(this._state.width, this._state.height);
+			this._win.resizeTo(
+				Math.max(WINSTATE_MIN_WIDTH,  this._state.width),
+				Math.max(WINSTATE_MIN_HEIGHT, this._state.height)
+			);
 		}
 		const minX = this._win.screen.availLeft;
 		const minY = this._win.screen.availTop;
