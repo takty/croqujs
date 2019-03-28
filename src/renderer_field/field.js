@@ -3,7 +3,7 @@
  * Field (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-20
+ * @version 2019-03-28
  *
  */
 
@@ -18,7 +18,7 @@ class Field {
 
 	constructor() {
 		[this._id, ] = window.location.hash.replace('#', '').split(',');
-		this._winstate = new WinState(window, false, 'winstate_field');
+		this._winstate = new WinState(window, 'winstate_field');
 
 		this._container = document.createElement('div');
 		document.body.appendChild(this._container);
@@ -52,6 +52,11 @@ class Field {
 			this._container.removeChild(this._frame);
 		} catch (e) { }
 		this._frame = null;
+	}
+
+	alignWindow(x, y, width, height) {
+		window.moveTo(x, y);
+		window.resizeTo(width, height);
 	}
 
 	onKeyDown(e) {  // Called also from injection.js

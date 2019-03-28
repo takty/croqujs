@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-26
+ * @version 2019-03-28
  *
  */
 
@@ -31,7 +31,7 @@ class Study {
 		}
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
 		this._config.addEventListener((conf) => this._configUpdated(conf));
-		this._winstate = new WinState(window, false, 'winstate_study');
+		this._winstate = new WinState(window, 'winstate_study');
 		this._lang = this._config.getItem('language');
 		if (!this._lang) this._lang = 'ja';
 
@@ -513,7 +513,7 @@ class Study {
 				const w = window.screen.availWidth / 2, h = window.screen.availHeight;
 				window.moveTo(x, y);
 				window.resizeTo(w, h);
-				window.localStorage.setItem('winstate_field', JSON.stringify({x: w, y: y, width: w, height: h}));
+				this._callFieldMethod('alignWindow', x + w, y, w, h);
 			} else if (cmd === 'fontSizePlus') {
 				const size = Math.min(64, Math.max(10, conf.getItem('fontSize') + 2));
 				conf.setItem('fontSize', size);

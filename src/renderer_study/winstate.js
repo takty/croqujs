@@ -11,34 +11,24 @@
 'use strict';
 
 
-const WINSTATE_MIN_WIDTH  = 400;
-const WINSTATE_MIN_HEIGHT = 300;
-
-
 class WinState {
 
-	constructor(win, suppressRestore, key = 'winState', config = window.localStorage) {
-		this._state = {};
-		this._win   = win;
+	constructor(win, key = 'winState', suppressRestore = false, config = win.localStorage) {
+		this._state  = {};
+		this._win    = win;
+		this._key    = key;
+		this._config = config;
 
-		this._read = () => { const v = config.getItem(key); return v ? JSON.parse(v) : null; };
-		this._write = (obj) => { config.setItem(key, JSON.stringify(obj)); };
 		this._initialize(suppressRestore);
-
-		window.addEventListener('storage', (e) => {
-			if (key !== e.key) return;
-			const s = JSON.parse(e.newValue);
-			if (this._state.x === s.x && this._state.y === s.y && this._state.width === s.width && this._state.height === s.height) return;
-			this._state = s;
-			this._restore();
-		});
 	}
 
 	_initialize(suppressRestore) {
 		const POLING_INTERVAL = 500;
 		const MINOR_DELAY = 0;
 
-		const t = this._read();
+		const raw = this._config.getItem(this._key);
+		const t = raw ? JSON.parse(raw) : null;
+
 		if (t && suppressRestore !== true) {
 			this._state = { x: t.x, y: t.y, width: t.width, height: t.height };
 			this._win.addEventListener('load', () => {
@@ -67,15 +57,19 @@ class WinState {
 		this._state.y      = y;
 		this._state.width  = width;
 		this._state.height = height;
-		this._write(this._state);
+
+		this._config.setItem(this._key, JSON.stringify(this._state));
 	}
 
 	_restore() {
+		const MIN_WIDTH  = 400;
+		const MIN_HEIGHT = 300;
+
 		if (this._state.width === undefined) return;
 		if (this._state.width !== 0 && this._state.height !== 0) {
 			this._win.resizeTo(
-				Math.max(WINSTATE_MIN_WIDTH,  this._state.width),
-				Math.max(WINSTATE_MIN_HEIGHT, this._state.height)
+				Math.max(MIN_WIDTH,  this._state.width),
+				Math.max(MIN_HEIGHT, this._state.height)
 			);
 		}
 		const minX = this._win.screen.availLeft;
