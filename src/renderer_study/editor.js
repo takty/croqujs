@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-27
+ * @version 2019-03-28
  *
  */
 
@@ -675,6 +675,7 @@ class Editor {
 	}
 
 	getFunctionLineNumber(lineNo) {
+		if (!this._lineNoByFunc) return [0, 1];
 		return this._lineNoByFunc[lineNo];
 	}
 
