@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-28
+ * @version 2019-03-29
  *
  */
 
@@ -457,7 +457,7 @@ class Editor {
 
 		const text = this._doFormat(doc.getRange(bgn, end))
 		if (text === false) return;
-		if (2 < text.split('\n').length) return;
+		if (1 < text.split('\n').length) return;
 		this._comp.operation(() => {
 			doc.replaceRange(text, bgn, end);
 			this._comp.indentLine(line);
@@ -471,8 +471,7 @@ class Editor {
 		try {
 			const headSlashSlash = text.match(/^(\s*\/\/)/);
 			text = js_beautify(text, opts);
-			text = text.replace(/(.);\s*\/\//gm, '$1;  //');  // Make the blank before the comment two blanks
-			text = text.replace(/(.?)}\s*\/\//gm, '$1}  //');  // Make the blank before the comment two blanks
+			text = text.replace(/(\S+)\s*\/\//m, '$1  //');  // Make the blank before the comment two blanks
 			if (headSlashSlash) {
 				text = text.replace(/^\s*\/\//, headSlashSlash.groups[0]);
 			}
