@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-14
+ * @version 2019-04-18
  *
  */
 
@@ -231,6 +231,7 @@ class Exporter {
 			if (pst === '') continue;
 			const pos = pst.indexOf('.');
 			val = pst.substr(0, pos).toUpperCase();
+			break;
 		}
 		return val.replace(/[ -+\\.]/, '_');
 	}
