@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-29
+ * @version 2019-04-18
  *
  */
 
@@ -696,21 +696,24 @@ class Editor {
 	}
 
 	_updateFuncLineNoGutter() {
-		const lines = this._codeStructure.fnLocs;
-		if (!lines || lines.length === 0) return;
-		const lineCount = this._comp.getDoc().lineCount();
-
 		this._lineNoByFunc = [];
-		let fnIdx = 0, off = 0;
-		for (let i = 0; i < lineCount; i += 1) {
-			if (lines[fnIdx] !== undefined && i === lines[fnIdx][0].line - 1) {
-				off = lines[fnIdx][0].line - 1;
-				fnIdx += 1;
-			}
-			this._lineNoByFunc.push([fnIdx, (1 + i - off)]);
-		}
 
-		if (lineCount === 0) this._lineNoByFunc.push([0, 1]);
+		const lineCount = this._comp.getDoc().lineCount();
+		const fnStarts = this._codeStructure.fnStarts;
+
+		if (lineCount === 0 || !fnStarts || fnStarts.length === 0) {
+			this._lineNoByFunc.push([0, 1]);
+		} else {
+			let fnIdx = 0, local = 1;
+			for (let i = 0; i < lineCount; i += 1) {
+				if (fnStarts[fnIdx] !== undefined && i === fnStarts[fnIdx]) {
+					local = 1;
+					fnIdx += 1;
+				}
+				this._lineNoByFunc.push([fnIdx, local]);
+				local += 1;
+			}
+		}
 		const width = this._calcWidth(this._comp, lineCount);
 
 		this._comp.operation(() => {

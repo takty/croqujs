@@ -3,7 +3,7 @@
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-04
+ * @version 2019-04-18
  *
  */
 
@@ -96,7 +96,15 @@ function analyze(code) {
 			console.error(e);
 		}
 	}
-	return { fnLocs: fnLocs, ifLocs: ifLocs, forLocs: forLocs, fnNames: fnNames };
+	const fnStarts = [];
+	let lastEnd = -1;
+	for (let loc of fnLocs) {
+		if (lastEnd < loc[1].line - 1) {
+			fnStarts.push(loc[0].line - 1);
+			lastEnd = loc[1].line - 1;
+		}
+	}
+	return { fnLocs, fnStarts, ifLocs, forLocs, fnNames };
 }
 
 if (typeof module === 'object') {
