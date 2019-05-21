@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-08
+ * @version 2019-05-21
  *
  */
 
@@ -20,7 +20,7 @@ class DialogBox {
 
 	showAlert(text, type) {
 		this._disableBackground();
-		swal(this._makeOption(text, type)
+		Swal.fire(this._makeOption(text, type)
 		).then(() => {
 			this._enableBackground();
 		});
@@ -28,7 +28,7 @@ class DialogBox {
 
 	showConfirm(text, type, fn) {
 		this._disableBackground();
-		swal(this._makeOption(text, type, {
+		Swal.fire(this._makeOption(text, type, {
 			confirmButtonText: 'OK',
 			showCancelButton: true,
 			cancelButtonText: this._textCancel,
@@ -40,7 +40,7 @@ class DialogBox {
 
 	showPrompt(text, type, placeholder, value, fn) {
 		this._disableBackground();
-		swal(this._makeOption(text, type, {
+		Swal.fire(this._makeOption(text, type, {
 			input: 'text',
 			confirmButtonText: 'OK',
 			showCancelButton: true,
@@ -64,7 +64,7 @@ class DialogBox {
 
 	showPromptWithOption(text, type, placeholder, value, optText, fn) {
 		this._disableBackground();
-		swal({
+		Swal.fire({
 			title: '',
 			type: type,
 			allowOutsideClick: false,
@@ -74,8 +74,8 @@ class DialogBox {
 			customClass: 'prompt-with-option',
 			focusConfirm: false,
 			html: '<div style="display: inline-block;">' + this._formatText(text) + '</div>' +
-				'<input id="swal-input" class="swal2-input" placeholder="' + placeholder + '" type="text" value="' + value + '">' + 
-				'<label class="swal2-checkbox-opt"><input type="checkbox" id="swal-checkbox">' + 
+				'<input id="swal-input" class="swal2-input" placeholder="' + placeholder + '" type="text" value="' + value + '">' +
+				'<label class="swal2-checkbox-opt"><input type="checkbox" id="swal-checkbox">' +
 				'<span class="swal2-label">' + this._formatText(optText) + '</span></label>',
 			preConfirm: () => {
 				return [
