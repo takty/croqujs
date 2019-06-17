@@ -20,12 +20,12 @@
     "acorn": "6.1.1",
     "acorn-loose": "^6.0.0",
     "acorn-walk": "^6.1.1",
-    "codemirror": "^5.46.0",
+    "codemirror": "^5.47.0",
     "js-beautify": "^1.10.0",
     "jshint": "^2.10.2",
     "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
-    "sweetalert2": "^8.11.1",
-    "tern": "^0.23.0"
+    "sweetalert2": "^8.12.1",
+    "tern": "^0.24.0"
   },
   "devDependencies": {
     "electron": "^3.1.9",
@@ -40,8 +40,6 @@
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.0.2",
     "gulp-zip": "^5.0.0",
-    "json-merger": "^1.1.1",
-    "lodash": "^4.17.11",
-    "plist": "^3.0.1"
+    "json-merger": "^1.1.1"
   }
 }
