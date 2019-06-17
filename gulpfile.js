@@ -88,7 +88,7 @@ gulp.task('sass', () => {
 	return gulp.src(['src/**/scss/**/[^_]*.scss'])
 		.pipe($.plumber())
 		.pipe($.sass({ outputStyle: 'compressed' }))
-		.pipe($.autoprefixer({ browsers: ['ie >= 11'], remove: false }))
+		.pipe($.autoprefixer({ remove: false }))
 		.pipe($.rename({ extname: '.min.css' }))
 		.pipe($.rename((p) => {
 			p.dirname = p.dirname.replace(path.sep + 'scss' + path.sep, path.sep + 'css' + path.sep);
@@ -137,10 +137,10 @@ const packageOpts = {
 	ignore: [
 		'^/node_modules',
 		'^/src',
-		'^/res', 
-		'^/.gitignore', 
-		'^/config.json',  
-		'^/npm-debug.log', 
+		'^/res',
+		'^/.gitignore',
+		'^/config.json',
+		'^/npm-debug.log',
 		'^/gulpfile.js'
 	],
 };
