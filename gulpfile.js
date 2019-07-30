@@ -5,6 +5,7 @@ const glob       = require('glob');
 const path       = require('path');
 const jsonMerger = require('json-merger');
 const gulp       = require('gulp');
+const gulp_plist = require('./gulp-plist');
 const $          = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
 
 function copySync(from, to) {
@@ -177,7 +178,7 @@ gulp.task('package-mac', gulp.series((done) => {
 		icon: 'dist/res/icon.icns',
 	}, () => {
 		gulp.src(['package/Croqujs-darwin-x64/' + config.productName + '.app/Contents/Info.plist'], { base: '.' })
-			.pipe($.plist({
+			.pipe(gulp_plist({
 				CFBundleDocumentTypes: [
 					{
 						CFBundleTypeExtensions: ['js'],
