@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-15
+ * @version 2019-07-30
  *
  */
 
@@ -72,6 +72,8 @@ class ErrorTranslator {
 				m = '定義されていないオブジェクトのプロパティ ' + m.replace(/.*'(.*)'.*/, (m, s1) => s1) + ' を使おうとしています。直前を打ち間違えていませんか？';
 			} else if (m.startsWith('Cannot set property ') && m.endsWith(' of undefined')) {
 				m = '定義されていないオブジェクトのプロパティ ' + m.replace(/.*'(.*)'.*/, (m, s1) => s1) + ' にセットしようとしています。直前を打ち間違えていませんか？';
+			} else if (m.startsWith('Assignment to constant variable.')) {
+				m = '定数に値をもう一度セットしようとしています。一度セットされた定数を変えることはできません。';
 			}
 			return m + '<div>（型エラー）' + msg + '</div>';
 		}
