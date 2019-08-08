@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-04-18
+ * @version 2019-08-08
  *
  */
 
@@ -752,7 +752,8 @@ class Editor {
 		const test = display.measure.appendChild(_elt('div', _elt('div', document.createTextNode(str)), 'CodeMirror-function-linenumber CodeMirror-gutter-elt'));
 		const innerW = test.firstChild.offsetWidth;
 		const padding = test.offsetWidth - innerW;
-		const lineNumWidth = Math.max(innerW, display.lineGutter.offsetWidth - padding) + 1 + padding;
+		const lineGutterWidth = display.lineGutter ? display.lineGutter.offsetWidth : 0;
+		const lineNumWidth = Math.max(innerW, lineGutterWidth - padding) + 1 + padding;
 		return (lineNumWidth || 1) + 'px';
 	}
 
