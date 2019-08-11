@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-28
+ * @version 2019-08-12
  *
  */
 
@@ -34,6 +34,15 @@ class Study {
 		this._winstate = new WinState(window, 'winstate_study');
 		this._lang = this._config.getItem('language');
 		if (!this._lang) this._lang = 'ja';
+
+		const se = document.createElement('script');
+		se.src = 'lib/jshint/' + (this._lang === 'en' ? 'jshint.js' : 'jshint-ja-edu.js');
+		document.getElementsByTagName('head')[0].appendChild(se);
+		setTimeout(() => {
+			const se2 = document.createElement('script');
+			se2.src = 'lib/codemirror/addon/lint/javascript-lint.js';
+			document.getElementsByTagName('head')[0].appendChild(se2);
+		}, 10);
 
 		loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json'], (ret) => {
 			this._res = Object.assign(ret[0], ret[1]);
@@ -198,12 +207,6 @@ class Study {
 		const pane = document.querySelector('.sub');
 		pane.style.fontSize = parseInt(conf.fontSize, 10) + 'px';
 
-		if (!this._jsHintLoaded) {
-			const se = document.createElement('script');
-			se.src = './lib/jshint/' + (this._lang === 'en' ? 'jshint.js' : 'jshint-ja-edu.js');
-			document.getElementsByTagName('head')[0].appendChild(se);
-			this._jsHintLoaded = true;
-		}
 		this._editor.refresh();
 		this._sideMenu.reflectConfig(conf);
 	}
