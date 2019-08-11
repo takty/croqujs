@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-11
+ * @version 2019-08-12
  *
  */
 
@@ -51,7 +51,7 @@ class Twin {
 
 	_createStudyWindow(path) {
 		this._studyWin = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: true } });
-		this._studyWin.loadURL(`file://${__dirname}/renderer_study/study.html#${this._id}`);
+		this._studyWin.loadURL(`file://${__dirname}/study/study.html#${this._id}`);
 		this._studyWin.once('ready-to-show', () => {
 			this._initializeDocument();
 			this._studyWin.show();
@@ -138,7 +138,7 @@ class Twin {
 
 
 	doOpen(defaultPath = this._filePath) {
-		const fp = dialog.showOpenDialog(this._studyWin, { defaultPath: defaultPath, filters: FILE_FILTERS });
+		const fp = dialog.showOpenDialogSync(this._studyWin, { defaultPath: defaultPath ? defaultPath : '', filters: FILE_FILTERS });
 		if (fp) this._openFile(fp[0]);
 	}
 
@@ -178,7 +178,7 @@ class Twin {
 	}
 
 	doSaveAs(text, dlgTitle) {
-		const fp = dialog.showSaveDialog(this._studyWin, { title: dlgTitle, defaultPath: this._filePath, filters: FILE_FILTERS });
+		const fp = dialog.showSaveDialogSync(this._studyWin, { title: dlgTitle, defaultPath: this._filePath ? this._filePath : '', filters: FILE_FILTERS });
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
@@ -223,7 +223,7 @@ class Twin {
 	}
 
 	doSaveCopy(text, dlgTitle) {
-		const fp = dialog.showSaveDialog(this._studyWin, { title: dlgTitle, defaultPath: this._filePath, filters: FILE_FILTERS });
+		const fp = dialog.showSaveDialogSync(this._studyWin, { title: dlgTitle, defaultPath: this._filePath ? this._filePath : '', filters: FILE_FILTERS });
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
@@ -391,7 +391,7 @@ class Twin {
 	_createFieldWindow() {
 		this._fieldWin = new BrowserWindow({ show: false });
 		this._fieldWin.setTitle('Croqujs');
-		this._fieldWin.loadURL(`file://${__dirname}/renderer_field/field.html#${this._id}`);
+		this._fieldWin.loadURL(`file://${__dirname}/field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => { this._fieldWin = null; });
 		this._fieldWin.setMenu(null);
 	}
