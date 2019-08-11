@@ -138,7 +138,7 @@ class Twin {
 
 
 	doOpen(defaultPath = this._filePath) {
-		const fp = dialog.showOpenDialog(this._studyWin, { defaultPath: defaultPath, filters: FILE_FILTERS });
+		const fp = dialog.showOpenDialogSync(this._studyWin, { defaultPath: defaultPath ? defaultPath : '', filters: FILE_FILTERS });
 		if (fp) this._openFile(fp[0]);
 	}
 
@@ -178,7 +178,7 @@ class Twin {
 	}
 
 	doSaveAs(text, dlgTitle) {
-		const fp = dialog.showSaveDialog(this._studyWin, { title: dlgTitle, defaultPath: this._filePath, filters: FILE_FILTERS });
+		const fp = dialog.showSaveDialogSync(this._studyWin, { title: dlgTitle, defaultPath: this._filePath ? this._filePath : '', filters: FILE_FILTERS });
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
@@ -223,7 +223,7 @@ class Twin {
 	}
 
 	doSaveCopy(text, dlgTitle) {
-		const fp = dialog.showSaveDialog(this._studyWin, { title: dlgTitle, defaultPath: this._filePath, filters: FILE_FILTERS });
+		const fp = dialog.showSaveDialogSync(this._studyWin, { title: dlgTitle, defaultPath: this._filePath ? this._filePath : '', filters: FILE_FILTERS });
 		if (!fp) return;  // No file is selected.
 		let writable = true;
 		try {
