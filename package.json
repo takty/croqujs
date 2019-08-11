@@ -32,7 +32,7 @@
     "bplist-parser": "^0.2.0",
     "deepmerge": "^4.0.0",
     "electron": "^3.1.11",
-    "electron-packager": "^13.1.1",
+    "electron-packager": "^14.0.4",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",
