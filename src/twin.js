@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-26
+ * @version 2019-08-11
  *
  */
 
@@ -50,7 +50,7 @@ class Twin {
 	}
 
 	_createStudyWindow(path) {
-		this._studyWin = new BrowserWindow({ show: false });
+		this._studyWin = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: true } });
 		this._studyWin.loadURL(`file://${__dirname}/renderer_study/study.html#${this._id}`);
 		this._studyWin.once('ready-to-show', () => {
 			this._initializeDocument();
