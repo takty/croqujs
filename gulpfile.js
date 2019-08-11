@@ -1,5 +1,7 @@
 'use strict';
 
+const VER_DATE = '%VER_DATE%';
+
 const fs         = require('fs-extra');
 const glob       = require('glob');
 const path       = require('path');
@@ -7,6 +9,9 @@ const jsonMerger = require('json-merger');
 const gulp       = require('gulp');
 const gulp_plist = require('./gulp-plist');
 const $          = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
+
+const moment  = require('moment');
+const verDate = moment().format('YYYY-MM-DD');
 
 function copySync(from, to) {
 	const isToDir = to.endsWith('/');
@@ -78,6 +83,12 @@ gulp.task('copy-src', (done) => {
 
 gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
 
+gulp.task('version', () => {
+	return gulp.src(['./src/renderer_study/study.html', './src/renderer_study/res/resource.json'], { base: './src' })
+		.pipe($.replace(VER_DATE, verDate))
+		.pipe(gulp.dest('dist'));
+});
+
 gulp.task('compile-json', (done) => {
 	const files = glob.sync('./src/renderer_study/def/*');
 	const res = jsonMerger.mergeFiles(files);
@@ -87,7 +98,12 @@ gulp.task('compile-json', (done) => {
 
 gulp.task('sass', () => {
 	return gulp.src(['src/**/scss/**/[^_]*.scss'])
-		.pipe($.plumber())
+		.pipe($.plumber({
+			errorHandler: function (err) {
+				console.log(err.messageFormatted);
+				this.emit('end');
+			}
+		}))
 		.pipe($.sass({ outputStyle: 'compressed' }))
 		.pipe($.autoprefixer({ remove: false }))
 		.pipe($.rename({ extname: '.min.css' }))
@@ -108,7 +124,7 @@ gulp.task('sass-misc', () => {
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', gulp.series('copy', 'compile-json', 'sass', 'sass-misc'));
+gulp.task('default', gulp.series('copy', 'version', 'compile-json', 'sass', 'sass-misc'));
 
 
 // -----------------------------------------------------------------------------

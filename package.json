@@ -40,10 +40,12 @@
     "gulp-load-plugins": "^2.0.1",
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^1.4.0",
+    "gulp-replace": "^1.0.0",
     "gulp-sass": "^4.0.2",
     "gulp-util": "^3.0.8",
     "gulp-zip": "^5.0.0",
     "json-merger": "^1.1.1",
+    "moment": "^2.24.0",
     "plist": "^3.0.1",
     "through2": "^3.0.1"
   }
