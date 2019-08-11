@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-12-19
+ * @version 2019-08-12
  *
  */
 
@@ -102,7 +102,7 @@
 		pointer-events: auto;
 		transition: 0.25s;
 	}
-	&:hover::after {
+	.CodeMirror:not(.simple) &:hover::after {
 		background-color: rgba($L-Purple, 0.45);
 		transition: 0.25s;
 	}
@@ -159,7 +159,7 @@
 		height: 100%;
 		pointer-events: auto;
 	}
-	&:hover::before {
+	.CodeMirror:not(.simple) &:hover::before {
 		background-color: rgba($L-Purple, 0.25);
 	}
 }
@@ -226,10 +226,10 @@
 		height: 100%;
 		pointer-events: auto;
 	}
-	&:hover::before {
+	.CodeMirror:not(.simple) &:hover::before {
 		background-color: rgba($L-Purple, 0.25);
 	}
-	&.CodeMirror-function-even {
+	.CodeMirror:not(.simple) &.CodeMirror-function-even {
 		&:hover::before {
 			background-color: rgba($L-Purple, 0.65);
 		}

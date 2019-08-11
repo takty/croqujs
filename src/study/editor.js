@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-08
+ * @version 2019-08-12
  *
  */
 
@@ -550,6 +550,7 @@ class Editor {
 		this._comp.setOption('cursorBlinkRate', -1);
 		this._comp.setOption('cursorHeight',    0);
 		this._comp.setOption('lineWrapping',    false);
+		this._elem.classList.add('simple');
 		return orig;
 	}
 
@@ -560,6 +561,7 @@ class Editor {
 		this._comp.setOption('cursorBlinkRate', orig.cursorBlinkRate);
 		this._comp.setOption('cursorHeight',    orig.cursorHeight);
 		this._comp.setOption('lineWrapping',    orig.lineWrapping);
+		this._elem.classList.remove('simple');
 	}
 
 
