@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-04-18
+ * @version 2019-08-12
  *
  */
 
@@ -15,9 +15,9 @@ const require_ = (path) => { let r; return () => { return r || (r = require(path
 const FS   = require_('fs');
 const PATH = require_('path');
 
-global.acorn      = require('./renderer_study/lib/acorn/acorn.js');
-global.acorn.walk = require('./renderer_study/lib/acorn/walk.js');
-const analyze     = require('./renderer_study/analyzer.js');
+global.acorn      = require('./study/lib/acorn/acorn.js');
+global.acorn.walk = require('./study/lib/acorn/walk.js');
+const analyze     = require('./study/analyzer.js');
 
 const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
 const HTML_HEAD2  = '</head><body><script>';

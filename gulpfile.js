@@ -26,7 +26,7 @@ function copySync(from, to) {
 	}
 }
 
-const PATH_STUDY_LIB = './dist/renderer_study/lib/';
+const PATH_STUDY_LIB = './dist/study/lib/';
 
 gulp.task('copy-acorn', (done) => {
 	copySync('./node_modules/acorn/dist', PATH_STUDY_LIB + 'acorn');
@@ -75,8 +75,8 @@ gulp.task('copy-lib', gulp.parallel(
 
 gulp.task('copy-src', (done) => {
 	copySync('./src', './dist');
-	fs.removeSync('./dist/renderer_study/scss/');
-	fs.removeSync('./dist/renderer_study/def/');
+	fs.removeSync('./dist/study/scss/');
+	fs.removeSync('./dist/study/def/');
 	copySync('./res/icon/icon.*', './dist/res/');
 	done();
 });
@@ -84,15 +84,15 @@ gulp.task('copy-src', (done) => {
 gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
 
 gulp.task('version', () => {
-	return gulp.src(['./src/renderer_study/study.html', './src/renderer_study/res/resource.json'], { base: './src' })
+	return gulp.src(['./src/study/study.html', './src/study/res/resource.json'], { base: './src' })
 		.pipe($.replace(VER_DATE, verDate))
 		.pipe(gulp.dest('dist'));
 });
 
 gulp.task('compile-json', (done) => {
-	const files = glob.sync('./src/renderer_study/def/*');
+	const files = glob.sync('./src/study/def/*');
 	const res = jsonMerger.mergeFiles(files);
-	fs.writeFileSync('./dist/renderer_study/libl.json', JSON.stringify(res, null, '\t'));
+	fs.writeFileSync('./dist/study/libl.json', JSON.stringify(res, null, '\t'));
 	done();
 });
 
