@@ -26,9 +26,8 @@ const FILE_FILTERS = [{ name: 'JavaScript', extensions: ['js'] }, { name: 'All F
 
 class Twin {
 
-	constructor(main, id, path) {
+	constructor(id, path) {
 		this._id       = id;
-		this._main     = main;
 		this._studyWin = null;
 		this._fieldWin = null;
 
@@ -46,7 +45,6 @@ class Twin {
 		});
 
 		this._createStudyWindow(path);
-		this._main.onTwinCreated(this);
 	}
 
 	_createStudyWindow(path) {
@@ -244,7 +242,6 @@ class Twin {
 	doClose(text) {
 		if (this._isModified) this._backup.backupText(text);
 
-		this._main.onTwinDestruct(this);
 		this._studyWin.destroy();
 		this._studyWin = null;
 		if (this._fieldWin) this._fieldWin.close();
@@ -378,7 +375,6 @@ class Twin {
 
 	_createFieldWindow() {
 		this._fieldWin = new BrowserWindow({ show: false });
-		this._fieldWin.setTitle('Croqujs');
 		this._fieldWin.loadURL(`file://${__dirname}/field/field.html#${this._id}`);
 		this._fieldWin.on('closed', () => { this._fieldWin = null; });
 		this._fieldWin.setMenu(null);

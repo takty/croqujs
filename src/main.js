@@ -13,52 +13,49 @@
 const { app, globalShortcut } = require('electron');
 const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
-const FS      = require_('fs');
-const PROCESS = require_('process');
-const Twin    = require('./twin.js');
+const FS   = require_('fs');
+const PROC = require_('process');
+const Twin = require('./twin.js');
 
 
 class Main {
 
 	constructor() {
+		this._gs      = [];
+		this._gId     = 0;
 		this._isReady = false;
-		const gotTheLock = app.requestSingleInstanceLock()
-		if (!gotTheLock) app.quit();
 
-		this._twins = [];
-		this._twinId = 0;
-		let path = this._getArgPath();
+		if (!app.requestSingleInstanceLock()) app.quit();
 
 		app.on('activate', () => {  // for Mac
-			if (this._twins.length === 0) this._createWindow();
+			if (this._gs.length === 0) this._createWindow();
 		});
 		app.on('will-finish-launching', () => {  // for Mac
-			app.on('open-file', (ev, p) => {
-				ev.preventDefault();
-				path = this._checkArgPath(p);
-				if (this._isReady) this._createWindow(path);
+			app.on('open-file', (e, p) => {
+				e.preventDefault();
+				if (this._isReady) this._createWindow(this._checkArgPath(p));
 			});
 		});
 		app.on('ready', () => {
-			this._createWindow(path);
+			this._createWindow(this._getArgPath());
 			this._isReady = true;
 			globalShortcut.register('CmdOrCtrl+F12', () => {
-				for (let t of this._twins) { if (t._fieldWin) t._fieldWin.webContents.toggleDevTools(); }
+				for (let g of this._gs) { if (g._fieldWin) g._fieldWin.webContents.toggleDevTools(); }
 			});
 			globalShortcut.register('CmdOrCtrl+Shift+F12', () => {
-				for (let t of this._twins) t._studyWin.webContents.toggleDevTools();
+				for (let g of this._gs) g._studyWin.webContents.toggleDevTools();
 			});
 		});
-		app.on('second-instance', (ev, argv, workDir) => {
+		app.on('second-instance', (e, argv, workDir) => {
 			this._createWindow(this._getArgPath(argv));
-		})
+		});
 		app.on('window-all-closed', () => {
 			globalShortcut.unregisterAll();
 			app.quit();
 		});
 	}
 
-	_getArgPath(argv = PROCESS().argv) {
+	_getArgPath(argv = PROC().argv) {
 		if (argv.length === 1) return null;
 		return this._checkArgPath(argv[argv.length - 1]);
 	}
@@ -74,16 +71,10 @@ class Main {
 	}
 
 	_createWindow(path = null) {
-		this._twinId += 1;
-		new Twin(this, this._twinId, path);
-	}
-
-	onTwinCreated(t) {  // Called By Twin
-		this._twins.push(t);
-	}
-
-	onTwinDestruct(t) {  // Called By Twin
-		this._twins.splice(this._twins.indexOf(t), 1);
+		this._gId += 1;
+		const g = new Twin(this._gId, path);
+		g._studyWin.on('closed', () => { this._gs.splice(this._gs.indexOf(g), 1); });
+		this._gs.push(g);
 	}
 
 }
