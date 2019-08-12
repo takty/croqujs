@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-05-21
+ * @version 2019-08-12
  *
  */
 
@@ -19,6 +19,7 @@ class DialogBox {
 	}
 
 	showAlert(text, type) {
+		window.focus();
 		this._disableBackground();
 		Swal.fire(this._makeOption(text, type)
 		).then(() => {
@@ -27,6 +28,7 @@ class DialogBox {
 	}
 
 	showConfirm(text, type, fn) {
+		window.focus();
 		this._disableBackground();
 		Swal.fire(this._makeOption(text, type, {
 			confirmButtonText: 'OK',
@@ -39,6 +41,7 @@ class DialogBox {
 	}
 
 	showPrompt(text, type, placeholder, value, fn) {
+		window.focus();
 		this._disableBackground();
 		Swal.fire(this._makeOption(text, type, {
 			input: 'text',
@@ -63,6 +66,7 @@ class DialogBox {
 	}
 
 	showPromptWithOption(text, type, placeholder, value, optText, fn) {
+		window.focus();
 		this._disableBackground();
 		Swal.fire({
 			title: '',

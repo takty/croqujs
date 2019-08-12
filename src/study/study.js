@@ -382,25 +382,11 @@ class Study {
 
 
 	showServerAlert(mid, type, additional = false) {  // Called By Twin
-		window.focus();
 		const text = this._res.msg[mid] + (additional ? additional : '');
 		this._dialogBox.showAlert(text, type);
 	}
 
-	_showAlert(text, type) {
-		window.focus();
-		this._dialogBox.showAlert(text, type);
-	}
-
-	_showConfirm(text, type, messageForMain, ...args) {
-		window.focus();
-		this._dialogBox.showConfirm(text, type, () => {
-			if (messageForMain) this._twinMessage(messageForMain, ...args);
-		});
-	}
-
 	_showPrompt(text, type, placeholder, value, optText, messageForMain, ...args) {
-		window.focus();
 		this._dialogBox.showPromptWithOption(text, type, placeholder, value, optText, (resVal, resOpt) => {
 			if (messageForMain) this._twinMessage(messageForMain, resVal, resOpt, ...args);
 		});
@@ -412,7 +398,9 @@ class Study {
 
 	_checkCanDiscard(msg, returnMsg, ...args) {
 		if (this._isModified) {
-			this._showConfirm(msg, 'warning', returnMsg, ...args);
+			this._dialogBox.showConfirm(msg, 'warning', () => {
+				if (returnMsg) this._twinMessage(returnMsg, ...args);
+			});
 		} else {
 			this._twinMessage(returnMsg, ...args);
 		}
@@ -460,10 +448,10 @@ class Study {
 
 			} else if (cmd === 'setLanguageJa') {
 				conf.setItem('language', 'ja');
-				this._showAlert(this._res.msg.alertNextTime, 'info');
+				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
 			} else if (cmd === 'setLanguageEn') {
 				conf.setItem('language', 'en');
-				this._showAlert(this._res.msg.alertNextTime, 'info');
+				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
 			}
 
 			// Edit Command
@@ -546,7 +534,7 @@ class Study {
 			// Help Command
 
 			if (cmd === 'showAbout') {
-				this._showAlert(this._res.about.join('\n'), 'info');
+				this._dialogBox.showAlert(this._res.about.join('\n'), 'info');
 			}
 		}, 0);
 	}
