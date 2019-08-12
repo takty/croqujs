@@ -418,15 +418,15 @@ class Study {
 		}
 	}
 
-	_prepareExecution(nextMethod) {
+	_prepareExecution(nextMethod) {  // 'doRun', 'doRunWithoutWindow'
 		this._outputPane.setMessageReceivable(false);
 		this._callFieldMethod('closeProgram');
 
 		setTimeout(() => {
 			this._clearErrorMarker();
 			this._outputPane.initialize();
-			this._twinMessage(nextMethod, this._editor.value());
 			this._outputPane.setMessageReceivable(true);
+			this._twinMessage(nextMethod, this._editor.value());  // 'addErrorMessage', 'openProgram'
 		}, 100);
 	}
 
