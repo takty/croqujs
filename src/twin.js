@@ -86,18 +86,6 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	isOwnerOf(win) {  // Called By Main
-		return win === this._studyWin || win === this._fieldWin;
-	}
-
-	toggleFieldDevTools() {  // Called By Main
-		if (this._fieldWin) this._fieldWin.webContents.toggleDevTools();
-	}
-
-	toggleStudyDevTools() {  // Called By Main
-		this._studyWin.webContents.toggleDevTools();
-	}
-
 	callStudyMethod(method, ...args) {
 		this._studyWin.webContents.send('callStudyMethod', method, ...args);
 	}

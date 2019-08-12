@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-11
+ * @version 2019-08-12
  *
  */
 
@@ -27,7 +27,6 @@ class Main {
 
 		this._twins = [];
 		this._twinId = 0;
-		this._focusedTwin = null;
 		let path = this._getArgPath();
 
 		app.on('activate', () => {  // for Mac
@@ -43,15 +42,16 @@ class Main {
 		app.on('ready', () => {
 			this._createWindow(path);
 			this._isReady = true;
-			globalShortcut.register('CmdOrCtrl+F12',       () => { this._focusedTwin.toggleFieldDevTools(); });
-			globalShortcut.register('CmdOrCtrl+Shift+F12', () => { this._focusedTwin.toggleStudyDevTools(); });
+			globalShortcut.register('CmdOrCtrl+F12', () => {
+				for (let t of this._twins) { if (t._fieldWin) t._fieldWin.webContents.toggleDevTools(); }
+			});
+			globalShortcut.register('CmdOrCtrl+Shift+F12', () => {
+				for (let t of this._twins) t._studyWin.webContents.toggleDevTools();
+			});
 		});
 		app.on('second-instance', (ev, argv, workDir) => {
 			this._createWindow(this._getArgPath(argv));
 		})
-		app.on('browser-window-focus', (ev, win) => {
-			this._focusedTwin = this._twins.find(t => t.isOwnerOf(win));
-		});
 		app.on('window-all-closed', () => {
 			globalShortcut.unregisterAll();
 			app.quit();
