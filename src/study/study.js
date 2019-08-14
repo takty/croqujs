@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-12
+ * @version 2019-08-13
  *
  */
 
@@ -11,6 +11,7 @@
 'use strict';
 
 const { ipcRenderer } = require('electron');
+const promiseIpc = require('electron-promise-ipc');
 
 
 class Study {
@@ -54,6 +55,10 @@ class Study {
 		ipcRenderer.send('fromRenderer_' + this._id, msg, ...args);
 	}
 
+	_twinMessagePromise(msg, ...args) {
+		return promiseIpc.send('fromRendererPromise_' + this._id, [msg, ...args]);
+	}
+
 	_constructorSecond() {
 		this._initEditor();
 
@@ -90,6 +95,16 @@ class Study {
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 
 		this._config.notify();
+
+
+
+		setTimeout(async () => {
+			const res = await this._twinMessagePromise('onStudyReady');
+			if (res) {
+				const [msg, args] = res;
+				this[msg](...args);
+			}
+		}, 100);
 	}
 
 	_callFieldMethod(method, ...args) {
@@ -119,11 +134,15 @@ class Study {
 			}
 			analyze();
 		});
-		ec.on('drop', (em, ev) => {
+		ec.on('drop', async (em, ev) => {
 			ev.preventDefault();
 			if (ev.dataTransfer.files.length > 0) {
 				const filePath = ev.dataTransfer.files[0].path;
-				this._checkCanDiscard(this._res.msg.confirmOpen, 'doFileDropped', filePath);
+				const res = await this._checkCanDiscard(this._res.msg.confirmOpen, 'doFileDropped_', filePath);
+				if (res) {
+					const [msg, args] = res;
+					this[msg](...args);
+				}
 			}
 		});
 		ec.on('focus', () => { this._sideMenu.close(); });
@@ -382,27 +401,41 @@ class Study {
 
 
 	showServerAlert(mid, type, additional = false) {  // Called By Twin
+		// console.log(mid, type);
 		const text = this._res.msg[mid] + (additional ? additional : '');
 		this._dialogBox.showAlert(text, type);
 	}
 
-	_showPrompt(text, type, placeholder, value, optText, messageForMain, ...args) {
-		this._dialogBox.showPromptWithOption(text, type, placeholder, value, optText, (resVal, resOpt) => {
-			if (messageForMain) this._twinMessage(messageForMain, resVal, resOpt, ...args);
-		});
+	async _showPrompt(text, type, placeholder, value, optText, messageForMain, ...args) {
+		// this._dialogBox.showPromptWithOption(text, type, placeholder, value, optText, (resVal, resOpt) => {
+		// 	if (messageForMain) this._twinMessage(messageForMain, resVal, resOpt, ...args);
+		// });
+		const res = await this._dialogBox.showPromptWithOption_(text, type, placeholder, value, optText);
+		if (res.value[0]) {
+			return this._twinMessagePromise(messageForMain, res.value[0], res.value[1], ...args);
+		}
 	}
 
 
 	// -------------------------------------------------------------------------
 
 
-	_checkCanDiscard(msg, returnMsg, ...args) {
+	// _checkCanDiscard(msg, returnMsg, ...args) {
+	// 	if (this._isModified) {
+	// 		this._dialogBox.showConfirm(msg, 'warning', () => {
+	// 			if (returnMsg) this._twinMessage(returnMsg, ...args);
+	// 		});
+	// 	} else {
+	// 		this._twinMessage(returnMsg, ...args);
+	// 	}
+	// }
+
+	async _checkCanDiscard(msg, returnMsg, ...args) {
 		if (this._isModified) {
-			this._dialogBox.showConfirm(msg, 'warning', () => {
-				if (returnMsg) this._twinMessage(returnMsg, ...args);
-			});
+			const res = await this._dialogBox.showConfirm_(msg, 'warning');
+			if (res) return this._twinMessagePromise(returnMsg, ...args);
 		} else {
-			this._twinMessage(returnMsg, ...args);
+			return this._twinMessagePromise(returnMsg, ...args);
 		}
 	}
 
@@ -414,37 +447,72 @@ class Study {
 			this._clearErrorMarker();
 			this._outputPane.initialize();
 			this._outputPane.setMessageReceivable(true);
-			this._twinMessage(nextMethod, this._editor.value());  // 'addErrorMessage', 'openProgram'
+			if (nextMethod.endsWith('_')) {
+				this._twinMessagePromise(nextMethod, this._editor.value())
+					.then(([msg, args]) => { this[msg](...args); })
+					.catch((e) => console.error(e));  // 'addErrorMessage', 'openProgram'
+			} else {
+				this._twinMessage(nextMethod, this._editor.value());  // 'addErrorMessage', 'openProgram'
+			}
 		}, 100);
 	}
 
-	executeCommand(cmd, close = true) {
+	async executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
 		this._editor.setLineSelectionMode(false);
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			const conf = this._config;
 
 			// File Command
 
 			if (cmd === 'new') {
-				this._checkCanDiscard(this._res.msg.confirmNew, '_initializeDocument');
+				const res = await this._checkCanDiscard(this._res.msg.confirmNew, '_initializeDocument_');
+				if (res) {
+					const [msg, args] = res;
+					this[msg](...args);
+				}
 			} else if (cmd === 'open') {
-				this._checkCanDiscard(this._res.msg.confirmOpen, 'doOpen');
+				const res = await this._checkCanDiscard(this._res.msg.confirmOpen, 'doOpen_');
+				if (res) {
+					const [msg, args] = res;
+					this[msg](...args);
+				}
 			} else if (cmd === 'save') {
-				this._twinMessage('doSave', this._editor.value(), this._res.dialogTitle.saveAs);
+				// this._twinMessage('doSave', this._editor.value(), this._res.dialogTitle.saveAs);
+				const res = await this._twinMessagePromise('doSave_', this._editor.value(), this._res.dialogTitle.saveAs);
+				if (res) {
+					const [msg, args] = res;
+					this[msg](...args);
+				}
 			} else if (cmd === 'saveAs') {
-				this._twinMessage('doSaveAs', this._editor.value(), this._res.dialogTitle.saveAs);
+				// this._twinMessage('doSaveAs', this._editor.value(), this._res.dialogTitle.saveAs);
+				const res = await this._twinMessagePromise('doSaveAs_', this._editor.value(), this._res.dialogTitle.saveAs);
+				if (res) {
+					const [msg, args] = res;
+					this[msg](...args);
+				}
 			} else if (cmd === 'saveCopy') {
-				this._twinMessage('doSaveCopy', this._editor.value(), this._res.dialogTitle.saveCopy);
+				const res = await this._twinMessagePromise('doSaveCopy_', this._editor.value(), this._res.dialogTitle.saveCopy);
+				if (res) {
+					const [msg, args] = res;
+					this[msg](...args);
+				}
 			} else if (cmd === 'close') {
-				this._checkCanDiscard(this._res.msg.confirmExit, 'doClose', this._editor.value());
+				const res = await this._checkCanDiscard(this._res.msg.confirmExit, 'doClose', this._editor.value());
+				if (res) {
+					const [msg, args] = res;
+					this[msg](...args);
+				}
 
 			} else if (cmd === 'exportAsLibrary') {
 				const cs = JSON.stringify(this._codeStructure);
-				this._showPrompt(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries, 'doExportAsLibrary', this._editor.value(), cs);
+				const [msg, args] = await this._showPrompt(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries, 'doExportAsLibrary_', this._editor.value(), cs);
+				this[msg](...args);
 			} else if (cmd === 'exportAsWebPage') {
-				this._twinMessage('doExportAsWebPage', this._editor.value());
+				this._twinMessagePromise('doExportAsWebPage_', this._editor.value())
+					.then(([msg, args]) => { this[msg](...args); })
+					.catch((e) => console.error(e));
 
 			} else if (cmd === 'setLanguageJa') {
 				conf.setItem('language', 'ja');
@@ -489,12 +557,12 @@ class Study {
 			// Code Command
 
 			if (cmd === 'run') {
-				this._prepareExecution('doRun');
+				this._prepareExecution('doRun_');
 			} else if (cmd === 'stop') {
 				this._callFieldMethod('closeProgram');
 				this._twinMessage('stop');
 			} else if (cmd === 'runWithoutWindow') {
-				this._prepareExecution('doRunWithoutWindow');
+				this._prepareExecution('doRunWithoutWindow_');
 			}
 
 			// View Command

@@ -152,7 +152,6 @@ const packageOpts = {
 		InternalName    : config.productName,
 	},
 	ignore: [
-		'^/node_modules',
 		'^/src',
 		'^/res',
 		'^/.gitignore',

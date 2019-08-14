@@ -40,6 +40,19 @@ class DialogBox {
 		});
 	}
 
+	showConfirm_(text, type) {
+		window.focus();
+		this._disableBackground();
+		return Swal.fire(this._makeOption(text, type, {
+			confirmButtonText: 'OK',
+			showCancelButton: true,
+			cancelButtonText: this._textCancel,
+		})).then((res) => {
+			this._enableBackground();
+			return res.value;
+		});
+	}
+
 	showPrompt(text, type, placeholder, value, fn) {
 		window.focus();
 		this._disableBackground();
@@ -90,6 +103,34 @@ class DialogBox {
 		}).then((res) => {
 			this._enableBackground();
 			if (fn && res.value[0]) fn(res.value[0], res.value[1]);
+		});
+	}
+
+	showPromptWithOption_(text, type, placeholder, value, optText) {
+		window.focus();
+		this._disableBackground();
+		return Swal.fire({
+			title: '',
+			type: type,
+			allowOutsideClick: false,
+			confirmButtonText: 'OK',
+			showCancelButton: true,
+			cancelButtonText: this._textCancel,
+			customClass: 'prompt-with-option',
+			focusConfirm: false,
+			html: '<div style="display: inline-block;">' + this._formatText(text) + '</div>' +
+				'<input id="swal-input" class="swal2-input" placeholder="' + placeholder + '" type="text" value="' + value + '">' +
+				'<label class="swal2-checkbox-opt"><input type="checkbox" id="swal-checkbox">' +
+				'<span class="swal2-label">' + this._formatText(optText) + '</span></label>',
+			preConfirm: () => {
+				return [
+					document.getElementById('swal-input').value,
+					document.getElementById('swal-checkbox').checked
+				];
+			},
+		}).then((res) => {
+			this._enableBackground();
+			return res;
 		});
 	}
 
