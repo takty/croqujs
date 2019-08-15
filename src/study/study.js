@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-13
+ * @version 2019-08-15
  *
  */
 
@@ -20,7 +20,6 @@ class Study {
 		this._errorMarker = null;
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
-		ipcRenderer.on('callStudyMethod', (ev, method, ...args) => { this[method](...args); });
 
 		window.ondragover = (e) => { e.preventDefault(); return false; };
 		window.ondrop     = (e) => { e.preventDefault(); return false; };
@@ -30,6 +29,14 @@ class Study {
 				return false;
 			}
 		}
+		ipcRenderer.on('callStudyMethod', (ev, method, ...args) => { this[method](...args); });
+		window.onbeforeunload = (e) => {
+			if (this._isModified) {
+				e.preventDefault();
+				e.returnValue = this._res.msg.confirmExit;
+			}
+		}
+
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
 		this._config.addEventListener((conf) => this._configUpdated(conf));
 		this._winstate = new WinState(window, 'winstate_study');
@@ -49,14 +56,6 @@ class Study {
 			this._res = Object.assign(ret[0], ret[1]);
 			this._constructorSecond();
 		});
-	}
-
-	_twinMessage(msg, ...args) {
-		ipcRenderer.send('fromRenderer_' + this._id, msg, ...args);
-	}
-
-	_twinMessagePromise(msg, ...args) {
-		return promiseIpc.send('fromRendererPromise_' + this._id, [msg, ...args]);
 	}
 
 	_constructorSecond() {
@@ -82,7 +81,7 @@ class Study {
 			window.localStorage.removeItem(e.key);
 			const ma = JSON.parse(e.newValue);
 			if (ma.message === 'error') {
-				this._twinMessage('onStudyErrorOccurred', ma.params);
+				this._notifyServer('onStudyErrorOccurred', ma.params);
 				this.addErrorMessage(ma.params);
 			} else if (ma.message === 'output') {
 				this._outputPane.addOutput(ma.params);
@@ -96,19 +95,14 @@ class Study {
 
 		this._config.notify();
 
-
-
 		setTimeout(async () => {
-			const res = await this._twinMessagePromise('onStudyReady');
+			const res = await this._callServer('onStudyReady');
 			if (res) {
 				const [msg, args] = res;
-				this[msg](...args);
+				if (msg === 'init') this.initializeDocument(...args);
+				else this[msg](...args);
 			}
 		}, 100);
-	}
-
-	_callFieldMethod(method, ...args) {
-		window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
 	}
 
 	_initEditor() {
@@ -129,22 +123,12 @@ class Study {
 			if (this._editor.enabled()) {
 				this._isModified  = true;
 				this._historySize = this._editor._comp.getDoc().historySize();
-				this._twinMessage('onStudyModified');
+				this._notifyServer('onStudyModified');
 				this._reflectState();
 			}
 			analyze();
 		});
-		ec.on('drop', async (em, ev) => {
-			ev.preventDefault();
-			if (ev.dataTransfer.files.length > 0) {
-				const filePath = ev.dataTransfer.files[0].path;
-				const res = await this._checkCanDiscard(this._res.msg.confirmOpen, 'doFileDropped_', filePath);
-				if (res) {
-					const [msg, args] = res;
-					this[msg](...args);
-				}
-			}
-		});
+		ec.on('drop', (em, ev) => { this._onFileDrop(ev); });
 		ec.on('focus', () => { this._sideMenu.close(); });
 		ec.on('copy', (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
 		ec.on('cut',  (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
@@ -215,6 +199,22 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
+	_notifyServer(msg, ...args) {
+		ipcRenderer.send('notifyServer_' + this._id, msg, ...args);
+	}
+
+	_callServer(msg, ...args) {
+		return promiseIpc.send('callServer_' + this._id, [msg, ...args]);
+	}
+
+	_callFieldMethod(method, ...args) {
+		window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
 	_configUpdated(conf) {
 		this._lang = conf.language;
 
@@ -249,7 +249,7 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	initializeDocument(text, filePath, name, baseName, dirName, readOnly) {  // Called By Twin
+	initializeDocument(filePath, name, baseName, dirName, readOnly, text) {  // Called By Twin
 		this._filePath   = filePath;
 		this._name       = name;
 		this._baseName   = baseName;
@@ -288,7 +288,7 @@ class Study {
 		const title = prefix + fn + fp + ' — ' + 'Croqujs';
 		if (window.title !== title) {
 			window.title = title;
-			this._twinMessage('onStudyTitleChanged', title);
+			this._notifyServer('onStudyTitleChanged', title);
 		}
 	}
 
@@ -356,7 +356,10 @@ class Study {
 		let canvas = null;
 		let top = 0;
 
-		const capture = () => { this._twinMessage('onStudyRequestPageCapture', r); };
+		const capture = () => {
+			this._callServer('onStudyRequestPageCapture', r)
+				.then(([msg, args]) => { this[msg](...args); });
+		};
 		setTimeout(capture, 400);
 
 		this.capturedImageReceived = (dataUrl, scaleFactor) => {  // Called By Twin
@@ -390,7 +393,10 @@ class Study {
 			img.onload = () => {
 				const ctx = canvas.getContext('2d');
 				ctx.drawImage(img, 0, y);
-				if (finished) this._twinMessage('onStudyCapturedImageCreated', canvas.toDataURL('image/png'));
+				if (finished) {
+					this._callServer('onStudyCapturedImageCreated', canvas.toDataURL('image/png'))
+						.then(([msg, args]) => { this[msg](...args); });
+				}
 			};
 			img.src = dataUrl;
 		};
@@ -401,61 +407,20 @@ class Study {
 
 
 	showServerAlert(mid, type, additional = false) {  // Called By Twin
-		// console.log(mid, type);
 		const text = this._res.msg[mid] + (additional ? additional : '');
 		this._dialogBox.showAlert(text, type);
 	}
 
 	async _showPrompt(text, type, placeholder, value, optText, messageForMain, ...args) {
-		// this._dialogBox.showPromptWithOption(text, type, placeholder, value, optText, (resVal, resOpt) => {
-		// 	if (messageForMain) this._twinMessage(messageForMain, resVal, resOpt, ...args);
-		// });
 		const res = await this._dialogBox.showPromptWithOption_(text, type, placeholder, value, optText);
 		if (res.value[0]) {
-			return this._twinMessagePromise(messageForMain, res.value[0], res.value[1], ...args);
+			return this._callServer(messageForMain, res.value[0], res.value[1], ...args);
 		}
 	}
 
 
 	// -------------------------------------------------------------------------
 
-
-	// _checkCanDiscard(msg, returnMsg, ...args) {
-	// 	if (this._isModified) {
-	// 		this._dialogBox.showConfirm(msg, 'warning', () => {
-	// 			if (returnMsg) this._twinMessage(returnMsg, ...args);
-	// 		});
-	// 	} else {
-	// 		this._twinMessage(returnMsg, ...args);
-	// 	}
-	// }
-
-	async _checkCanDiscard(msg, returnMsg, ...args) {
-		if (this._isModified) {
-			const res = await this._dialogBox.showConfirm_(msg, 'warning');
-			if (res) return this._twinMessagePromise(returnMsg, ...args);
-		} else {
-			return this._twinMessagePromise(returnMsg, ...args);
-		}
-	}
-
-	_prepareExecution(nextMethod) {  // 'doRun', 'doRunWithoutWindow'
-		this._outputPane.setMessageReceivable(false);
-		this._callFieldMethod('closeProgram');
-
-		setTimeout(() => {
-			this._clearErrorMarker();
-			this._outputPane.initialize();
-			this._outputPane.setMessageReceivable(true);
-			if (nextMethod.endsWith('_')) {
-				this._twinMessagePromise(nextMethod, this._editor.value())
-					.then(([msg, args]) => { this[msg](...args); })
-					.catch((e) => console.error(e));  // 'addErrorMessage', 'openProgram'
-			} else {
-				this._twinMessage(nextMethod, this._editor.value());  // 'addErrorMessage', 'openProgram'
-			}
-		}, 100);
-	}
 
 	async executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
@@ -464,63 +429,8 @@ class Study {
 		setTimeout(async () => {
 			const conf = this._config;
 
-			// File Command
-
-			if (cmd === 'new') {
-				const res = await this._checkCanDiscard(this._res.msg.confirmNew, '_initializeDocument_');
-				if (res) {
-					const [msg, args] = res;
-					this[msg](...args);
-				}
-			} else if (cmd === 'open') {
-				const res = await this._checkCanDiscard(this._res.msg.confirmOpen, 'doOpen_');
-				if (res) {
-					const [msg, args] = res;
-					this[msg](...args);
-				}
-			} else if (cmd === 'save') {
-				// this._twinMessage('doSave', this._editor.value(), this._res.dialogTitle.saveAs);
-				const res = await this._twinMessagePromise('doSave_', this._editor.value(), this._res.dialogTitle.saveAs);
-				if (res) {
-					const [msg, args] = res;
-					this[msg](...args);
-				}
-			} else if (cmd === 'saveAs') {
-				// this._twinMessage('doSaveAs', this._editor.value(), this._res.dialogTitle.saveAs);
-				const res = await this._twinMessagePromise('doSaveAs_', this._editor.value(), this._res.dialogTitle.saveAs);
-				if (res) {
-					const [msg, args] = res;
-					this[msg](...args);
-				}
-			} else if (cmd === 'saveCopy') {
-				const res = await this._twinMessagePromise('doSaveCopy_', this._editor.value(), this._res.dialogTitle.saveCopy);
-				if (res) {
-					const [msg, args] = res;
-					this[msg](...args);
-				}
-			} else if (cmd === 'close') {
-				const res = await this._checkCanDiscard(this._res.msg.confirmExit, 'doClose', this._editor.value());
-				if (res) {
-					const [msg, args] = res;
-					this[msg](...args);
-				}
-
-			} else if (cmd === 'exportAsLibrary') {
-				const cs = JSON.stringify(this._codeStructure);
-				const [msg, args] = await this._showPrompt(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries, 'doExportAsLibrary_', this._editor.value(), cs);
-				this[msg](...args);
-			} else if (cmd === 'exportAsWebPage') {
-				this._twinMessagePromise('doExportAsWebPage_', this._editor.value())
-					.then(([msg, args]) => { this[msg](...args); })
-					.catch((e) => console.error(e));
-
-			} else if (cmd === 'setLanguageJa') {
-				conf.setItem('language', 'ja');
-				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
-			} else if (cmd === 'setLanguageEn') {
-				conf.setItem('language', 'en');
-				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
-			}
+			if (this._executeCommandFile(cmd)) return;
+			if (this._executeCommandCode(cmd)) return;
 
 			// Edit Command
 
@@ -552,17 +462,6 @@ class Study {
 
 			} else if (cmd === 'copyAsImage') {
 				this.sendBackCapturedImages();
-			}
-
-			// Code Command
-
-			if (cmd === 'run') {
-				this._prepareExecution('doRun_');
-			} else if (cmd === 'stop') {
-				this._callFieldMethod('closeProgram');
-				this._twinMessage('stop');
-			} else if (cmd === 'runWithoutWindow') {
-				this._prepareExecution('doRunWithoutWindow_');
 			}
 
 			// View Command
@@ -597,6 +496,13 @@ class Study {
 				conf.setItem('functionLineNumber', !conf.getItem('functionLineNumber'));
 			} else if (cmd === 'toggleOutputPane') {
 				this._outputPane.toggle();
+
+			} else if (cmd === 'setLanguageJa') {
+				conf.setItem('language', 'ja');
+				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
+			} else if (cmd === 'setLanguageEn') {
+				conf.setItem('language', 'en');
+				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
 			}
 
 			// Help Command
@@ -605,6 +511,123 @@ class Study {
 				this._dialogBox.showAlert(this._res.about.join('\n'), 'info');
 			}
 		}, 0);
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	async _executeCommandFile(cmd) {
+		switch (cmd) {
+			case 'new':
+				this._handleOpening(this._res.msg.confirmNew, 'initializeDocument');
+				return true;
+			case 'open':
+				this._handleOpening(this._res.msg.confirmOpen, 'doOpen');
+				return true;
+			case 'close':
+				this._handleOpening(this._res.msg.confirmExit, 'doClose', this._editor.value());
+				return true;
+
+			case 'save':
+				this._handleSaving('doSave', this._res.dialogTitle.saveAs);
+				return true;
+			case 'saveAs':
+				this._handleSaving('doSaveAs', this._res.dialogTitle.saveAs);
+				return true;
+			case 'saveCopy':
+				this._handleSaving('doSaveCopy', this._res.dialogTitle.saveCopy);
+				return true;
+
+			case 'exportAsLibrary':
+				const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption_(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries);
+				if (libName) {
+					this._handleSaving('doExportAsLibrary', libName, flag, JSON.stringify(this._codeStructure));
+				}
+				return true;
+			case 'exportAsWebPage':
+				this._handleSaving('doExportAsWebPage');
+				return true;
+		}
+		return false;
+	}
+
+	async _onFileDrop(e) {
+		e.preventDefault();
+		if (e.dataTransfer.files.length > 0) {
+			const filePath = e.dataTransfer.files[0].path;
+			this._handleOpening(this._res.msg.confirmOpen, 'doFileDropped', filePath);
+		}
+	}
+
+	async _handleOpening(text, returnMsg, ...args) {
+		if (this._isModified) {
+			const res = await this._dialogBox.showConfirm_(text, 'warning');
+			if (!res) return;
+		}
+		const [msg, arg] = await this._callServer(returnMsg, ...args);
+		if (msg === 'init') {
+			this.initializeDocument(...arg);
+		} else if (msg === 'alert_error') {
+			this.showServerAlert('error', 'error', arg);
+		}
+	}
+
+	async _handleSaving(method, ...opts) {
+		const [msg, arg] = await this._callServer(method, this._editor.value(), ...opts);
+		if (msg === 'path') {
+			this.setDocumentFilePath(...arg);
+		} else if (msg === 'success_export') {
+			this.showServerAlert(arg, 'success');
+		} else if (msg === 'alert_error') {
+			this.showServerAlert('error', 'error', arg);
+		}
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	_executeCommandCode(cmd) {
+		switch (cmd) {
+			case 'run':
+				this._handleExecution('doRun');
+				return true;
+			case 'runWithoutWindow':
+				this._handleExecution('doRunWithoutWindow');
+				return true;
+			case 'stop':
+				this._callFieldMethod('closeProgram');
+				this._notifyServer('stop');
+				return true;
+		}
+		return false;
+	}
+
+	async _handleExecution(method) {
+		await this._resetOutputPane();
+		const [msg, arg] = await this._callServer(method, this._editor.value());
+		if (msg === 'open') {
+			this.openProgram(arg);
+		} else if (msg === 'error') {
+			this.addErrorMessage(arg);
+		} else if (msg === 'alert_error') {
+			this.showServerAlert('error', 'error', arg);
+		}
+	}
+
+	_resetOutputPane() {
+		this._callFieldMethod('closeProgram');
+		this._outputPane.setMessageReceivable(false);
+
+		return new Promise(resolve => {
+			setTimeout(() => {
+				this._clearErrorMarker();
+				this._outputPane.initialize();
+				this._outputPane.setMessageReceivable(true);
+				resolve();
+			}, 100);
+		});
 	}
 
 }
