@@ -1,6 +1,6 @@
 'use strict';
 
-const VER_DATE = '%VER_DATE%';
+const VER_MINOR = '%VER_MINOR%';
 
 const fs         = require('fs-extra');
 const glob       = require('glob');
@@ -11,7 +11,7 @@ const gulp_plist = require('./gulp-plist');
 const $          = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
 
 const moment  = require('moment');
-const verDate = moment().format('YYYY-MM-DD');
+const verMinor = moment().format('YYYYMMDD');
 
 function copySync(from, to) {
 	const isToDir = to.endsWith('/');
@@ -85,7 +85,7 @@ gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
 
 gulp.task('version', () => {
 	return gulp.src(['./src/study/study.html', './src/study/res/resource.json'], { base: './src' })
-		.pipe($.replace(VER_DATE, verDate))
+		.pipe($.replace(VER_MINOR, verMinor))
 		.pipe(gulp.dest('dist'));
 });
 
