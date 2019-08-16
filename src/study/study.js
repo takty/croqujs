@@ -31,10 +31,9 @@ class Study {
 		}
 		ipcRenderer.on('windowClose', () => this.executeCommand('close') );
 		window.onbeforeunload = (e) => {
-			if (this._isModified) {
-				e.preventDefault();
-				e.returnValue = this._res.msg.confirmExit;
-			}
+			if (!this._isModified) return;
+			e.preventDefault();
+			e.returnValue = this._res.msg.confirmExit;
 		}
 
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
@@ -128,7 +127,7 @@ class Study {
 			}
 			analyze();
 		});
-		ec.on('drop', (em, ev) => { this._onFileDrop(ev); });
+		ec.on('drop', (em, ev) => { this._onFileDropped(ev); });
 		ec.on('focus', () => { this._sideMenu.close(); });
 		ec.on('copy', (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
 		ec.on('cut',  (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
@@ -325,7 +324,15 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	_copyAsImage() {
+	_cmdTileWindow() {
+		const x = window.screen.availLeft, y = window.screen.availTop;
+		const w = window.screen.availWidth / 2, h = window.screen.availHeight;
+		window.moveTo(x, y);
+		window.resizeTo(w, h);
+		this._callFieldMethod('alignWindow', x + w, y, w, h);
+	}
+
+	_cmdCopyAsImage() {
 		const orig = this._editor.setSimpleView();
 		this._toolbar.showMessage(this._res.msg.copyingAsImage, true);
 
@@ -373,7 +380,7 @@ class Study {
 			ctx.drawImage(img, 0, y);
 			if (finished) {
 				const [res] = await this._callServer('doCopyImageToClipboard', c.toDataURL('image/png'));
-				if (res === 'success') this._showAlert('copiedAsImage', 'success');
+				if (res === 'success') this._dialogBox.showAlert(this._res.msg['copiedAsImage'], 'success');
 			}
 		};
 		img.src = dataUrl;
@@ -390,34 +397,6 @@ class Study {
 			this._editor._comp.scrollTo(0, nextTop);
 			this._editor._comp.refresh();
 			setTimeout(capture, 200);
-		}
-	}
-
-
-	// -------------------------------------------------------------------------
-
-
-	_tileWindow() {
-		const x = window.screen.availLeft,      y = window.screen.availTop;
-		const w = window.screen.availWidth / 2, h = window.screen.availHeight;
-		window.moveTo(x, y);
-		window.resizeTo(w, h);
-		this._callFieldMethod('alignWindow', x + w, y, w, h);
-	}
-
-
-	// -------------------------------------------------------------------------
-
-
-	_showAlert(mid, type, additional = false) {
-		const text = this._res.msg[mid] + (additional ? additional : '');
-		this._dialogBox.showAlert(text, type);
-	}
-
-	async _showPrompt(text, type, placeholder, value, optText, messageForMain, ...args) {
-		const res = await this._dialogBox.showPromptWithOption_(text, type, placeholder, value, optText);
-		if (res.value[0]) {
-			return this._callServer(messageForMain, res.value[0], res.value[1], ...args);
 		}
 	}
 
@@ -449,19 +428,19 @@ class Study {
 			else if (cmd === 'findNext')      this._editor.findNext();
 			else if (cmd === 'replace')       this._editor.replace();
 
-			else if (cmd === 'copyAsImage')   this._copyAsImage();
-			else if (cmd === 'tileWin')       this._tileWindow();
+			else if (cmd === 'copyAsImage')   this._cmdCopyAsImage();
+			else if (cmd === 'tileWin')       this._cmdTileWindow();
 			else if (cmd === 'showAbout')     this._dialogBox.showAlert(this._res.about.join('\n'), 'info');
 
-			else if (cmd === 'fontSizePlus')             cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') + 2, 10, 64));
-			else if (cmd === 'fontSizeMinus')            cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') - 2, 10, 64));
-			else if (cmd === 'fontSizeReset')            cfg.setItem('fontSize', 16);
-			else if (cmd === 'lineHeightPlus')           cfg.setItem('lineHeight', minmax(cfg.getItem('lineHeight') + 15, 135, 195));
-			else if (cmd === 'lineHeightMinus')          cfg.setItem('lineHeight', minmax(cfg.getItem('lineHeight') - 15, 135, 195));
-			else if (cmd === 'lineHeightReset')          cfg.setItem('lineHeight', 165);
-			else if (cmd === 'toggleSoftWrap')           cfg.setItem('softWrap', !cfg.getItem('softWrap'));
-			else if (cmd === 'toggleFunctionLineNumber') cfg.setItem('functionLineNumber', !cfg.getItem('functionLineNumber'));
-			else if (cmd === 'toggleOutputPane')         this._outputPane.toggle();
+			else if (cmd === 'fontSizePlus')     cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') + 2, 10, 64));
+			else if (cmd === 'fontSizeMinus')    cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') - 2, 10, 64));
+			else if (cmd === 'fontSizeReset')    cfg.setItem('fontSize', 16);
+			else if (cmd === 'lineHeightPlus')   cfg.setItem('lineHeight', minmax(cfg.getItem('lineHeight') + 15, 135, 195));
+			else if (cmd === 'lineHeightMinus')  cfg.setItem('lineHeight', minmax(cfg.getItem('lineHeight') - 15, 135, 195));
+			else if (cmd === 'lineHeightReset')  cfg.setItem('lineHeight', 165);
+			else if (cmd === 'toggleSoftWrap')   cfg.setItem('softWrap', !cfg.getItem('softWrap'));
+			else if (cmd === 'toggleFnLineNum')  cfg.setItem('functionLineNumber', !cfg.getItem('functionLineNumber'));
+			else if (cmd === 'toggleOutputPane') this._outputPane.toggle();
 
 			if (cmd === 'setLanguageJa') {
 				cfg.setItem('language', 'ja');
@@ -471,6 +450,22 @@ class Study {
 				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
 			}
 		}, 0);
+	}
+
+	_handleServerResponse(msg, arg) {
+		if (msg === 'init') {
+			this._initializeDocument(...arg);
+		} else if (msg === 'alert_error') {
+			this._dialogBox.showAlert(this._res.msg['error'] + arg, 'error');
+		} else if (msg === 'path') {
+			this._setDocumentFilePath(...arg);
+		} else if (msg === 'success_export') {
+			this._dialogBox.showAlert(this._res.msg[arg], 'success');
+		} else if (msg === 'open') {
+			this._callFieldMethod('openProgram', arg);
+		} else if (msg === 'error') {
+			this._addErrorMessage(arg);
+		}
 	}
 
 
@@ -498,7 +493,7 @@ class Study {
 				this._handleSaving('doSaveCopy', this._res.dialogTitle.saveCopy);
 				return true;
 			case 'exportAsLibrary':
-				this._handleExportAsLibrary();
+				this._onExportAsLibrary();
 				return true;
 			case 'exportAsWebPage':
 				this._handleSaving('doExportAsWebPage');
@@ -507,7 +502,7 @@ class Study {
 		return false;
 	}
 
-	async _onFileDrop(e) {
+	async _onFileDropped(e) {
 		e.preventDefault();
 		if (e.dataTransfer.files.length > 0) {
 			const filePath = e.dataTransfer.files[0].path;
@@ -515,36 +510,26 @@ class Study {
 		}
 	}
 
-	async _handleExportAsLibrary() {
-		const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption_(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries);
+	async _onExportAsLibrary() {
+		const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption(this._res.msg.enterLibName, '', this._res.msg.libName, this._name, this._res.msg.includeUsedLibs);
 		if (libName) {
 			this._handleSaving('doExportAsLibrary', libName, flag, JSON.stringify(this._codeStructure));
 		}
 		return true;
 	}
 
-	async _handleOpening(text, returnMsg, ...args) {
+	async _handleOpening(text, method, ...args) {
 		if (this._isModified) {
-			const res = await this._dialogBox.showConfirm_(text, 'warning');
+			const { value: res } = await this._dialogBox.showConfirm(text, 'warning');
 			if (!res) return;
 		}
-		const [msg, arg] = await this._callServer(returnMsg, ...args);
-		if (msg === 'init') {
-			this._initializeDocument(...arg);
-		} else if (msg === 'alert_error') {
-			this._showAlert('error', 'error', arg);
-		}
+		const [msg, arg] = await this._callServer(method, ...args);
+		this._handleServerResponse(msg, arg);
 	}
 
 	async _handleSaving(method, ...opts) {
 		const [msg, arg] = await this._callServer(method, this._editor.value(), ...opts);
-		if (msg === 'path') {
-			this._setDocumentFilePath(...arg);
-		} else if (msg === 'success_export') {
-			this._showAlert(arg, 'success');
-		} else if (msg === 'alert_error') {
-			this._showAlert('error', 'error', arg);
-		}
+		this._handleServerResponse(msg, arg);
 	}
 
 
@@ -570,13 +555,7 @@ class Study {
 	async _handleExecution(method) {
 		await this._resetOutputPane();
 		const [msg, arg] = await this._callServer(method, this._editor.value());
-		if (msg === 'open') {
-			this._callFieldMethod('openProgram', arg);
-		} else if (msg === 'error') {
-			this._addErrorMessage(arg);
-		} else if (msg === 'alert_error') {
-			this._showAlert('error', 'error', arg);
-		}
+		this._handleServerResponse(msg, arg);
 	}
 
 	_resetOutputPane() {

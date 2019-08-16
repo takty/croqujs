@@ -170,7 +170,7 @@ class SideMenu {
 
 	reflectConfig(conf) {
 		this._setChecked('toggleSoftWrap', conf.softWrap);
-		this._setChecked('toggleFunctionLineNumber', conf.functionLineNumber);
+		this._setChecked('toggleFnLineNum', conf.functionLineNumber);
 		if (conf.language === 'ja') {
 			this._setChecked('setLanguageJa', true);
 			this._setChecked('setLanguageEn', false);
