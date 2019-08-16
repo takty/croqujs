@@ -29,7 +29,7 @@ class Study {
 				return false;
 			}
 		}
-		ipcRenderer.on('callStudyMethod', (ev, method, ...args) => { this[method](...args); });
+		ipcRenderer.on('windowClose', () => this.executeCommand('close') );
 		window.onbeforeunload = (e) => {
 			if (this._isModified) {
 				e.preventDefault();
@@ -250,22 +250,14 @@ class Study {
 
 
 	initializeDocument(filePath, name, baseName, dirName, readOnly, text) {
-		this._filePath   = filePath;
-		this._name       = name;
-		this._baseName   = baseName;
-		this._dirName    = dirName;
-		this._isReadOnly = readOnly;
-		this._isModified = false;
-		this._reflectState();
+		this.setDocumentFilePath(filePath, name, baseName, dirName, readOnly);
 
 		this._editor.enabled(false);
 		this._editor.value(text);
-		this._editor.readOnly(readOnly);
 		this._editor.enabled(true);
 
 		this._clearErrorMarker();
 		this._outputPane.initialize();
-		this._updateWindowTitle();
 	}
 
 	setDocumentFilePath(filePath, name, baseName, dirName, readOnly) {

@@ -60,7 +60,7 @@ class Twin {
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();
-			this._studyWin.webContents.send('callStudyMethod', 'executeCommand', 'close');
+			this._studyWin.webContents.send('windowClose');
 		});
 	}
 
