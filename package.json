@@ -17,6 +17,9 @@
   "license": "MIT",
   "homepage": "https://github.com/takty/croqujs#readme",
   "dependencies": {
+    "electron-promise-ipc": "^1.3.0"
+  },
+  "bundledDependencies": {
     "acorn": "6.2.1",
     "acorn-loose": "^6.1.0",
     "acorn-walk": "^6.2.0",
