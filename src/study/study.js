@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-15
+ * @version 2019-08-16
  *
  */
 
@@ -96,7 +96,7 @@ class Study {
 		this._config.notify();
 
 		setTimeout(async () => {
-			const res = await this._callServer('onStudyReady');
+			const res = await this._callServer('doReady');
 			if (res) {
 				const [msg, args] = res;
 				if (msg === 'init') this.initializeDocument(...args);
@@ -249,7 +249,7 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	initializeDocument(filePath, name, baseName, dirName, readOnly, text) {  // Called By Twin
+	initializeDocument(filePath, name, baseName, dirName, readOnly, text) {
 		this._filePath   = filePath;
 		this._name       = name;
 		this._baseName   = baseName;
@@ -268,7 +268,7 @@ class Study {
 		this._updateWindowTitle();
 	}
 
-	setDocumentFilePath(filePath, name, baseName, dirName, readOnly) {  // Called By Twin
+	setDocumentFilePath(filePath, name, baseName, dirName, readOnly) {
 		this._filePath   = filePath;
 		this._name       = name;
 		this._baseName   = baseName;
@@ -296,7 +296,7 @@ class Study {
 		this._callFieldMethod('openProgram', url);
 	}
 
-	addErrorMessage(info) {  // Called By Twin
+	addErrorMessage(info) {
 		let msg;
 		if (info.library) {
 			msg = this._res.msg.cannotReadLibrary.replace('%s', info.msg);
@@ -337,76 +337,91 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	sendBackCapturedImages() {
+	_copyAsImage() {
 		const orig = this._editor.setSimpleView();
 		this._toolbar.showMessage(this._res.msg.copyingAsImage, true);
 
-		const count = this._editor._comp.getDoc().lineCount();
-		const lineHeight = this._editor._comp.defaultTextHeight();
-		const logicalImageHeight = lineHeight * count + lineHeight * 0.25;
-		const topDelta = lineHeight * 10;
+		const comp     = this._editor._comp;
+		const count    = comp.getDoc().lineCount();
+		const lh       = comp.defaultTextHeight();
+		const height   = lh * count + lh * 0.25;
+		const topDelta = lh * 10;
 
 		const bcr = this._editor._elem.getBoundingClientRect();
 		const r = {x: bcr.left | 0, y: bcr.top | 0, width: bcr.width | 0, height: bcr.height | 0};
 
-		this._editor._comp.scrollTo(0, 0);
-		this._editor._comp.refresh();
+		comp.scrollTo(0, 0);
+		comp.refresh();
 		this._editor.enabled(false);  // After showing modal, it becomes true.
 
-		let canvas = null;
+		let c = null;
 		let top = 0;
 
 		const capture = () => {
-			this._callServer('onStudyRequestPageCapture', r)
-				.then(([msg, args]) => { this[msg](...args); });
+			this._callServer('doCapturePage', r).then(([url, scaleFactor]) => {
+				if (c === null) c = this._createTempCanvas(r.width, height, scaleFactor);
+				top += topDelta;
+				const finished = (top > height);
+				setTimeout(() => {
+					this._addImageToCanvas(c, comp.getScrollInfo().top * scaleFactor, url, finished);
+					this._goNextStep(top, finished, orig, capture);
+				}, 0);
+			});
 		};
 		setTimeout(capture, 400);
+	}
 
-		this.capturedImageReceived = (dataUrl, scaleFactor) => {  // Called By Twin
-			if (canvas === null) {
-				canvas = document.createElement('canvas');
-				canvas.width = r.width * scaleFactor;
-				canvas.height = logicalImageHeight * scaleFactor;
+	_createTempCanvas(width, height, scaleFactor) {
+		const c = document.createElement('canvas');
+		c.width  = width * scaleFactor;
+		c.height = height * scaleFactor;
+		return c;
+	}
+
+	_addImageToCanvas(c, y, dataUrl, finished) {
+		const img = new Image();
+		img.onload = async () => {
+			const ctx = c.getContext('2d');
+			ctx.drawImage(img, 0, y);
+			if (finished) {
+				const [res] = await this._callServer('doCopyImageToClipboard', c.toDataURL('image/png'));
+				if (res === 'success') this._showAlert('copiedAsImage', 'success');
 			}
-			top += topDelta;
-			const finished = (top > logicalImageHeight);
-
-			setTimeout(() => {
-				addImageToCanvas(canvas, this._editor._comp.getScrollInfo().top * scaleFactor, dataUrl, finished);
-
-				if (finished) {
-					this._toolbar.hideMessage(200);
-					setTimeout(() => {
-						this._editor.restoreOriginalView(orig);
-						this._editor._comp.scrollTo(0, 0);
-					}, 200);
-				} else {
-					this._editor._comp.scrollTo(0, top);
-					this._editor._comp.refresh();
-					setTimeout(capture, 200);
-				}
-			}, 0);
-		}
-
-		const addImageToCanvas = (canvas, y, dataUrl, finished) => {
-			const img = new Image();
-			img.onload = () => {
-				const ctx = canvas.getContext('2d');
-				ctx.drawImage(img, 0, y);
-				if (finished) {
-					this._callServer('onStudyCapturedImageCreated', canvas.toDataURL('image/png'))
-						.then(([msg, args]) => { this[msg](...args); });
-				}
-			};
-			img.src = dataUrl;
 		};
+		img.src = dataUrl;
+	}
+
+	_goNextStep(nextTop, finished, orig, capture) {
+		if (finished) {
+			this._toolbar.hideMessage(200);
+			setTimeout(() => {
+				this._editor.restoreOriginalView(orig);
+				this._editor._comp.scrollTo(0, 0);
+			}, 200);
+		} else {
+			this._editor._comp.scrollTo(0, nextTop);
+			this._editor._comp.refresh();
+			setTimeout(capture, 200);
+		}
 	}
 
 
 	// -------------------------------------------------------------------------
 
 
-	showServerAlert(mid, type, additional = false) {  // Called By Twin
+	_tileWindow() {
+		const x = window.screen.availLeft,      y = window.screen.availTop;
+		const w = window.screen.availWidth / 2, h = window.screen.availHeight;
+		window.moveTo(x, y);
+		window.resizeTo(w, h);
+		this._callFieldMethod('alignWindow', x + w, y, w, h);
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	_showAlert(mid, type, additional = false) {
 		const text = this._res.msg[mid] + (additional ? additional : '');
 		this._dialogBox.showAlert(text, type);
 	}
@@ -422,93 +437,50 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	async executeCommand(cmd, close = true) {
+	executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
 		this._editor.setLineSelectionMode(false);
 
-		setTimeout(async () => {
-			const conf = this._config;
+		const minmax = (val, min, max) => Math.min(max, Math.max(min, val));
+
+		setTimeout(() => {
+			const cfg = this._config;
 
 			if (this._executeCommandFile(cmd)) return;
 			if (this._executeCommandCode(cmd)) return;
 
-			// Edit Command
+			if      (cmd === 'undo')          this._editor.undo();
+			else if (cmd === 'redo')          this._editor.redo();
+			else if (cmd === 'cut')           this._editor.cut();
+			else if (cmd === 'copy')          this._editor.copy();
+			else if (cmd === 'paste')         this._editor.paste();
+			else if (cmd === 'selectAll')     this._editor.selectAll();
+			else if (cmd === 'toggleComment') this._editor.toggleComment();
+			else if (cmd === 'format')        this._editor.format();
+			else if (cmd === 'find')          this._editor.find();
+			else if (cmd === 'findNext')      this._editor.findNext();
+			else if (cmd === 'replace')       this._editor.replace();
 
-			if (cmd === 'undo') {
-				this._editor.undo();
-			} else if (cmd === 'redo') {
-				this._editor.redo();
+			else if (cmd === 'copyAsImage')   this._copyAsImage();
+			else if (cmd === 'tileWin')       this._tileWindow();
+			else if (cmd === 'showAbout')     this._dialogBox.showAlert(this._res.about.join('\n'), 'info');
 
-			} else if (cmd === 'cut') {
-				this._editor.cut();
-			} else if (cmd === 'copy') {
-				this._editor.copy();
-			} else if (cmd === 'paste') {
-				this._editor.paste();
-			} else if (cmd === 'selectAll') {
-				this._editor.selectAll();
+			else if (cmd === 'fontSizePlus')             cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') + 2, 10, 64));
+			else if (cmd === 'fontSizeMinus')            cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') - 2, 10, 64));
+			else if (cmd === 'fontSizeReset')            cfg.setItem('fontSize', 16);
+			else if (cmd === 'lineHeightPlus')           cfg.setItem('lineHeight', minmax(cfg.getItem('lineHeight') + 15, 135, 195));
+			else if (cmd === 'lineHeightMinus')          cfg.setItem('lineHeight', minmax(cfg.getItem('lineHeight') - 15, 135, 195));
+			else if (cmd === 'lineHeightReset')          cfg.setItem('lineHeight', 165);
+			else if (cmd === 'toggleSoftWrap')           cfg.setItem('softWrap', !cfg.getItem('softWrap'));
+			else if (cmd === 'toggleFunctionLineNumber') cfg.setItem('functionLineNumber', !cfg.getItem('functionLineNumber'));
+			else if (cmd === 'toggleOutputPane')         this._outputPane.toggle();
 
-			} else if (cmd === 'toggleComment') {
-				this._editor.toggleComment();
-			} else if (cmd === 'format') {
-				this._editor.format();
-
-			} else if (cmd === 'find') {
-				this._editor.find();
-			} else if (cmd === 'findNext') {
-				this._editor.findNext();
-			} else if (cmd === 'replace') {
-				this._editor.replace();
-
-			} else if (cmd === 'copyAsImage') {
-				this.sendBackCapturedImages();
-			}
-
-			// View Command
-
-			if (cmd === 'tileWin') {
-				const x = window.screen.availLeft, y = window.screen.availTop;
-				const w = window.screen.availWidth / 2, h = window.screen.availHeight;
-				window.moveTo(x, y);
-				window.resizeTo(w, h);
-				this._callFieldMethod('alignWindow', x + w, y, w, h);
-			} else if (cmd === 'fontSizePlus') {
-				const size = Math.min(64, Math.max(10, conf.getItem('fontSize') + 2));
-				conf.setItem('fontSize', size);
-			} else if (cmd === 'fontSizeMinus') {
-				const size = Math.min(64, Math.max(10, conf.getItem('fontSize') - 2));
-				conf.setItem('fontSize', size);
-			} else if (cmd === 'fontSizeReset') {
-				conf.setItem('fontSize', 16);
-
-			} else if (cmd === 'lineHeightPlus') {
-				const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') + 15));
-				conf.setItem('lineHeight', lh);
-			} else if (cmd === 'lineHeightMinus') {
-				const lh = Math.min(195, Math.max(135, conf.getItem('lineHeight') - 15));
-				conf.setItem('lineHeight', lh);
-			} else if (cmd === 'lineHeightReset') {
-				conf.setItem('lineHeight', 165);
-
-			} else if (cmd === 'toggleSoftWrap') {
-				conf.setItem('softWrap', !conf.getItem('softWrap'));
-			} else if (cmd === 'toggleFunctionLineNumber') {
-				conf.setItem('functionLineNumber', !conf.getItem('functionLineNumber'));
-			} else if (cmd === 'toggleOutputPane') {
-				this._outputPane.toggle();
-
-			} else if (cmd === 'setLanguageJa') {
-				conf.setItem('language', 'ja');
+			if (cmd === 'setLanguageJa') {
+				cfg.setItem('language', 'ja');
 				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
 			} else if (cmd === 'setLanguageEn') {
-				conf.setItem('language', 'en');
+				cfg.setItem('language', 'en');
 				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
-			}
-
-			// Help Command
-
-			if (cmd === 'showAbout') {
-				this._dialogBox.showAlert(this._res.about.join('\n'), 'info');
 			}
 		}, 0);
 	}
@@ -517,10 +489,10 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	async _executeCommandFile(cmd) {
+	_executeCommandFile(cmd) {
 		switch (cmd) {
 			case 'new':
-				this._handleOpening(this._res.msg.confirmNew, 'initializeDocument');
+				this._handleOpening(this._res.msg.confirmNew, 'doNew');
 				return true;
 			case 'open':
 				this._handleOpening(this._res.msg.confirmOpen, 'doOpen');
@@ -528,7 +500,6 @@ class Study {
 			case 'close':
 				this._handleOpening(this._res.msg.confirmExit, 'doClose', this._editor.value());
 				return true;
-
 			case 'save':
 				this._handleSaving('doSave', this._res.dialogTitle.saveAs);
 				return true;
@@ -538,12 +509,8 @@ class Study {
 			case 'saveCopy':
 				this._handleSaving('doSaveCopy', this._res.dialogTitle.saveCopy);
 				return true;
-
 			case 'exportAsLibrary':
-				const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption_(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries);
-				if (libName) {
-					this._handleSaving('doExportAsLibrary', libName, flag, JSON.stringify(this._codeStructure));
-				}
+				this._handleExportAsLibrary();
 				return true;
 			case 'exportAsWebPage':
 				this._handleSaving('doExportAsWebPage');
@@ -560,6 +527,14 @@ class Study {
 		}
 	}
 
+	async _handleExportAsLibrary() {
+		const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption_(this._res.msg.enterLibraryName, '', this._res.msg.libraryName, this._name, this._res.msg.includeUsedLibraries);
+		if (libName) {
+			this._handleSaving('doExportAsLibrary', libName, flag, JSON.stringify(this._codeStructure));
+		}
+		return true;
+	}
+
 	async _handleOpening(text, returnMsg, ...args) {
 		if (this._isModified) {
 			const res = await this._dialogBox.showConfirm_(text, 'warning');
@@ -569,7 +544,7 @@ class Study {
 		if (msg === 'init') {
 			this.initializeDocument(...arg);
 		} else if (msg === 'alert_error') {
-			this.showServerAlert('error', 'error', arg);
+			this._showAlert('error', 'error', arg);
 		}
 	}
 
@@ -578,9 +553,9 @@ class Study {
 		if (msg === 'path') {
 			this.setDocumentFilePath(...arg);
 		} else if (msg === 'success_export') {
-			this.showServerAlert(arg, 'success');
+			this._showAlert(arg, 'success');
 		} else if (msg === 'alert_error') {
-			this.showServerAlert('error', 'error', arg);
+			this._showAlert('error', 'error', arg);
 		}
 	}
 
@@ -598,7 +573,7 @@ class Study {
 				return true;
 			case 'stop':
 				this._callFieldMethod('closeProgram');
-				this._notifyServer('stop');
+				this._notifyServer('onStudyProgramClosed');
 				return true;
 		}
 		return false;
@@ -612,7 +587,7 @@ class Study {
 		} else if (msg === 'error') {
 			this.addErrorMessage(arg);
 		} else if (msg === 'alert_error') {
-			this.showServerAlert('error', 'error', arg);
+			this._showAlert('error', 'error', arg);
 		}
 	}
 

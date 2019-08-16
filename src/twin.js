@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-15
+ * @version 2019-08-16
  *
  */
 
@@ -22,7 +22,10 @@ const Backup   = require('./backup.js');
 const Exporter = require('./exporter.js');
 
 const DEFAULT_EXT = '.js';
-const FILE_FILTERS = [{ name: 'JavaScript', extensions: ['js'] }, { name: 'All Files', extensions: ['*'] }];
+const FILE_FILTERS = [
+	{ name: 'JavaScript', extensions: ['js'] },
+	{ name: 'All Files', extensions: ['*'] }
+];
 
 
 class Twin {
@@ -31,6 +34,8 @@ class Twin {
 		this._id       = id;
 		this._studyWin = null;
 		this._fieldWin = null;
+
+		if (path) this._initPath = path;
 
 		this._filePath   = null;
 		this._isReadOnly = false;
@@ -41,14 +46,12 @@ class Twin {
 		this._tempDirs  = [];
 		this._codeCache = '';
 
-		ipcMain.on('notifyServer_' + this._id, (ev, msg, ...args) => {
-			if (this[msg]) this[msg](...args);
-		});
-		promiseIpc.on('callServer_' + this._id, ([msg, ...args], ev) => {
-			return this[msg](...args);
-		});
-		if (path) this._initPath = path;
+		ipcMain.on('notifyServer_' + this._id, (ev, msg, ...args) => { this[msg](...args); });
+		promiseIpc.on('callServer_' + this._id, ([msg, ...args], ev) => { return this[msg](...args); });
+
 		this._createStudyWindow();
+		// this._studyWin.show();
+		// this._studyWin.webContents.toggleDevTools();
 	}
 
 	_createStudyWindow() {
@@ -59,8 +62,6 @@ class Twin {
 			e.preventDefault();
 			this._studyWin.webContents.send('callStudyMethod', 'executeCommand', 'close');
 		});
-		// this._studyWin.show();
-		// this._studyWin.webContents.toggleDevTools();
 	}
 
 	_createFieldWindow() {
@@ -73,17 +74,25 @@ class Twin {
 		});
 	}
 
+	_initializeDocument(text = '', filePath = null) {
+		const readOnly = filePath ? ((FS().statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
+		const name     = filePath ? PATH().basename(filePath, PATH().extname(filePath)) : '';
+		const baseName = filePath ? PATH().basename(filePath) : '';
+		const dirName  = filePath ? PATH().dirname(filePath) : '';
+
+		this._filePath   = filePath;
+		this._isReadOnly = readOnly;
+		this._isModified = false;
+		this._backup.setFilePath(filePath);
+
+		this.stop();
+		this._studyWin.show();
+		return [filePath, name, baseName, dirName, readOnly, text];
+	}
+
 
 	// -------------------------------------------------------------------------
 
-
-	onStudyReady() {
-		if (this._initPath) {
-			return this._openFile(this._initPath);
-		} else {
-			return this.initializeDocument();
-		}
-	}
 
 	onStudyModified() {
 		this._isModified = true;
@@ -93,22 +102,12 @@ class Twin {
 		this._studyWin.setTitle(title);
 	}
 
-	async onStudyRequestPageCapture(bcr) {
-		if (this._studyWin === null) return;  // When window is closed while capturing
-		const scaleFactor = electron.screen.getPrimaryDisplay().scaleFactor;
-		const ni = await this._studyWin.capturePage(bcr);
-		const url = ni.toDataURL();
-		return ['capturedImageReceived', [url, scaleFactor]];
-	}
-
-	onStudyCapturedImageCreated(dataUrl) {
-		const ni = nativeImage.createFromDataURL(dataUrl);
-		clipboard.writeImage(ni);
-		return ['showServerAlert', ['copiedAsImage', 'success']];
-	}
-
 	onStudyErrorOccurred(info) {
 		this._backup.backupErrorLog(info, this._codeCache);
+	}
+
+	onStudyProgramClosed() {
+		this.stop();
 	}
 
 	_returnAlertError(e, dir) {
@@ -119,38 +118,58 @@ class Twin {
 		return ['alert_error', `\n${dir}\n${err}`];
 	}
 
+	_returnExecutionError(msg) {
+		const info = { msg: msg, library: true, isUserCode: false };
+		this._backup.backupErrorLog(info, this._codeCache);
+		return ['error', info];
+	}
+
 
 	// -------------------------------------------------------------------------
 
 
-	initializeDocument(text = '', filePath = null) {
-		const readOnly = filePath ? ((FS().statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
-		const name = filePath ? PATH().basename(filePath, PATH().extname(filePath)) : '';
-		const baseName = filePath ? PATH().basename(filePath) : '';
-		const dirName = filePath ? PATH().dirname(filePath) : '';
-
-		this._filePath = filePath;
-		this._isReadOnly = readOnly;
-		this._isModified = false;
-		this._backup.setFilePath(filePath);
-
-		this.stop();
-		this._studyWin.show();
-		return ['init', [filePath, name, baseName, dirName, readOnly, text]];
+	doReady() {
+		if (this._initPath) {
+			return this._openFile(this._initPath);
+		} else {
+			return this.doNew();
+		}
 	}
 
-	doOpen(defaultPath = this._filePath) {
-		const fp = dialog.showOpenDialogSync(this._studyWin, { defaultPath: defaultPath ? defaultPath : '', filters: FILE_FILTERS });
+	async doCapturePage(bcr) {
+		if (this._studyWin === null) return;  // When window is closed while capturing
+		const scaleFactor = electron.screen.getPrimaryDisplay().scaleFactor;
+		const ni = await this._studyWin.capturePage(bcr);
+		const url = ni.toDataURL();
+		return [url, scaleFactor];
+	}
+
+	doCopyImageToClipboard(dataUrl) {
+		const ni = nativeImage.createFromDataURL(dataUrl);
+		clipboard.writeImage(ni);
+		return ['success'];
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	doNew() {
+		return ['init', this._initializeDocument()];
+	}
+
+	doOpen(dirPath = '') {
+		if (dirPath !== '' && this._filePath) dirPath = this._filePath;
+		const fp = dialog.showOpenDialogSync(this._studyWin, { defaultPath: dirPath, filters: FILE_FILTERS });
 		if (fp) return this._openFile(fp[0]);
-		else return ['nop'];
+		return ['nop'];
 	}
 
 	doFileDropped(path) {
 		try {
 			const isDir = FS().statSync(path).isDirectory();
-			if (!isDir) {
-				return this._openFile(path);
-			}
+			if (!isDir) return this._openFile(path);
+
 			const fns = FS().readdirSync(path);
 			const fps = fns.map(e => PATH().join(path, e)).filter((fp) => {
 				try {
@@ -159,30 +178,38 @@ class Twin {
 					return ['nop'];
 				}
 			});
-			if (fps.length === 1) {
-				return this._openFile(fps[0]);
-			} else if (fps.length > 1) {
-				return this.doOpen(path);
-			}
+			if (fps.length === 1) return this._openFile(fps[0]);
+			if (fps.length > 1)   return this.doOpen(path);
 		} catch (e) {
 			if (e.code !== 'ENOENT' && e.code !== 'EPERM') return this._returnAlertError(e, path);
 		}
 	}
 
-	_openFile(filePath) {
-		return new Promise(resolve => {
-			FS().readFile(filePath, 'utf-8', (error, contents) => {
-				resolve(contents);
-			});
-		}).then((contents) => {
-			if (contents === null) {
-				return this._returnAlertError('', filePath);
-			}
-			return this.initializeDocument(contents, filePath);
+	async _openFile(filePath) {
+		const text = await new Promise(resolve => {
+			FS().readFile(filePath, 'utf-8', (error, contents) => { resolve(contents); });
 		});
+		if (text === null) return this._returnAlertError('', filePath);
+		return ['init', this._initializeDocument(text, filePath)];
+	}
+
+	doSave(text, dlgTitle) {
+		if (this._filePath === null || this._isReadOnly) {
+			return this.doSaveAs(text, dlgTitle);
+		} else {
+			return this._save(this._filePath, text);
+		}
 	}
 
 	doSaveAs(text, dlgTitle) {
+		return this._prepareSaving(text, dlgTitle, false);
+	}
+
+	doSaveCopy(text, dlgTitle) {
+		return this._prepareSaving(text, dlgTitle, true);
+	}
+
+	_prepareSaving(text, dlgTitle, copy) {
 		const fp = dialog.showSaveDialogSync(this._studyWin, { title: dlgTitle, defaultPath: this._filePath ? this._filePath : '', filters: FILE_FILTERS });
 		if (!fp) return ['nop'];  // No file is selected.
 		let writable = true;
@@ -192,26 +219,17 @@ class Twin {
 			if (e.code !== 'ENOENT') return this._returnAlertError(e, fp);
 		}
 		if (writable) {
-			return this._saveFile(fp, text);
-		} else {
-			// In Windows, the save dialog itself does not allow to select read only files.
-			return this._returnAlertError('', fp);
+			if (copy) return this._saveCopy(fp, text);
+			else return this._save(fp, text);
 		}
+		// In Windows, the save dialog itself does not allow to select read only files.
+		return this._returnAlertError('', fp);
 	}
 
-	doSave(text, dlgTitle) {
-		if (this._filePath === null || this._isReadOnly) {
-			return this.doSaveAs(text, dlgTitle);
-		} else {
-			return this._saveFile(this._filePath, text);
-		}
-	}
-
-	_saveFile(fp, text) {
+	_save(fp, text) {
 		if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
 		this._filePath = fp;
 		this._backup.setFilePath(fp);
-
 		this._backup.backupExistingFile(text, this._filePath);
 		try {
 			FS().writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
@@ -227,26 +245,14 @@ class Twin {
 		}
 	}
 
-	doSaveCopy(text, dlgTitle) {
-		const fp = dialog.showSaveDialogSync(this._studyWin, { title: dlgTitle, defaultPath: this._filePath ? this._filePath : '', filters: FILE_FILTERS });
-		if (!fp) return ['nop'];  // No file is selected.
-		let writable = true;
+	_saveCopy(fp, text) {
+		if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
+		this._backup.backupExistingFile(text, fp);
 		try {
-			writable = ((FS().statSync(fp).mode & 0x0080) !== 0);  // check write flag
+			FS().writeFileSync(fp, text.replace(/\n/g, '\r\n'));
+			return ['nop'];
 		} catch (e) {
-			if (e.code !== 'ENOENT') throw e;
-		}
-		if (writable) {
-			if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
-			this._backup.backupExistingFile(text, fp);
-			try {
-				FS().writeFileSync(fp, text.replace(/\n/g, '\r\n'));
-			} catch (e) {
-				return this._returnAlertError(e, fp);
-			}
-		} else {
-			// In Windows, the save dialog itself does not allow to select read only files.
-			return this._returnAlertError('', fp);
+			return this._returnAlertError(e, fp);
 		}
 	}
 
@@ -287,24 +293,6 @@ class Twin {
 		}
 	}
 
-	_makeExportPath(fp) {
-		const name = PATH().basename(fp, PATH().extname(fp));
-		return PATH().join(PATH().dirname(fp), name + '.export');
-	}
-
-	_rmdirSync(dirPath) {
-		if (!FS().existsSync(dirPath)) return;
-		for (let fp of FS().readdirSync(dirPath)) {
-			fp = PATH().join(dirPath, fp);
-			if (FS().lstatSync(fp).isDirectory()) {
-				this._rmdirSync(fp);
-			} else {
-				FS().unlinkSync(fp);
-			}
-		}
-		FS().rmdirSync(dirPath);
-	}
-
 
 	// -------------------------------------------------------------------------
 
@@ -341,30 +329,46 @@ class Twin {
 		}
 	}
 
-	_execute(codeStr) {  // for Promise Test
+	_execute(codeStr) {
 		const ret = this._exporter.checkLibraryReadable(codeStr, this._filePath);
-		if (ret !== true) {
-			const info = { msg: ret, library: true, isUserCode: false };
-			this._backup.backupErrorLog(info, this._codeCache);
-			return ['error', info];
-		}
+		if (ret !== true) return this._returnExecutionError(ret);
+
 		this._clearTempPath();
 		const expDir = this._getTempPath();
 		try {
 			this._rmdirSync(expDir);
 			FS().mkdirSync(expDir);
 			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
-			if (!success) {
-				const info = { msg: expPath, library: true, isUserCode: false };
-				this._backup.backupErrorLog(info, this._codeCache);
-				return ['error', info];
-			}
+			if (!success) return this._returnExecutionError(expPath);
+
 			const baseUrl = 'file:///' + expPath.replace(/\\/g, '/');
 			const url = baseUrl + '#' + this._id + ',' + this._exporter._userCodeOffset;
 			return ['open', url];
 		} catch (e) {
 			return this._returnAlertError(e, expDir);
 		}
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	_makeExportPath(fp) {
+		const name = PATH().basename(fp, PATH().extname(fp));
+		return PATH().join(PATH().dirname(fp), name + '.export');
+	}
+
+	_rmdirSync(dirPath) {
+		if (!FS().existsSync(dirPath)) return;
+		for (let fp of FS().readdirSync(dirPath)) {
+			fp = PATH().join(dirPath, fp);
+			if (FS().lstatSync(fp).isDirectory()) {
+				this._rmdirSync(fp);
+			} else {
+				FS().unlinkSync(fp);
+			}
+		}
+		FS().rmdirSync(dirPath);
 	}
 
 	_getTempPath() {
