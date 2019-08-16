@@ -82,7 +82,7 @@ class Study {
 			const ma = JSON.parse(e.newValue);
 			if (ma.message === 'error') {
 				this._notifyServer('onStudyErrorOccurred', ma.params);
-				this.addErrorMessage(ma.params);
+				this._addErrorMessage(ma.params);
 			} else if (ma.message === 'output') {
 				this._outputPane.addOutput(ma.params);
 			}
@@ -99,7 +99,7 @@ class Study {
 			const res = await this._callServer('doReady');
 			if (res) {
 				const [msg, args] = res;
-				if (msg === 'init') this.initializeDocument(...args);
+				if (msg === 'init') this._initializeDocument(...args);
 				else this[msg](...args);
 			}
 		}, 100);
@@ -249,8 +249,8 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	initializeDocument(filePath, name, baseName, dirName, readOnly, text) {
-		this.setDocumentFilePath(filePath, name, baseName, dirName, readOnly);
+	_initializeDocument(filePath, name, baseName, dirName, readOnly, text) {
+		this._setDocumentFilePath(filePath, name, baseName, dirName, readOnly);
 
 		this._editor.enabled(false);
 		this._editor.value(text);
@@ -260,7 +260,7 @@ class Study {
 		this._outputPane.initialize();
 	}
 
-	setDocumentFilePath(filePath, name, baseName, dirName, readOnly) {
+	_setDocumentFilePath(filePath, name, baseName, dirName, readOnly) {
 		this._filePath   = filePath;
 		this._name       = name;
 		this._baseName   = baseName;
@@ -284,11 +284,7 @@ class Study {
 		}
 	}
 
-	openProgram(url) {
-		this._callFieldMethod('openProgram', url);
-	}
-
-	addErrorMessage(info) {
+	_addErrorMessage(info) {
 		let msg;
 		if (info.library) {
 			msg = this._res.msg.cannotReadLibrary.replace('%s', info.msg);
@@ -534,7 +530,7 @@ class Study {
 		}
 		const [msg, arg] = await this._callServer(returnMsg, ...args);
 		if (msg === 'init') {
-			this.initializeDocument(...arg);
+			this._initializeDocument(...arg);
 		} else if (msg === 'alert_error') {
 			this._showAlert('error', 'error', arg);
 		}
@@ -543,7 +539,7 @@ class Study {
 	async _handleSaving(method, ...opts) {
 		const [msg, arg] = await this._callServer(method, this._editor.value(), ...opts);
 		if (msg === 'path') {
-			this.setDocumentFilePath(...arg);
+			this._setDocumentFilePath(...arg);
 		} else if (msg === 'success_export') {
 			this._showAlert(arg, 'success');
 		} else if (msg === 'alert_error') {
@@ -575,9 +571,9 @@ class Study {
 		await this._resetOutputPane();
 		const [msg, arg] = await this._callServer(method, this._editor.value());
 		if (msg === 'open') {
-			this.openProgram(arg);
+			this._callFieldMethod('openProgram', arg);
 		} else if (msg === 'error') {
-			this.addErrorMessage(arg);
+			this._addErrorMessage(arg);
 		} else if (msg === 'alert_error') {
 			this._showAlert('error', 'error', arg);
 		}
