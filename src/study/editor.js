@@ -125,7 +125,6 @@ class Editor {
 		this._elem.addEventListener('wheel', (e) => {
 			if (!this._isEnabled || !isCtrl) return;
 			this._owner.executeCommand(e.deltaY > 0 ? 'fontSizeMinus' : 'fontSizePlus');
-			e.preventDefault();
 		}, { passive: true });
 		this._elem.addEventListener('keydown', (e) => { if (e.which === 17) { isCtrl = (e.type === 'keydown'); } });
 		this._elem.addEventListener('keyup',   (e) => { if (e.which === 17) { isCtrl = (e.type === 'keydown'); } });
