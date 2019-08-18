@@ -3,12 +3,13 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-16
+ * @version 2019-08-18
  *
  */
 
 
 'use strict';
+
 
 const electron = require('electron');
 const { ipcMain, BrowserWindow, dialog, clipboard, nativeImage } = electron;
