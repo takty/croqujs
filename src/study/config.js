@@ -3,7 +3,7 @@
  * Config
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-10-12
+ * @version 2019-08-18
  *
  */
 
@@ -53,8 +53,9 @@ class Config {
 		this._notifyUpdate(this._getConf());
 	}
 
-	getItem(key) {
-		return this._getConf()[key];
+	getItem(key, def = null) {
+		const c = this._getConf();
+		return (typeof c[key] !== 'undefined') ? c[key] : def;
 	}
 
 	setItem(key, val) {
