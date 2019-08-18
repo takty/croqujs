@@ -3,12 +3,13 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-16
+ * @version 2019-08-18
  *
  */
 
 
 'use strict';
+
 
 const { ipcRenderer } = require('electron');
 const promiseIpc = require('electron-promise-ipc');
@@ -17,44 +18,43 @@ const promiseIpc = require('electron-promise-ipc');
 class Study {
 
 	constructor() {
-		this._errorMarker = null;
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
 
-		window.ondragover = (e) => { e.preventDefault(); return false; };
-		window.ondrop     = (e) => { e.preventDefault(); return false; };
-		window.onkeydown  = (e) => {
-			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) {
-				e.preventDefault();
-				return false;
-			}
-		}
-		ipcRenderer.on('windowClose', () => this.executeCommand('close') );
+		this._winstate = new WinState(window, 'winstate_study');
+		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
+		this._config.addEventListener((cfg) => this._configUpdated(cfg));
+		this._lang = this._config.getItem('language', 'ja');
+
+		ipcRenderer.on('windowClose', () => this.executeCommand('close'));
 		window.onbeforeunload = (e) => {
 			if (!this._isModified) return;
 			e.preventDefault();
 			e.returnValue = this._res.msg.confirmExit;
 		}
 
-		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
-		this._config.addEventListener((conf) => this._configUpdated(conf));
-		this._winstate = new WinState(window, 'winstate_study');
-		this._lang = this._config.getItem('language');
-		if (!this._lang) this._lang = 'ja';
+		window.addEventListener('dragover', (e) => { e.preventDefault(); }, true);
+		window.addEventListener('drop',     (e) => { this._onFileDropped(e); }, true);
+		window.addEventListener('keydown',  (e) => {
+			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) e.preventDefault();
+		});
 
+		this._loadPlugin(this._lang);
+		this._initialize();
+	}
+
+	_loadPlugin(lang) {
 		const se = document.createElement('script');
-		se.src = 'lib/jshint/' + (this._lang === 'en' ? 'jshint.js' : 'jshint-ja-edu.js');
+		se.src = 'lib/jshint/' + (lang === 'en' ? 'jshint.js' : 'jshint-ja-edu.js');
 		document.getElementsByTagName('head')[0].appendChild(se);
 		setTimeout(() => {
 			const se2 = document.createElement('script');
 			se2.src = 'lib/codemirror/addon/lint/javascript-lint.js';
 			document.getElementsByTagName('head')[0].appendChild(se2);
-		}, 10);
-
-		this._constructorSecond();
+		}, 0);
 	}
 
-	async _constructorSecond() {
+	async _initialize() {
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json']);//, (ret) => {
 		this._res = Object.assign(rets[0], rets[1]);
 		this._initEditor();
@@ -71,20 +71,11 @@ class Study {
 		this._isReadOnly  = false;
 		this._isModified  = false;
 		this._historySize = { undo: 0, redo: 0 };
+		this._errorMarker = null;
 
 		this._initWindowResizing(this._editor);
+		this._initFieldConnection();
 
-		window.addEventListener('storage', (e) => {
-			if ('study_' + this._id !== e.key) return;
-			window.localStorage.removeItem(e.key);
-			const ma = JSON.parse(e.newValue);
-			if (ma.message === 'error') {
-				this._notifyServer('onStudyErrorOccurred', ma.params);
-				this._addErrorMessage(ma.params);
-			} else if (ma.message === 'output') {
-				this._outputPane.addOutput(ma.params);
-			}
-		});
 		window.addEventListener('focus', (e) => {
 			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
 		});
@@ -92,15 +83,10 @@ class Study {
 
 		this._config.notify();
 
-		setTimeout(async () => {
-			const res = await this._callServer('doReady');
-			if (res) {
-				const [msg, args] = res;
-				if (msg === 'init') this._initializeDocument(...args);
-				else this[msg](...args);
-			}
-			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
-		}, 100);
+		const [msg, arg] = await this._callServer('doReady');
+		this._handleServerResponse(msg, arg);
+
+		navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
 	}
 
 	_initEditor() {
@@ -126,10 +112,10 @@ class Study {
 			}
 			analyze();
 		});
-		ec.on('drop', (em, ev) => { this._onFileDropped(ev); });
+		// ec.on('drop', (cm, e) => { this._onFileDropped(e); });
 		ec.on('focus', () => { this._sideMenu.close(); });
-		ec.on('copy', (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
-		ec.on('cut',  (cm, ev) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
+		ec.on('copy', (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
+		ec.on('cut',  (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
 	}
 
 	_initWindowResizing(ed) {
@@ -193,6 +179,20 @@ class Study {
 		setSubPaneHeight(sub.offsetHeight);
 	}
 
+	_initFieldConnection() {
+		window.addEventListener('storage', (e) => {
+			if ('study_' + this._id !== e.key) return;
+			window.localStorage.removeItem(e.key);
+			const ma = JSON.parse(e.newValue);
+			if (ma.message === 'error') {
+				this._notifyServer('onStudyErrorOccurred', ma.params);
+				this._addErrorMessage(ma.params);
+			} else if (ma.message === 'output') {
+				this._outputPane.addOutput(ma.params);
+			}
+		});
+	}
+
 
 	// -------------------------------------------------------------------------
 
@@ -205,7 +205,7 @@ class Study {
 		return promiseIpc.send('callServer_' + this._id, [msg, ...args]);
 	}
 
-	_callFieldMethod(method, ...args) {
+	_callField(method, ...args) {
 		window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
 	}
 
@@ -213,19 +213,19 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	_configUpdated(conf) {
-		this._lang = conf.language;
+	_configUpdated(cfg) {
+		this._lang = cfg.language;
 
-		this._editor.lineWrapping(conf.softWrap);
-		this._editor.lineHeight(parseInt(conf.lineHeight, 10) + '%');
-		this._editor.fontSize(parseInt(conf.fontSize, 10));
-		this._editor.functionLineNumberEnabled(conf.functionLineNumber);
+		this._editor.lineWrapping(cfg.softWrap);
+		this._editor.lineHeight(parseInt(cfg.lineHeight, 10) + '%');
+		this._editor.fontSize(parseInt(cfg.fontSize, 10));
+		this._editor.functionLineNumberEnabled(cfg.functionLineNumber);
 
 		const pane = document.querySelector('.sub');
-		pane.style.fontSize = parseInt(conf.fontSize, 10) + 'px';
+		pane.style.fontSize = parseInt(cfg.fontSize, 10) + 'px';
 
 		this._editor.refresh();
-		this._sideMenu.reflectConfig(conf);
+		this._sideMenu.reflectConfig(cfg);
 	}
 
 	_reflectClipboardState(text) {
@@ -247,8 +247,8 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	_initializeDocument(filePath, name, baseName, dirName, readOnly, text) {
-		this._setDocumentFilePath(filePath, name, baseName, dirName, readOnly);
+	_initDocument(filePath, name, baseName, dirName, readOnly, text) {
+		this._setDocumentFile(filePath, name, baseName, dirName, readOnly);
 
 		this._editor.enabled(false);
 		this._editor.value(text);
@@ -258,7 +258,7 @@ class Study {
 		this._outputPane.initialize();
 	}
 
-	_setDocumentFilePath(filePath, name, baseName, dirName, readOnly) {
+	_setDocumentFile(filePath, name, baseName, dirName, readOnly) {
 		this._filePath   = filePath;
 		this._name       = name;
 		this._baseName   = baseName;
@@ -313,10 +313,9 @@ class Study {
 	}
 
 	_clearErrorMarker() {
-		if (this._errorMarker) {
-			this._editor.getComponent().getDoc().removeLineClass(this._errorMarker, 'wrap', 'error-line');
-			this._errorMarker = null;
-		}
+		if (!this._errorMarker) return;
+		this._editor.getComponent().getDoc().removeLineClass(this._errorMarker, 'wrap', 'error-line');
+		this._errorMarker = null;
 	}
 
 
@@ -328,7 +327,7 @@ class Study {
 		const w = window.screen.availWidth / 2, h = window.screen.availHeight;
 		window.moveTo(x, y);
 		window.resizeTo(w, h);
-		this._callFieldMethod('alignWindow', x + w, y, w, h);
+		this._callField('alignWindow', x + w, y, w, h);
 	}
 
 	_cmdCopyAsImage() {
@@ -453,15 +452,15 @@ class Study {
 
 	_handleServerResponse(msg, arg) {
 		if (msg === 'init') {
-			this._initializeDocument(...arg);
+			this._initDocument(...arg);
 		} else if (msg === 'alert_error') {
 			this._dialogBox.showAlert(this._res.msg['error'] + arg, 'error');
 		} else if (msg === 'path') {
-			this._setDocumentFilePath(...arg);
+			this._setDocumentFile(...arg);
 		} else if (msg === 'success_export') {
 			this._dialogBox.showAlert(this._res.msg[arg], 'success');
 		} else if (msg === 'open') {
-			this._callFieldMethod('openProgram', arg);
+			this._callField('openProgram', arg);
 		} else if (msg === 'error') {
 			this._addErrorMessage(arg);
 		}
@@ -544,7 +543,7 @@ class Study {
 				this._handleExecution('doRunWithoutWindow');
 				return true;
 			case 'stop':
-				this._callFieldMethod('closeProgram');
+				this._callField('closeProgram');
 				this._notifyServer('onStudyProgramClosed');
 				return true;
 		}
@@ -558,7 +557,7 @@ class Study {
 	}
 
 	_resetOutputPane() {
-		this._callFieldMethod('closeProgram');
+		this._callField('closeProgram');
 		this._outputPane.setMessageReceivable(false);
 
 		return new Promise(resolve => {
