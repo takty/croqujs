@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-12
+ * @version 2019-08-18
  *
  */
 
@@ -334,6 +334,11 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 
 .CodeMirror-activeline .cm-tab:before {
 	color: $L-Red-35;
+}
+
+.CodeMirror-activeline .cm-variable-2 {
+	border-radius: 0 0.35em 0.35em 0;
+	box-shadow: 0 0 4px rgba(#000, 0.3), 0 2px 4px rgba(#000, 0.2);
 }
 
 .CodeMirror-focused .cm-matchhighlight {
