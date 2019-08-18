@@ -3,7 +3,7 @@
  * Toolbar
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-12-19
+ * @version 2019-08-18
  *
  */
 
@@ -66,6 +66,7 @@ class Toolbar {
 		const overwrap = this._elm.querySelector('.overwrap');
 		const overwrapMsg = document.createTextNode(text);
 		overwrap.style.display = 'flex';
+		if (overwrap.firstChild) overwrap.removeChild(overwrap.firstChild);
 		overwrap.appendChild(overwrapMsg);
 	}
 
@@ -76,7 +77,7 @@ class Toolbar {
 			}
 			const overwrap = this._elm.querySelector('.overwrap');
 			overwrap.style.display = 'none';
-			overwrap.removeChild(overwrap.firstChild);
+			if (overwrap.firstChild) overwrap.removeChild(overwrap.firstChild);
 		}, delay);
 	}
 
