@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2019-08-19
  *
  */
 
@@ -266,8 +266,8 @@ class Study {
 	// -------------------------------------------------------------------------
 
 
-	_initDocument(filePath, name, baseName, dirName, readOnly, text) {
-		this._setDocumentFile(filePath, name, baseName, dirName, readOnly);
+	_initDocument(filePath, name, baseName, dirName, readOnly, defJsons, text) {
+		this._setDocumentFile(filePath, name, baseName, dirName, readOnly, defJsons);
 
 		this._editor.enabled(false);
 		this._editor.value(text);
@@ -277,7 +277,18 @@ class Study {
 		this._outputPane.initialize();
 	}
 
-	_setDocumentFile(filePath, name, baseName, dirName, readOnly) {
+	_setDocumentFile(filePath, name, baseName, dirName, readOnly, defJsons) {
+		if (defJsons) {
+			const defs = [];
+			for (let d of defJsons) {
+				try {
+					defs.push(JSON.parse(d));
+				} catch(e) {
+					console.error(d);
+				}
+			}
+			this._editor.updateAutoComplete(defs);
+		}
 		this._filePath   = filePath;
 		this._name       = name;
 		this._baseName   = baseName;

@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2019-08-19
  *
  */
 
@@ -14,12 +14,15 @@
 class Editor {
 
 	constructor(owner, domElm) {
-		this._owner = owner;
-		this._isEnabled = true;
-		this._isReadOnly = false;
+		this._owner           = owner;
+		this._codeStructure   = {};
+		this._ternServer      = null;
+		this._defaultDefJsons = [];
+
+		this._isEnabled                   = true;
+		this._isReadOnly                  = false;
 		this._isFunctionLineNumberEnabled = false;
-		this._isLineSelModeEnabled = false;
-		this._codeStructure = {};
+		this._isLineSelModeEnabled        = false;
 
 		CodeMirror.keyMap.pcDefault['Shift-Ctrl-R'] = false;  // Directly Change the Key Map!
 		this._comp = new CodeMirror(domElm, this.codeMirrorOptions(this._owner._res.jsHintOpt));
@@ -39,8 +42,8 @@ class Editor {
 	}
 
 	async constructorSecond() {
-		const rets = await loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'libl.json']);
-		this.initAutoComplete(rets);
+		this._defaultDefJsons = await loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json']);
+		this.initAutoComplete();
 
 		this.rulerEnabled(true);
 		this.functionLineNumberEnabled(false);
@@ -389,10 +392,10 @@ class Editor {
 	// -------------------------------------------------------------------------
 
 
-	initAutoComplete(defs) {
-		const server = new CodeMirror.TernServer({ defs: defs });
-		this._comp.on('cursorActivity', (cm) => { server.updateArgHints(cm); });
-		this._comp.setOption('extraKeys', { 'Ctrl-Tab': (cm) => { this._complete(cm, server); } });
+	initAutoComplete() {
+		this._ternServer = new CodeMirror.TernServer({ defs: this._defaultDefJsons });
+		this._comp.on('cursorActivity', (cm) => { this._ternServer.updateArgHints(cm); });
+		this._comp.setOption('extraKeys', { 'Ctrl-Tab': (cm) => { this._complete(cm, this._ternServer); } });
 		const reg = /\w|\./;
 		let autoComp = null;
 		this._comp.on('keypress', (cm, e) => {
@@ -401,7 +404,7 @@ class Editor {
 				autoComp = setTimeout(() => {
 					const elm = document.querySelector('.CodeMirror-hints');
 					if (!elm) this._autoCompActivated = true;
-					this._complete(cm, server);
+					this._complete(cm, this._ternServer);
 				}, 500);
 			} else {
 				if (!autoComp) return;
@@ -409,6 +412,12 @@ class Editor {
 				autoComp = null;
 			}
 		});
+	}
+
+	updateAutoComplete(defs) {
+		if (this._ternServer) this._ternServer.destroy();
+		const ds = this._defaultDefJsons.concat(defs);
+		this._ternServer = new CodeMirror.TernServer({ defs: ds });
 	}
 
 	_complete(cm, server) {
