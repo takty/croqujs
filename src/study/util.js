@@ -19,21 +19,6 @@ function createDelayFunction(fn, delay) {
 }
 
 async function loadJSON(fileNames) {
-	// let count = fileNames.length;
-	// const ret = new Array(count);
-	// for (let i = 0; i < fileNames.length; i += 1) {
-	// 	const idx = i;
-	// 	const xhr = new XMLHttpRequest();
-	// 	xhr.onreadystatechange = function () {
-	// 		if (this.readyState === 4 && this.status === 200) {
-	// 			ret[idx] = JSON.parse(this.responseText);
-	// 			if (--count === 0) cb(ret);
-	// 		}
-	// 	};
-	// 	xhr.open('GET', fileNames[i], true);
-	// 	xhr.send();
-	// }
-
 	return Promise.all(fileNames.map((url) => {
 		return _ajaxRequest(url);
 	})).then((resuluts) => {

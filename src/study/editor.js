@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-12
+ * @version 2019-08-18
  *
  */
 
@@ -35,9 +35,6 @@ class Editor {
 		this.initCodeStructureView();
 		this.initAutoFormat();
 
-		// loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'libl.json'], (ret) => {
-		// 	this.initAutoComplete(ret);
-		// });
 		this.constructorSecond();
 	}
 
