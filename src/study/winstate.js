@@ -3,7 +3,7 @@
  * WinState (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-28
+ * @version 2019-08-18
  *
  */
 
@@ -31,6 +31,7 @@ class WinState {
 
 		if (t && suppressRestore !== true) {
 			this._state = { x: t.x, y: t.y, width: t.width, height: t.height };
+			this._restore();
 			this._win.addEventListener('load', () => {
 				setTimeout(() => { this._restore(); }, MINOR_DELAY);
 				setTimeout(inter, POLING_INTERVAL);
