@@ -274,15 +274,16 @@
 		text-shadow: $L-Yellow 0 0 0.25em;
 	}
 	.cm-def {
-		color: $L-Purple;
+		color: $color-text;
 		font-weight: bold;
 	}
 	.cm-variable { color: $L-Turquoise; }  // Global Varialbe
-	.cm-variable-2 { color: $L-YellowGreen; }  // Local Variable
+	.cm-variable-2 { color: hsl(86, 60%, 30%); }  // Local Variable
 	.cm-variable,
 	.cm-variable-2 {
 		border-radius: 0 0.35em 0.35em 0;
-		box-shadow: 0 0 4px rgba(#000, 0.05), 0 2px 4px rgba(#000, 0.15);
+		box-shadow: 0 1px 2px rgba(#000, 0.25);
+		background-color: rgba($color-editor, 0.95);
 	}
 	.cm-property { color: $L-Blue; }
 	.cm-error {
@@ -329,7 +330,7 @@ div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
 }
 
 .CodeMirror-focused .CodeMirror-activeline-background {
-	background: rgba(#fff, 0.4);
+	background: rgba(#fff, 0.65);
 	box-shadow: 0 0 4px rgba(#000, 0.15), 0 2px 4px rgba(#000, 0.10);
 }
 

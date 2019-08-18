@@ -182,16 +182,31 @@ class Editor {
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
 		if (cs.fnLocs) {
-			ctx.fillStyle = 'rgba(255, 127, 0, 0.1)';
+			ctx.fillStyle = 'hsla(40, 100%, 50%, 0.15)';
 			for (let loc of cs.fnLocs) this._drawSyntaxRange(ctx, loc);
 		}
 		if (cs.ifLocs) {
-			ctx.fillStyle = 'rgba(0, 127, 0, 0.1)';
+			ctx.fillStyle = 'hsla(150, 100%, 35%, 0.15)';
 			for (let loc of cs.ifLocs) this._drawSyntaxRange(ctx, loc);
 		}
 		if (cs.forLocs) {
-			ctx.fillStyle = 'rgba(0, 127, 255, 0.1)';
+			ctx.fillStyle = 'hsla(190, 90%, 50%, 0.20)';
 			for (let loc of cs.forLocs) this._drawSyntaxRange(ctx, loc);
+		}
+		if (cs.varLocs) {
+			ctx.fillStyle = 'hsla(0, 0%, 97%, 1)';
+			ctx.strokeStyle = 'hsla(0, 0%, 69%, 0.75)';
+			for (let loc of cs.varLocs) this._drawSyntaxToken(ctx, loc);
+		}
+		if (cs.letLocs) {
+			ctx.fillStyle = 'hsla(205, 100%, 97%, 1)';
+			ctx.strokeStyle = 'hsla(205, 100%, 52%, 0.75)';
+			for (let loc of cs.letLocs) this._drawSyntaxToken(ctx, loc);
+		}
+		if (cs.constLocs) {
+			ctx.fillStyle = 'hsla(240, 75%, 97%, 1)';
+			ctx.strokeStyle = 'hsla(240, 75%, 65%, 0.75)';
+			for (let loc of cs.constLocs) this._drawSyntaxToken(ctx, loc);
 		}
 	}
 
@@ -207,9 +222,9 @@ class Editor {
 		const w = ctx.canvas.width / 2;
 
 		this._fillLeftRoundedRect(ctx, scc.left, scc.top + 3, iw, ecc.top - scc.top + lh - 6, lh / 1.5);
-		this._fillRightRoundedRect(ctx, scc.left + iw, scc.top + 3, w, lh - 3, lh / 1.5);
+		this._fillRightRoundedRect(ctx, scc.left + iw, scc.top + 3, w, lh - 6, lh / 1.5);
 		if (bgn.line !== end.line) {
-			this._fillRightRoundedRect(ctx, scc.left + iw, ecc.top, w, lh - 3, lh / 1.5);
+			this._fillRightRoundedRect(ctx, scc.left + iw, ecc.top + 3, w, lh - 6, lh / 1.5);
 		}
 
 		const elsecc = this._comp.charCoords({ line: bgn.line - 1, ch: bgn.column + 4 }, 'local');
@@ -219,6 +234,28 @@ class Editor {
 			const icc = this._comp.charCoords({ line: pos[i].line - 1, ch: pos[i].column }, 'local');
 			this._fillRightRoundedRect(ctx, scc.left + iw, icc.top + 3, elsew, lh - 6, lh / 1.5);
 		}
+	}
+
+	_drawSyntaxToken(ctx, pos) {
+		const bgn = pos[0], end = pos[1];
+		const scc = this._comp.charCoords({ line: bgn.line - 1, ch: bgn.column }, 'local');
+		const ecc = this._comp.charCoords({ line: end.line - 1, ch: end.column }, 'local');
+		scc.left -= 2;
+
+		const th = this._comp.defaultTextHeight();
+		const cw = this._comp.defaultCharWidth();
+		const dh = th - cw * 1.9;
+		const w = ecc.left - scc.left + 4;
+		const h = ecc.top - scc.top + th - dh;
+
+		this._fillRightRoundedRect(ctx, scc.left, scc.top + dh / 2, w, h, th / 4);
+		ctx.lineWidth = 0.5;
+		ctx.stroke();
+		ctx.lineWidth = cw * 0.35;
+		ctx.beginPath();
+		ctx.moveTo(scc.left - cw * 0.35 * 0.5, scc.top + dh / 2);
+		ctx.lineTo(scc.left - cw * 0.35 * 0.5, scc.top + dh / 2 + h)
+		ctx.stroke();
 	}
 
 	_fillLeftRoundedRect(ctx, x, y, width, height, radius) {

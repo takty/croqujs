@@ -3,7 +3,7 @@
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-04-18
+ * @version 2019-08-18
  *
  */
 
@@ -26,11 +26,14 @@ function analyze(code) {
 	const FE = 'FunctionExpression', AFE = 'ArrowFunctionExpression', CE = 'ClassExpression', ME = 'MemberExpression';
 	const IF_STMT = 'IfStatement', ID = 'Identifier';
 
-	const fnLocs = [];
-	const ifLocs = [];
-	const forLocs = [];
-	const fnNames = [];
-	const ifNodes = [];
+	const fnLocs    = [];
+	const ifLocs    = [];
+	const forLocs   = [];
+	const fnNames   = [];
+	const ifNodes   = [];
+	const varLocs   = [];
+	const letLocs   = [];
+	const constLocs = [];
 
 	try {
 		const ast = acorn.parse(code, { locations: true });
@@ -50,6 +53,17 @@ function analyze(code) {
 					if (d.init !== null && (d.init.type === FE || d.init.type === AFE || d.init.type === CE)) {
 						fnNames.push(d.id.name);
 					}
+				}
+				switch (node.kind) {
+					case 'var':
+						for (let d of node.declarations) varLocs.push([d.id.loc.start, d.id.loc.end]);
+						break;
+					case 'let':
+						for (let d of node.declarations) letLocs.push([d.id.loc.start, d.id.loc.end]);
+						break;
+					case 'const':
+						for (let d of node.declarations) constLocs.push([d.id.loc.start, d.id.loc.end]);
+						break;
 				}
 			},
 			FunctionDeclaration: (node, state, c) => {  // function f () {...}
@@ -104,7 +118,7 @@ function analyze(code) {
 			lastEnd = loc[1].line - 1;
 		}
 	}
-	return { fnLocs, fnStarts, ifLocs, forLocs, fnNames };
+	return { fnLocs, fnStarts, ifLocs, forLocs, fnNames, varLocs, letLocs, constLocs };
 }
 
 if (typeof module === 'object') {
