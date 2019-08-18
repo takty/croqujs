@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-20
+ * @version 2019-08-18
  *
  */
 
@@ -27,7 +27,7 @@
 
 	window.addEventListener('error', (e) => {
 		// ErrorEvent should be copied here
-		const info = { url: e.filename, col: e.colno, line: e.lineno, msg: e.message };
+		const info = { url: e.filename, col: e.colno, line: e.lineno, msg: e.message, stack: e.error.stack };
 
 		info.isUserCode = info.url === URL;
 		if (info.isUserCode && info.line === 1) info.col -= UCO;
