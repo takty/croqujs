@@ -271,7 +271,7 @@
 	.cm-string-2 {  // String quoted by back quotes (`)
 		color: $L-Orange;
 		font-weight: bold;
-		text-shadow: $L-Yellow 0 0 0.75em;
+		text-shadow: $L-Yellow 0 0 0.25em;
 	}
 	.cm-def {
 		color: $L-Purple;
@@ -279,6 +279,11 @@
 	}
 	.cm-variable { color: $L-Turquoise; }  // Global Varialbe
 	.cm-variable-2 { color: $L-YellowGreen; }  // Local Variable
+	.cm-variable,
+	.cm-variable-2 {
+		border-radius: 0 0.35em 0.35em 0;
+		box-shadow: 0 0 4px rgba(#000, 0.05), 0 2px 4px rgba(#000, 0.15);
+	}
 	.cm-property { color: $L-Blue; }
 	.cm-error {
 		border-bottom: 0.15em solid $L-Red;
@@ -340,6 +345,18 @@ div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
 	.cm-string-2 {
 		text-shadow: none;
 	}
+	.cm-space {
+		visibility: visible;
+		color: $L-Red-15;
+		font-weight: bold
+	}
+	.cm-tab:before {
+		color: $L-Red-35;
+	}
+	.cm-variable,
+	.cm-variable-2 {
+		box-shadow: none;
+	}
 }
 
 
@@ -348,21 +365,6 @@ div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
 
 .cm-space {
 	visibility: hidden;
-}
-
-.CodeMirror-activeline .cm-space {
-	visibility: visible;
-	color: $L-Red-15;
-	font-weight: bold
-}
-
-.CodeMirror-activeline .cm-tab:before {
-	color: $L-Red-35;
-}
-
-.CodeMirror-activeline .cm-variable-2 {
-	border-radius: 0 0.35em 0.35em 0;
-	box-shadow: 0 0 4px rgba(#000, 0.3), 0 2px 4px rgba(#000, 0.2);
 }
 
 .CodeMirror-focused .cm-matchhighlight {
