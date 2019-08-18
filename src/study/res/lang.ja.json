@@ -57,7 +57,8 @@
         "libName": "ライブラリ名...",
         "cannotReadLibrary": "ファイル「%s」を読みこめませんでした。",
         "copyingAsImage": "画像としてコピー中...",
-        "copiedAsImage": "画像としてコピーしました。"
+        "copiedAsImage": "画像としてコピーしました。",
+        "openFile": "ファイルを開きます。"
     },
     "btn": {
         "cancel": "キャンセル"

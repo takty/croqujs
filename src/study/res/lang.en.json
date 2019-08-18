@@ -57,7 +57,8 @@
         "libName": "A library name...",
         "cannotReadLibrary": "The file '%s' cannot be read.",
         "copyingAsImage": "Copying as an image now...",
-        "copiedAsImage": "Copied as an image."
+        "copiedAsImage": "Copied as an image.",
+        "openFile": "Open a file."
     },
     "btn": {
         "cancel": "Cancel"

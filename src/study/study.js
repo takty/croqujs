@@ -33,14 +33,33 @@ class Study {
 			e.returnValue = this._res.msg.confirmExit;
 		}
 
-		window.addEventListener('dragover', (e) => { e.preventDefault(); }, true);
-		window.addEventListener('drop',     (e) => { this._onFileDropped(e); }, true);
 		window.addEventListener('keydown',  (e) => {
 			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) e.preventDefault();
 		});
 
 		this._loadPlugin(this._lang);
+		this._initFileDrop();
 		this._initialize();
+	}
+
+	_initFileDrop() {
+		let flag = false;
+		window.addEventListener('dragenter', (e) => {
+			flag = true;
+		}, true);
+		window.addEventListener('dragleave', (e) => {
+			if (!flag) this._toolbar.hideMessage();
+			flag = false;
+		}, true);
+		window.addEventListener('dragover', (e) => {
+			if (flag) this._toolbar.showMessage(this._res.msg.openFile);
+			flag = false;
+			e.preventDefault();
+		}, true);
+		window.addEventListener('drop', (e) => {
+			this._toolbar.hideMessage();
+			this._onFileDropped(e);
+		}, true);
 	}
 
 	_loadPlugin(lang) {
