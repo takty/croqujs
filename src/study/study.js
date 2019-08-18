@@ -95,7 +95,7 @@ class Study {
 		this._initWindowResizing(this._editor);
 		this._initFieldConnection();
 
-		window.addEventListener('focus', (e) => {
+		document.addEventListener('focus', (e) => {
 			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
 		});
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
@@ -306,9 +306,19 @@ class Study {
 		if (info.library) {
 			msg = this._res.msg.cannotReadLibrary.replace('%s', info.msg);
 		} else {
-			const file = info.isUserCode ? '' : `(${info.fileName}) `;
 			const transMsg = new ErrorTranslator(this._lang).translate(info.msg);
+			const file = info.isUserCode ? '' : `(${info.fileName}) `;
 			msg = `${file}%lineno% [${info.col}] - ${transMsg}`;
+
+			if (!info.isUserCode) {
+				const lc = this._extractErrorLocation(info);
+				if (lc) {
+					info.line       = lc[0];
+					info.col        = lc[1];
+					info.isUserCode = true;
+					msg = `%lineno% [${info.col}] (${info.fileName}) - ${transMsg}`;
+				}
+			}
 			if (info.isUserCode && this._editor.isFunctionLineNumberEnabled()) {
 				const lnf = this._editor.getFunctionLineNumber(info.line - 1);
 				msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
@@ -335,6 +345,22 @@ class Study {
 		if (!this._errorMarker) return;
 		this._editor.getComponent().getDoc().removeLineClass(this._errorMarker, 'wrap', 'error-line');
 		this._errorMarker = null;
+	}
+
+	_extractErrorLocation(info) {
+		const stack = info.stack.split('\n').map((e) => e.trim());
+		for (let s of stack) {
+			if (s.startsWith('at ')) {
+				const [, , path] = s.split(' ');
+				if (path.includes('index.html')) {
+					const p = path.indexOf('index.html');
+					let loc = path.substr(p + 11);
+					if (loc.endsWith(')')) loc = loc.substr(0, loc.length - 1);
+					return loc.split(':');
+				}
+			}
+		}
+		return false;
 	}
 
 
