@@ -51,13 +51,12 @@ class Study {
 			document.getElementsByTagName('head')[0].appendChild(se2);
 		}, 10);
 
-		loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json'], (ret) => {
-			this._res = Object.assign(ret[0], ret[1]);
-			this._constructorSecond();
-		});
+		this._constructorSecond();
 	}
 
-	_constructorSecond() {
+	async _constructorSecond() {
+		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json']);//, (ret) => {
+		this._res = Object.assign(rets[0], rets[1]);
 		this._initEditor();
 
 		this._toolbar    = new Toolbar(this, this._res);
@@ -89,7 +88,6 @@ class Study {
 		window.addEventListener('focus', (e) => {
 			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
 		});
-		setTimeout(() => { navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText)); }, 200);
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 
 		this._config.notify();
@@ -101,6 +99,7 @@ class Study {
 				if (msg === 'init') this._initializeDocument(...args);
 				else this[msg](...args);
 			}
+			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
 		}, 100);
 	}
 

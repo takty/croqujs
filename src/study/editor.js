@@ -35,9 +35,15 @@ class Editor {
 		this.initCodeStructureView();
 		this.initAutoFormat();
 
-		loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'libl.json'], (ret) => {
-			this.initAutoComplete(ret);
-		});
+		// loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'libl.json'], (ret) => {
+		// 	this.initAutoComplete(ret);
+		// });
+		this.constructorSecond();
+	}
+
+	async constructorSecond() {
+		const rets = await loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json', 'libl.json']);
+		this.initAutoComplete(rets);
 
 		this.rulerEnabled(true);
 		this.functionLineNumberEnabled(false);
