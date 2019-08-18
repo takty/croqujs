@@ -41,7 +41,6 @@ class Exporter {
 		for (let dec of decs) {
 			const p = Array.isArray(dec) ? dec[0] : dec;
 			if (p.indexOf('http') === 0) {
-				libs.push({ desc: p });
 			} else {
 				let cont = null;
 				if (bp) cont = this._readFile(PATH().join(bp, p));
@@ -61,8 +60,8 @@ class Exporter {
 			const p = Array.isArray(dec) ? dec[0] : dec;
 			if (p.indexOf('http') === 0) {
 			} else {
-				const path = PATH().join(bp, p);
 				if (!bp) continue;
+				const path = PATH().join(bp, p);
 				const cont = this._readFile(path);
 				if (cont === null) continue;  // Error
 				const dp = makeDefPath(path);
