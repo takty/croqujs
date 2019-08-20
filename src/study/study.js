@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-19
+ * @version 2019-08-21
  *
  */
 
@@ -509,14 +509,14 @@ class Study {
 	_handleServerResponse(msg, arg) {
 		if (msg === 'init') {
 			this._initDocument(...arg);
-		} else if (msg === 'alert_error') {
-			this._dialogBox.showAlert(this._res.msg['error'] + arg, 'error');
 		} else if (msg === 'path') {
 			this._setDocumentFile(...arg);
 		} else if (msg === 'success_export') {
 			this._dialogBox.showAlert(this._res.msg[arg], 'success');
 		} else if (msg === 'open') {
 			this._callField('openProgram', arg);
+		} else if (msg === 'alert_error') {
+			this._dialogBox.showAlert(this._res.msg['error'] + arg, 'error');
 		} else if (msg === 'error') {
 			this._addErrorMessage(arg);
 		}
