@@ -5,7 +5,6 @@ const VER_MINOR = '%VER_MINOR%';
 const fs         = require('fs-extra');
 const glob       = require('glob');
 const path       = require('path');
-const jsonMerger = require('json-merger');
 const gulp       = require('gulp');
 const gulp_plist = require('./gulp-plist');
 const $          = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
@@ -89,13 +88,6 @@ gulp.task('version', () => {
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('compile-json', (done) => {
-	const files = glob.sync('./src/study/def/*');
-	const res = jsonMerger.mergeFiles(files);
-	fs.writeFileSync('./dist/study/libl.json', JSON.stringify(res, null, '\t'));
-	done();
-});
-
 gulp.task('sass', () => {
 	return gulp.src(['src/**/scss/**/[^_]*.scss'])
 		.pipe($.plumber({
@@ -124,7 +116,7 @@ gulp.task('sass-misc', () => {
 		.pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', gulp.series('copy', 'version', 'compile-json', 'sass', 'sass-misc'));
+gulp.task('default', gulp.series('copy', 'version', 'sass', 'sass-misc'));
 
 
 // -----------------------------------------------------------------------------

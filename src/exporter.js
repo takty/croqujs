@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-12
+ * @version 2019-08-19
  *
  */
 
@@ -23,6 +23,7 @@ const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TI
 const HTML_HEAD2  = '</head><body><script>';
 const HTML_FOOT   = '</script></body>';
 const EXP_LIB_DIR = 'exp_lib';
+const DEF_DIR     = 'def';
 const INJECTION   = 'injection.js';
 const EXP_EOL     = '\r\n';
 
@@ -40,7 +41,6 @@ class Exporter {
 		for (let dec of decs) {
 			const p = Array.isArray(dec) ? dec[0] : dec;
 			if (p.indexOf('http') === 0) {
-				libs.push({ desc: p });
 			} else {
 				let cont = null;
 				if (bp) cont = this._readFile(PATH().join(bp, p));
@@ -49,6 +49,35 @@ class Exporter {
 			}
 		}
 		return true;
+	}
+
+	loadDefJsons(codeStr, filePath) {
+		const bp = (filePath) ? PATH().dirname(filePath) : null;
+		const decs = this._extractUseDeclarations(codeStr.split('\n'));
+		const ret = [];
+
+		for (let dec of decs) {
+			const p = Array.isArray(dec) ? dec[0] : dec;
+			if (p.indexOf('http') === 0) {
+			} else {
+				if (!bp) continue;
+				const path = PATH().join(bp, p);
+				const cont = this._readFile(path);
+				if (cont === null) continue;  // Error
+				const dp = makeDefPath(path);
+				const defJson = this._readFile(dp);
+				if (defJson === null) continue;
+				ret.push(defJson);
+			}
+		}
+		return ret;
+
+		function makeDefPath(path) {
+			const dir = PATH().dirname(path);
+			const ext = PATH().extname(path);
+			const bn  = PATH().basename(path, ext);
+			return PATH().join(dir, DEF_DIR, bn + '.json');
+		}
 	}
 
 	exportAsLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded = false) {

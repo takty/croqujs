@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2019-08-19
  *
  */
 
@@ -86,9 +86,17 @@ class Twin {
 		this._isModified = false;
 		this._backup.setFilePath(filePath);
 
+		const defJsons = this._loadDefJsons(text, filePath);
+
 		this.stop();
 		this._studyWin.show();
-		return [filePath, name, baseName, dirName, readOnly, text];
+		return [filePath, name, baseName, dirName, readOnly, defJsons, text];
+	}
+
+	_loadDefJsons(text, filePath) {
+		let ret = [];
+		if (text !== '' && filePath) ret = this._exporter.loadDefJsons(text, filePath);
+		return ret;
 	}
 
 
@@ -239,8 +247,10 @@ class Twin {
 			const baseName = PATH().basename(this._filePath);
 			const dirName  = PATH().dirname(this._filePath);
 
+			const defJsons = this._loadDefJsons(text, this._filePath);
+
 			this._isModified = false;
-			return ['path', [this._filePath, name, baseName, dirName, false]];
+			return ['path', [this._filePath, name, baseName, dirName, false, defJsons]];
 		} catch (e) {
 			return this._returnAlertError(e, this._filePath);
 		}
