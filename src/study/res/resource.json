@@ -30,12 +30,12 @@
         "v5.%VER_MINOR%",
         "",
         "Powered by:",
-        "    - Acorn v6.2.1",
-        "    - CodeMirror v5.48.2",
-        "    - Electron v6.0.2",
+        "    - Acorn v7.0.0",
+        "    - CodeMirror v5.48.4",
+        "    - Electron v6.0.3",
         "    - js-beautify v1.10.2",
         "    - JSHint v2.10.2",
-        "    - SweetAlert2 v8.15.3",
+        "    - SweetAlert2 v8.16.2",
         "    - Tern v0.24.1",
         "    - Inconsolata-dz v001.010"]
 }
