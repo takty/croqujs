@@ -563,6 +563,7 @@ class Editor {
 		this._comp.setValue(content);
 		this._comp.getDoc().clearHistory();
 		this._comp.getDoc().setCursor(0, 0);
+		this._codeStructure = {};
 		this.refresh();
 	}
 
