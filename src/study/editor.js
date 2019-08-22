@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-19
+ * @version 2019-08-22
  *
  */
 
@@ -255,8 +255,8 @@ class Editor {
 		ctx.stroke();
 		ctx.lineWidth = cw * 0.35;
 		ctx.beginPath();
-		ctx.moveTo(scc.left - cw * 0.35 * 0.5, scc.top + dh / 2);
-		ctx.lineTo(scc.left - cw * 0.35 * 0.5, scc.top + dh / 2 + h)
+		ctx.moveTo(scc.left - cw * 0.35 * 0.5, scc.top + dh / 2     - 0.5);
+		ctx.lineTo(scc.left - cw * 0.35 * 0.5, scc.top + dh / 2 + h + 0.5)
 		ctx.stroke();
 	}
 
