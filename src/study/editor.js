@@ -475,14 +475,16 @@ class Editor {
 		const doc = this._comp.getDoc();
 		let changedLine = -1;
 
-		this._comp.on('inputRead', () => {
+		this._comp.on('change', (cm, changeObj) => {
 			const { line } = doc.getCursor('head');
-			if (changedLine !== -1 && changedLine !== line) {
-				this._formatLine(changedLine);
-				changedLine = -1;
-			} else {
-				changedLine = line;
+			const { text } = changeObj;
+			if (1 < text.length) {
+				const flc = text.length - 1;
+				for (let i = 0; i < flc; i += 1) {
+					this._formatLine(line - flc + i);
+				}
 			}
+			changedLine = line;
 		});
 		this._comp.on('cursorActivity', () => {
 			const { line } = doc.getCursor('head');
