@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2019-08-22
  *
  */
 
@@ -22,6 +22,11 @@
 	font-family: monospace;
 	font-size: 16px;
 	line-height: 165%;
+}
+
+.CodeMirror-rulers {
+	z-index: 3;
+	pointer-events: none;
 }
 
 .CodeMirror-scrollbar-filler {
@@ -47,22 +52,32 @@
 				 #fff -1px -1px 8px !important;
 }
 
-.cm-tab:before {
-	content: "->";
+.cm-tab {
 	position: relative;
-	overflow: visible;
-	display: inline-block;
+	&::before,
+	&::after {
+		overflow: visible;
+		display: inline-block;
 
-	pointer-events: none;
-	letter-spacing: -0.1em;
+		pointer-events: none;
 
-	left: 0;
-	width: 0;
-	white-space: nowrap;
-	color: $L-Red-15;
-	z-index: -1;
-	transform: scale(0.95, 1);
-	font-weight: normal;
+		width: 0;
+		white-space: nowrap;
+		color: $L-Red-15;
+		z-index: -1;
+		font-weight: normal;
+	}
+	&::before {
+		content: '-';
+		left: 0;
+		transform: scaleX(0.8);
+	}
+	&::after {
+		content: '>';
+		position: absolute;
+		left: 25%;
+		transform: scaleX(0.95);
+	}
 }
 
 .CodeMirror-wrap pre {
@@ -351,12 +366,14 @@ div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
 		color: $L-Red-15;
 		font-weight: bold
 	}
-	.cm-tab:before {
+	.cm-tab::before,
+	.cm-tab::after {
 		color: $L-Red-35;
 	}
 	.cm-variable,
 	.cm-variable-2 {
 		box-shadow: none;
+		background-color: transparent;
 	}
 }
 
