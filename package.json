@@ -27,7 +27,7 @@
     "js-beautify": "1.10.2",
     "jshint": "2.10.2",
     "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
-    "sweetalert2": "8.16.2",
+    "sweetalert2": "8.16.3",
     "tern": "0.24.1",
     "bplist-creator": "^0.0.8",
     "bplist-parser": "^0.2.0",

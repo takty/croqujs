@@ -35,7 +35,7 @@
         "    - Electron v6.0.3",
         "    - js-beautify v1.10.2",
         "    - JSHint v2.10.2",
-        "    - SweetAlert2 v8.16.2",
+        "    - SweetAlert2 v8.16.3",
         "    - Tern v0.24.1",
         "    - Inconsolata-dz v001.010"]
 }
