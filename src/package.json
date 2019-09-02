@@ -1,0 +1,12 @@
+{
+  "name": "croqujs",
+  "version": "5.0.0",
+  "description": "The Playground for JavaScript",
+  "productName": "Croqujs",
+  "main": "main.js",
+  "author": "Takuto Yanagida",
+  "license": "MIT",
+  "dependencies": {
+    "electron-promise-ipc": "^1.3.0"
+  }
+}

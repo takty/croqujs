@@ -3,10 +3,11 @@
   "version": "5.0.0",
   "description": "The Playground for JavaScript",
   "productName": "Croqujs",
-  "main": "dist/main.js",
+  "main": "app/main.js",
   "scripts": {
     "start": "gulp",
-    "dev": "npm start && npm run exec",
+    "build": "gulp && gulp build",
+    "dev": "gulp && npm run exec",
     "exec": "./node_modules/.bin/electron ."
   },
   "repository": {
@@ -33,7 +34,7 @@
     "bplist-parser": "^0.2.0",
     "deepmerge": "^4.0.0",
     "electron": "^6.0.7",
-    "electron-packager": "^14.0.5",
+    "electron-builder": "^21.2.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",

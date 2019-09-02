@@ -1,16 +1,22 @@
 'use strict';
 
-const VER_MINOR = '%VER_MINOR%';
+const REP_VERSION_MAJOR = '%VERSION_MAJOR%';
+const REP_VERSION_MINOR = '%VERSION_MINOR%';
+const REP_VERSION       = '%VERSION%';
 
-const fs         = require('fs-extra');
-const glob       = require('glob');
-const path       = require('path');
-const gulp       = require('gulp');
-const gulp_plist = require('./gulp-plist');
-const $          = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
+const fs   = require('fs-extra');
+const glob = require('glob');
+const path = require('path');
+const gulp = require('gulp');
+const $    = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
 
-const moment  = require('moment');
-const verMinor = moment().format('YYYYMMDD');
+const config = require('./app/package.json');
+const moment = require('moment');
+
+const VERSION_MAJOR = config['version'].split('.')[0];
+const VERSION_MINOR = moment().format('YYMM.DD');
+const VERSION       = VERSION_MAJOR + '.' + VERSION_MINOR;
+
 
 function copySync(from, to) {
 	const isToDir = to.endsWith('/');
@@ -25,7 +31,7 @@ function copySync(from, to) {
 	}
 }
 
-const PATH_STUDY_LIB = './dist/study/lib/';
+const PATH_STUDY_LIB = './app/study/lib/';
 
 gulp.task('copy-acorn', (done) => {
 	copySync('./node_modules/acorn/dist', PATH_STUDY_LIB + 'acorn');
@@ -73,10 +79,10 @@ gulp.task('copy-lib', gulp.parallel(
 ));
 
 gulp.task('copy-src', (done) => {
-	copySync('./src', './dist');
-	fs.removeSync('./dist/study/scss/');
-	fs.removeSync('./dist/study/def/');
-	copySync('./res/icon/icon.*', './dist/res/');
+	copySync('./src', './app');
+	fs.removeSync('./app/study/scss/');
+	fs.removeSync('./app/study/def/');
+	copySync('./res/icon/icon.*', './app/res/');
 	done();
 });
 
@@ -84,8 +90,10 @@ gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
 
 gulp.task('version', () => {
 	return gulp.src(['./src/study/study.html', './src/study/res/resource.json'], { base: './src' })
-		.pipe($.replace(VER_MINOR, verMinor))
-		.pipe(gulp.dest('dist'));
+		.pipe($.replace(REP_VERSION_MINOR, VERSION_MINOR))
+		.pipe($.replace(REP_VERSION_MAJOR, VERSION_MAJOR))
+		.pipe($.replace(REP_VERSION, VERSION))
+		.pipe(gulp.dest('app'));
 });
 
 gulp.task('sass', () => {
@@ -103,7 +111,7 @@ gulp.task('sass', () => {
 			p.dirname = p.dirname.replace(path.sep + 'scss' + path.sep, path.sep + 'css' + path.sep);
 			p.dirname = p.dirname.replace(path.sep + 'scss', path.sep + 'css');
 		}))
-		.pipe(gulp.dest('dist'));
+		.pipe(gulp.dest('app'));
 });
 
 gulp.task('sass-misc', () => {
@@ -113,7 +121,7 @@ gulp.task('sass-misc', () => {
 			p.dirname = p.dirname.replace(path.sep + 'scss' + path.sep, path.sep + 'css' + path.sep);
 			p.dirname = p.dirname.replace(path.sep + 'scss', path.sep + 'css');
 		}))
-		.pipe(gulp.dest('dist'));
+		.pipe(gulp.dest('app'));
 });
 
 gulp.task('default', gulp.series('copy', 'version', 'sass', 'sass-misc'));
@@ -122,102 +130,58 @@ gulp.task('default', gulp.series('copy', 'version', 'sass', 'sass-misc'));
 // -----------------------------------------------------------------------------
 
 
-const packager = require('electron-packager');
-const config = require('./package.json');
+const builder = require('electron-builder');
 
-const packageOpts = {
-	asar         : true,
-	prune        : true,
-	overwrite    : true,
-	dir          : '.',
-	out          : 'package',
-	name         : config.productName,
-	version      : config.devDependencies['electron'],
-	appCopyright : 'Takuto Yanagida @ Space-Time Inc.',
-	appVersion   : config.version,
-	appBundleId  : 'croqujs',
-	win32metadata: {
-		CompanyName     : 'Takuto Yanagida @ Space-Time Inc.',
-		FileDescription : config.productName,
-		OriginalFilename: config.productName + '.exe',
-		ProductName     : config.productName,
-		InternalName    : config.productName,
-	},
-	ignore: [
-		'^/src',
-		'^/res',
-		'^/.gitignore',
-		'^/config.json',
-		'^/npm-debug.log',
-		'^/gulpfile.js'
-	],
+const buildOpts = {
+	config: {
+		appId: `com.stxst.${config.name}`,
+		copyright: 'Takuto Yanagida @ Space-Time Inc.',
+		buildVersion: VERSION,
+		fileAssociations: {
+			ext: 'js',
+			name: 'JavaScript',
+		},
+		win: {
+			target: [
+				{
+					target: 'zip',
+					arch: ['x64', 'ia32']
+				},
+				{
+					target: 'nsis',
+					arch: ['x64', 'ia32']
+				},
+			],
+			icon: 'app/res/icon.ico',
+		},
+		artifactName: '${name}-${os}-${arch}.${ext}',
+		nsis: {
+			oneClick: false,
+			artifactName: '${name}-${os}-setup.${ext}',
+			deleteAppDataOnUninstall: true,
+			uninstallDisplayName: `${config.productName} v${VERSION}`,
+		},
+		mac: {
+			'target': [
+				{
+					'target': 'zip',
+					'arch': ['x64']
+				},
+			],
+			icon: 'app/res/icon.icns',
+		},
+	}
 };
 
-function packageElectron(opts = {}, done) {
-	const defOpts = Object.assign({}, packageOpts);
-	packager(Object.assign(defOpts, opts)).then(() => {
+function buildElectron(opts = {}, done) {
+	const defOpts = Object.assign({}, buildOpts);
+	builder.build(Object.assign(defOpts, opts)).then(() => {
 		if (done != null) return done();
 	}).catch((err) => {
 		throw err;
 	});
 };
 
-gulp.task('remove-lv', (done) => {
-	let files = glob.sync('./package/Croqujs-*/LICENSE*');
-	for (let f of files) fs.removeSync(f);
-	files = glob.sync('./package/Croqujs-*/version');
-	for (let f of files) fs.removeSync(f);
-	return done();
-});
-
-gulp.task('package-win', gulp.series((done) => {
-	return packageElectron({
-		platform: 'win32',
-		arch: 'ia32,x64',
-		icon: 'dist/res/icon.ico',
-	}, done);
-}, 'remove-lv'));
-
-gulp.task('package-mac', gulp.series((done) => {
-	return packageElectron({
-		platform: 'darwin',
-		arch: 'x64',
-		icon: 'dist/res/icon.icns',
-	}, () => {
-		gulp.src(['package/Croqujs-darwin-x64/' + config.productName + '.app/Contents/Info.plist'], { base: '.' })
-			.pipe(gulp_plist({
-				CFBundleDocumentTypes: [
-					{
-						CFBundleTypeExtensions: ['js'],
-						CFBundleTypeIconFile: '',
-						CFBundleTypeName: 'JavaScript',
-						CFBundleTypeRole: 'Editor',
-						LSHandlerRank: 'Default'
-					}
-				]
-			}))
-			.pipe(gulp.dest('.'));
-		return done();
-	});
-}, 'remove-lv'));
-
-gulp.task('archive-win32', () => {
-	return gulp.src(['package/Croqujs-win32-ia32/**/*'])
-		.pipe($.zip('Croqujs-win32.zip'))
-		.pipe(gulp.dest('package'));
-});
-
-gulp.task('archive-win64', () => {
-	return gulp.src(['package/Croqujs-win32-x64/**/*'])
-		.pipe($.zip('Croqujs-win.zip'))
-		.pipe(gulp.dest('package'));
-});
-
-gulp.task('archive-mac', () => {
-	return gulp.src(['package/Croqujs-darwin-x64/**/*'])
-		.pipe($.zip('Croqujs-mac.zip'))
-		.pipe(gulp.dest('package'));
-});
-
-gulp.task('build-mac', gulp.series('package-mac', 'archive-mac'));
-gulp.task('build-win', gulp.series('package-win', gulp.parallel('archive-win32', 'archive-win64')));
+gulp.task('build', gulp.series((done) => {
+	return buildElectron({}, done);
+}));

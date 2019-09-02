@@ -1,7 +1,4 @@
-/node_modules/
+/app/
 /dist/
-/package/
-/.temp/
+/node_modules/
 npm-debug.log
-config.json
-/libl/

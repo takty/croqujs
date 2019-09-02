@@ -23,11 +23,11 @@
         "unescape_strings": true,
         "space_after_anon_function": true
     },
-    "about": ["Croqujs 5",
+    "about": ["Croqujs %VERSION_MAJOR%",
         "/krō-ˈkē/",
         "",
         "by Takuto Yanagida @ Space-Time Inc.",
-        "v5.%VER_MINOR%",
+        "v%VERSION%",
         "",
         "Powered by:",
         "    - Acorn v7.0.0",
