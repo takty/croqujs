@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-21
+ * @version 2019-09-02
  *
  */
 
@@ -384,6 +384,9 @@ class Study {
 		window.moveTo(x, y);
 		window.resizeTo(w, h);
 		this._callField('alignWindow', x + w, y, w, h);
+
+		const state = { x: x + w, y: y, width: w, height: h };
+		window.localStorage.setItem('winstate_field', JSON.stringify(state));
 	}
 
 	_cmdCopyAsImage() {
