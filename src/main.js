@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-12
+ * @version 2019-09-03
  *
  */
 
@@ -24,6 +24,7 @@ class Main {
 		this._gs      = [];
 		this._gId     = 0;
 		this._isReady = false;
+		this._macPath = null;
 
 		if (!app.requestSingleInstanceLock()) app.quit();
 
@@ -34,10 +35,11 @@ class Main {
 			app.on('open-file', (e, p) => {
 				e.preventDefault();
 				if (this._isReady) this._createWindow(this._checkArgPath(p));
+				else this._macPath = this._checkArgPath(p);
 			});
 		});
 		app.on('ready', () => {
-			this._createWindow(this._getArgPath());
+			this._createWindow(this._macPath ? this._macPath : this._getArgPath());
 			this._isReady = true;
 			globalShortcut.register('CmdOrCtrl+F12', () => {
 				for (let g of this._gs) { if (g._fieldWin) g._fieldWin.webContents.toggleDevTools(); }
