@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-07-30
+ * @version 2019-09-03
  *
  */
 
@@ -59,6 +59,9 @@ class ErrorTranslator {
 				m = 'return文がここにあるのはおかしいです。';
 			} else if (m === 'Missing initializer in const declaration') {
 				m = '定数の宣言に値がありません。';
+			} else if (m.startsWith('Identifier \'') && m.endsWith('\' has already been declared')) {
+				m = m.replace('Identifier \'', '').replace('\' has already been declared', '');
+				m = 'すでに付けられている名前「' + m + '」をもう一度付けようとしています。';
 			}
 			return m + '<div>（文法エラー）' + msg + '</div>';
 		}
