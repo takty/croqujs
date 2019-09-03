@@ -40,6 +40,7 @@ class Main {
 		});
 		app.on('ready', () => {
 			this._createWindow(this._macPath ? this._macPath : this._getArgPath());
+			this._macPath = null;
 			this._isReady = true;
 			globalShortcut.register('CmdOrCtrl+F12', () => {
 				for (let g of this._gs) { if (g._fieldWin) g._fieldWin.webContents.toggleDevTools(); }
