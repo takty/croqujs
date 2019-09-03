@@ -25,14 +25,6 @@
     "acorn-loose": "7.0.0",
     "acorn-walk": "7.0.0",
     "codemirror": "5.48.4",
-    "js-beautify": "1.10.2",
-    "jshint": "2.10.2",
-    "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
-    "sweetalert2": "8.17.1",
-    "tern": "0.24.1",
-    "bplist-creator": "^0.0.8",
-    "bplist-parser": "^0.2.0",
-    "deepmerge": "^4.0.0",
     "electron": "^6.0.7",
     "electron-builder": "^21.2.0",
     "fs-extra": "^8.1.0",
@@ -44,10 +36,11 @@
     "gulp-rename": "^1.4.0",
     "gulp-replace": "^1.0.0",
     "gulp-sass": "^4.0.2",
-    "gulp-util": "^3.0.8",
-    "gulp-zip": "^5.0.0",
+    "js-beautify": "1.10.2",
+    "jshint": "2.10.2",
+    "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
     "moment": "^2.24.0",
-    "plist": "^3.0.1",
-    "through2": "^3.0.1"
+    "sweetalert2": "8.17.1",
+    "tern": "0.24.1"
   }
 }
