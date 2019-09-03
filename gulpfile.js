@@ -10,7 +10,7 @@ const path = require('path');
 const gulp = require('gulp');
 const $    = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
 
-const config = require('./app/package.json');
+const config = require('./src/package.json');
 const moment = require('moment');
 
 const VERSION_MAJOR = config['version'].split('.')[0];
