@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-02
+ * @version 2019-09-03
  *
  */
 
@@ -363,7 +363,7 @@ class Study {
 		for (let s of stack) {
 			if (s.startsWith('at ')) {
 				const [, , path] = s.split(' ');
-				if (path.includes('index.html')) {
+				if (path && path.includes('index.html')) {
 					const p = path.indexOf('index.html');
 					let loc = path.substr(p + 11);
 					if (loc.endsWith(')')) loc = loc.substr(0, loc.length - 1);
