@@ -4,11 +4,11 @@ const REP_VERSION_MAJOR = '%VERSION_MAJOR%';
 const REP_VERSION_MINOR = '%VERSION_MINOR%';
 const REP_VERSION       = '%VERSION%';
 
-const fs   = require('fs-extra');
-const glob = require('glob');
-const path = require('path');
-const gulp = require('gulp');
-const $    = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
+const fs       = require('fs-extra');
+const path     = require('path');
+const gulp     = require('gulp');
+const $        = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
+const copySync = require('./copy-sync');
 
 const config = require('./src/package.json');
 const moment = require('moment');
@@ -17,21 +17,8 @@ const VERSION_MAJOR = config['version'].split('.')[0];
 const VERSION_MINOR = moment().format('YYMM.DD');
 const VERSION       = VERSION_MAJOR + '.' + VERSION_MINOR;
 
-
-function copySync(from, to) {
-	const isToDir = to.endsWith('/');
-	const files = glob.sync(from);
-	for (let f of files) {
-		if (isToDir) {
-			const fn = path.basename(f);
-			fs.copySync(f, path.join(to, fn));
-		} else {
-			fs.copySync(f, to);
-		}
-	}
-}
-
 const PATH_STUDY_LIB = './app/study/lib/';
+
 
 gulp.task('copy-acorn', (done) => {
 	copySync('./node_modules/acorn/dist', PATH_STUDY_LIB + 'acorn');
