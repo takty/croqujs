@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-22
+ * @version 2019-09-09
  *
  */
 
@@ -140,7 +140,7 @@ class Editor {
 
 	initCodeStructureView() {
 		this._canvas = document.createElement('canvas');
-		this._canvas.style.position = 'absolute';
+		this._canvas.classList.add('code-structure-view');
 
 		const parent = document.getElementsByClassName('CodeMirror-sizer')[0];
 		parent.insertBefore(this._canvas, parent.firstElementChild);
@@ -159,7 +159,7 @@ class Editor {
 		};
 		let st = null;
 		this._comp.on('scroll', () => {
-			if (st) clearTimeout(fn);
+			if (st) clearTimeout(st);
 			st = setTimeout(fn, 200);
 		});
 	}
@@ -168,10 +168,6 @@ class Editor {
 		const c = this._canvas;
 		const w = c.parentElement.clientWidth;
 		const h = c.parentElement.clientHeight;
-		c.style.minWidth  = w + 'px';
-		c.style.minHeight = h + 'px';
-		c.style.width     = w + 'px';
-		c.style.height    = h + 'px';
 		c.width  = w;
 		c.height = h;
 		c.getContext('2d').clearRect(0, 0, w, h);

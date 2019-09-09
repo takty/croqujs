@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-22
+ * @version 2019-09-09
  *
  */
 
@@ -437,4 +437,14 @@ div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
 
 .error-line {
 	background: hsla(350, 100%, 50%, 0.2);
+}
+
+.code-structure-view {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	transition: opacity 0.2s;
 }
