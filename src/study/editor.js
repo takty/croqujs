@@ -48,7 +48,6 @@ class Editor {
 		this.rulerEnabled(true);
 		this.functionLineNumberEnabled(false);
 
-		this._comp.on('refresh', () => { this._updateCodeStructureView(); });
 		this._comp.on('renderLine', (cm, line, elt) => {
 			if (!cm.getOption('lineWrapping')) return;
 			const charWidth = this._comp.defaultCharWidth(), basePadding = 2;
@@ -146,21 +145,17 @@ class Editor {
 		parent.insertBefore(this._canvas, parent.firstElementChild);
 
 		this._setCanvasSize();
-		this._comp.on('change', () => { this._setCanvasSize(); });
-
-		const fn = () => {
-			const c = this._canvas;
-			const w = c.parentElement.clientWidth;
-			const h = c.parentElement.clientHeight;
-			if (c.width !== w || c.height !== h) {
-				this._setCanvasSize();
-				this._updateCodeStructureView();
-			}
-		};
 		let st = null;
-		this._comp.on('scroll', () => {
+
+		this._comp.on('refresh', () => {
+			if (this._setCanvasSize()) {
+				if (st) clearTimeout(st);
+				st = setTimeout(() => { this._updateCodeStructureView(); }, 200);
+			}
+		});
+		this._comp.on('change', () => {
 			if (st) clearTimeout(st);
-			st = setTimeout(fn, 200);
+			this._clearCanvas();
 		});
 	}
 
@@ -168,9 +163,24 @@ class Editor {
 		const c = this._canvas;
 		const w = c.parentElement.clientWidth;
 		const h = c.parentElement.clientHeight;
-		c.width  = w;
-		c.height = h;
-		c.getContext('2d').clearRect(0, 0, w, h);
+		if (c.width !== w || c.height !== h) {
+			c.style.opacity = 0;
+			setTimeout(() => {
+				c.width  = w;
+				c.height = h;
+				c.getContext('2d').clearRect(0, 0, w, h);
+			}, 200);
+			return true;
+		}
+		return false;
+	}
+
+	_clearCanvas() {
+		const c = this._canvas;
+		c.style.opacity = 0;
+		setTimeout(() => {
+			c.getContext('2d').clearRect(0, 0, c.width, c.height);
+		}, 200);
 	}
 
 	_updateCodeStructureView() {
@@ -206,6 +216,7 @@ class Editor {
 			ctx.strokeStyle = 'hsla(240, 75%, 65%, 0.75)';
 			for (let loc of cs.constLocs) this._drawSyntaxToken(ctx, loc);
 		}
+		this._canvas.style.opacity = 1;
 	}
 
 	_drawSyntaxRange(ctx, pos) {
@@ -537,7 +548,6 @@ class Editor {
 
 	refresh() {
 		this._comp.refresh();
-		this._setCanvasSize();
 		this._updateLineNumberGutter();
 	}
 
@@ -570,7 +580,12 @@ class Editor {
 	setCodeStructureData(data) {
 		this._codeStructure = data;
 		this._updateLineNumberGutter();
-		this._updateCodeStructureView();
+		if (this._canvas.style.opacity === '1') {  // for the first time
+			this._clearCanvas();
+			setTimeout(() => { this._updateCodeStructureView(); }, 200);
+		} else {
+			this._updateCodeStructureView();
+		}
 	}
 
 	rulerEnabled(flag) {
