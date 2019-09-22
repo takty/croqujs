@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2019-09-21
  *
  */
 
@@ -44,6 +44,7 @@ $font-console: Inconsolata, 'Hiragino Kaku Gothic ProN', Meiryo, 'Yu Gothic', Yu
 @import 'dialog-box';
 @import 'toolbar';
 @import 'side-menu';
+@import 'fs-dialog';
 
 @font-face {
 	font-family: 'Inconsolata';

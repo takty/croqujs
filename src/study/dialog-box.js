@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-16
+ * @version 2019-09-22
  *
  */
 
@@ -16,6 +16,7 @@ class DialogBox {
 	constructor(study, res) {
 		this._study      = study;
 		this._textCancel = res.btn.cancel;
+		this._res        = res;
 	}
 
 	showAlert(text, type) {
@@ -82,6 +83,30 @@ class DialogBox {
 			this._enableBackground();
 			return res;
 		});
+	}
+
+	async showOpenDialog(filters) {
+		window.focus();
+		this._disableBackground();
+
+		const sender = this._study._callServer.bind(this._study);
+		const fsd = new FSDialog(new IpcFSProxy(sender), this._res.fileDialog, filters);
+		const ret = await fsd.showOpenDialog();
+
+		this._enableBackground();
+		return ret;
+	}
+
+	async showSaveDialog(filters) {
+		window.focus();
+		this._disableBackground();
+
+		const sender = this._study._callServer.bind(this._study);
+		const fsd = new FSDialog(new IpcFSProxy(sender), this._res.fileDialog, filters);
+		const ret = await fsd.showSaveDialog();
+
+		this._enableBackground();
+		return ret;
 	}
 
 

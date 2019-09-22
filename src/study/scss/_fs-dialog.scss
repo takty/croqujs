@@ -1,0 +1,260 @@
+/**
+ *
+ * File Dialog (CSS)
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2019-09-22
+ *
+ */
+
+
+.file-dialog {
+	position: absolute;
+	top     : 0;
+	left    : 0;
+	right   : 0;
+	bottom  : 0;
+	z-index : 1000;
+
+	display       : none;
+	flex-direction: column;
+	
+	background-color         : #fff;
+	font-family              : $font-ui;
+	font-size                : 14px;
+	-webkit-text-stroke-width: 0.1px;
+
+	* { box-sizing: border-box; }
+
+	&.visible { display: flex; }
+}
+
+.file-dialog .file-dialog-main {
+	max-height: calc(100% - 40px - 63px);
+}
+
+.file-dialog.save .file-dialog-main {
+	max-height: calc(100% - 40px - 111px);
+}
+
+.file-dialog-header {
+	display        : flex;
+	justify-content: space-between;
+
+	position: relative;
+	height  : 40px;
+	padding : 0.25rem 0;
+
+	> * {
+		display    : inline-flex;
+		align-items: center;
+		line-height: 1;
+	}
+	.back {
+		padding-left: 2.5rem;
+		user-select : none;
+		cursor      : normal;
+
+		&::before {
+			content         : '';
+			display         : inline-block;
+			position        : absolute;
+			top             : 50%;
+			left            : 0;
+			width           : 0.85rem;
+			height          : 0.85rem;
+			transform-origin: 50% 50%;
+			transform       : translate(1rem, -50%) rotate(-45deg);
+			border-top      : 2px solid #000;
+			border-left     : 2px solid #000;
+		}
+	}
+	.current {
+		position : absolute;
+		top      : 0;
+		left     : 50%;
+		bottom   : 0;
+		transform: translateX(-50%);
+
+		user-select : none;
+		font-weight: bold;
+		-webkit-text-stroke-width: initial;
+	}
+	.button-row {
+		display    : none;
+		user-select: none;
+		cursor     : normal;
+
+		.new {
+			width   : 30px;
+			height  : 30px; 
+			position: relative;
+
+			&::before, &::after {
+				content         : '';
+				position        : absolute;
+				top             : 50%;
+				left            : 50%;
+				width           : 2px;
+				height          : 1rem;
+				display         : inline-block;
+				transform-origin: 1px center;
+				border-left     : 2px solid #000;
+			}
+			&::before { transform: translate(-50%, -50%); }
+			&::after  { transform: translate(-50%, -50%) rotate(90deg); }
+		}
+		.select { padding: 0 1rem; }
+	}
+}
+
+.file-dialog-main {
+	flex-grow : 1;
+
+	.list-item-file {
+		height     : 100%;
+		overflow-y : auto;
+
+		margin     : 0;
+		padding    : 0;
+		list-style : none;
+		line-height: 1;
+
+		.header > * {
+			position        : sticky;
+			top             : 0;
+			z-index         : 1;
+			background-color: #f7f7f7;
+			box-shadow      : 0 2px 2px rgba(#000, 0.15);
+		}
+	}
+
+	.item-file {
+		display: table-row;
+
+		&.file, &.dir {
+			.name {
+				padding-left: 2.25rem;
+				position    : relative;
+
+				&::before {
+					content        : '';
+					position       : absolute;
+					top            : calc(50% - #{1.25rem / 2});
+					left           : 0.85rem;
+					width          : 1.25rem;
+					height         : 1.25rem;
+					display        : inline-block;
+					background-size: contain;
+				}
+			}
+		}
+		&.file .name::before { background-image: url('./icon-file.svg'); }
+		&.dir  .name::before { background-image: url('./icon-dir.svg'); }
+		&.readonly { opacity: 0.5; }
+		&.hidden { display: none; }
+
+		> * {
+			display    : table-cell;
+			white-space: nowrap; 
+			padding    : 0.5rem 1rem;
+
+			user-select: none;
+			cursor     : normal;
+		}
+		&:nth-child(2n + 1) { background-color: #f7f7f7; }
+		.name { 
+			width        : 100%; 
+			max-width    : 8rem;
+			text-overflow: ellipsis;
+			overflow     : hidden;
+		}
+		.size { text-align: right; }
+
+		&.selected {
+			> * {
+				background-color         : #2f78ff;
+				color                    : #fff;
+				-webkit-text-stroke-width: initial;
+			}
+		}
+	}
+}
+
+.file-dialog.save .file-dialog-action .input-row label {
+	display: flex;
+}
+
+.file-dialog-action {
+	padding         : 16px;
+	
+	background-color: #f7f7f7;
+	box-shadow      : 0 -1px 2px rgba(#000, 0.15);
+
+	> * + * { margin-top: 16px; }
+
+	.input-row {
+		display: flex;
+		justify-content: center;
+		max-width: 480px;
+		width: 100%;
+		margin-left: auto;
+		margin-right: auto;
+
+		> * + * {
+			margin-left: 16px;
+		}
+		label {
+			display: none;
+			align-items: center;
+			justify-content: center;
+			flex-grow: 1;
+
+			> * + * {
+				margin-left: 16px;
+			}
+			> span { white-space: nowrap; }
+		}
+
+		input {
+			box-sizing: border-box;
+			width     : 100%;
+			max-width : 384px;
+			height    : 32px;
+			padding   : 0 4px;
+			border    : 1px solid #b4dbed;
+			outline   : 0;
+			box-shadow: 0 0 3px #c4e6f5;
+		}
+		select {
+			height    : 32px;
+			padding   : 0 4px;
+			border    : 1px solid #b4dbed;
+			outline   : 0;
+			box-shadow: 0 0 3px #c4e6f5;
+		}
+	}
+
+	.button-row {
+		z-index         : 1;
+		display         : flex;
+		justify-content : flex-end;
+
+		> button + button { margin-left: 16px; }
+
+		> button {
+			&:not([disabled]) { box-shadow: 0 2px 2px rgba(#000, 0.15); }
+			min-width       : 96px;
+			padding         : 8px 16px;
+			user-select     : none;
+
+			border          : 1px solid #ccc;
+			border-radius   : 4px;
+			background-color: #fff;
+
+			font-family     : inherit;
+			text-align      : center;
+			line-height     : 1;
+		}
+	}
+}

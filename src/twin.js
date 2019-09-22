@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-19
+ * @version 2019-09-22
  *
  */
 
@@ -21,6 +21,7 @@ const FS       = require_('fs');
 const PATH     = require_('path');
 const Backup   = require('./backup.js');
 const Exporter = require('./exporter.js');
+const FSR      = require('./fs-real.js');
 
 const DEFAULT_EXT = '.js';
 const FILE_FILTERS = [
@@ -174,6 +175,10 @@ class Twin {
 		return ['nop'];
 	}
 
+	doOpenDirectly(dirPath, name) {
+		return this._openFile(PATH().join(dirPath, name));
+	}
+
 	doFileDropped(path) {
 		try {
 			const isDir = FS().statSync(path).isDirectory();
@@ -202,12 +207,8 @@ class Twin {
 		return ['init', this._initializeDocument(text, filePath)];
 	}
 
-	doSave(text, dlgTitle) {
-		if (this._filePath === null || this._isReadOnly) {
-			return this.doSaveAs(text, dlgTitle);
-		} else {
-			return this._save(this._filePath, text);
-		}
+	doSave(text) {
+		return this._save(this._filePath, text);
 	}
 
 	doSaveAs(text, dlgTitle) {
@@ -216,6 +217,14 @@ class Twin {
 
 	doSaveCopy(text, dlgTitle) {
 		return this._prepareSaving(text, dlgTitle, true);
+	}
+
+	doSaveAsDirectly(text, dirPath, name) {
+		return this._save(PATH().join(dirPath, name), text);
+	}
+
+	doSaveCopyDirectly(text, dirPath, name) {
+		return this._saveCopy(PATH().join(dirPath, name), text);
 	}
 
 	_prepareSaving(text, dlgTitle, copy) {
@@ -393,6 +402,23 @@ class Twin {
 	_clearTempPath() {
 		for (let td of this._tempDirs) this._rmdirSync(td);
 		this._tempDirs = [];
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	FS_getCurrentDirectory() {
+		if (this._filePath) return FSR.getCurrentDirectory(PATH().dirname(this._filePath));
+		return FSR.getCurrentDirectory();
+	}
+
+	FS_getParentDirectory(fileItem) {
+		return FSR.getParentDirectory(fileItem);
+	}
+
+	async FS_getFiles(fileItem) {
+		return await FSR.getFiles(fileItem);
 	}
 
 }

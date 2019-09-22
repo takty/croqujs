@@ -72,5 +72,19 @@
         {"name": "JavaScript", "extensions": ["js"]},
         {"name": "すべてのファイル", "extensions": ["*"]}
     ],
-    "readOnly": "読み込み専用"
+    "readOnly": "読み込み専用",
+    "fileDialog": {
+        "listHeader": { 
+            "name": "名前", 
+            "size": "ファイルサイズ", 
+            "timeStamp": "最終更新"
+        },
+        "label": { 
+            "cancel": "キャンセル", 
+            "open": "開く", 
+            "save": "保存", 
+            "saveAs": "名前:",
+            "select": "選択"
+        }
+    }
 }

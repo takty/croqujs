@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-09
+ * @version 2019-09-22
  *
  */
 
@@ -13,6 +13,13 @@
 
 const { ipcRenderer } = require('electron');
 const promiseIpc = require('electron-promise-ipc');
+
+const FILE_FILTERS = [
+	{ name: 'JavaScript', extensions: ['js'] },
+	{ name: 'All Files', extensions: ['*'] }
+];
+
+const USE_BROWSER_FS_DIALOG = true;
 
 
 class Study {
@@ -131,7 +138,6 @@ class Study {
 			}
 			analyze();
 		});
-		// ec.on('drop', (cm, e) => { this._onFileDropped(e); });
 		ec.on('focus', () => { this._sideMenu.close(); });
 		ec.on('copy', (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
 		ec.on('cut',  (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
@@ -535,19 +541,39 @@ class Study {
 				this._handleOpening(this._res.msg.confirmNew, 'doNew');
 				return true;
 			case 'open':
-				this._handleOpening(this._res.msg.confirmOpen, 'doOpen');
+				if (USE_BROWSER_FS_DIALOG) {
+					this._handleOpeningDirectly(this._res.msg.confirmOpen, 'doOpenDirectly');
+				} else {
+					this._handleOpening(this._res.msg.confirmOpen, 'doOpen');
+				}
 				return true;
 			case 'close':
 				this._handleOpening(this._res.msg.confirmExit, 'doClose', this._editor.value());
 				return true;
 			case 'save':
-				this._handleSaving('doSave', this._res.dialogTitle.saveAs);
+				if (this._filePath === null || this._isReadOnly) {
+					if (USE_BROWSER_FS_DIALOG) {
+						this._handleSavingDirectly('doSaveAsDirectly', this._res.dialogTitle.saveAs);
+					} else {
+						this._handleSaving('doSaveAs', this._res.dialogTitle.saveAs);
+					}
+				} else {
+					this._handleSaving('doSave');
+				}
 				return true;
 			case 'saveAs':
-				this._handleSaving('doSaveAs', this._res.dialogTitle.saveAs);
+				if (USE_BROWSER_FS_DIALOG) {
+					this._handleSavingDirectly('doSaveAsDirectly', this._res.dialogTitle.saveAs);
+				} else {
+					this._handleSaving('doSaveAs', this._res.dialogTitle.saveAs);
+				}
 				return true;
 			case 'saveCopy':
-				this._handleSaving('doSaveCopy', this._res.dialogTitle.saveCopy);
+				if (USE_BROWSER_FS_DIALOG) {
+					this._handleSavingDirectly('doSaveCopy', this._res.dialogTitle.saveCopy);
+				} else {
+					this._handleSaving('doSaveCopy', this._res.dialogTitle.saveCopy);
+				}
 				return true;
 			case 'exportAsLibrary':
 				this._onExportAsLibrary();
@@ -584,8 +610,28 @@ class Study {
 		this._handleServerResponse(msg, arg);
 	}
 
+	async _handleOpeningDirectly(text, method) {
+		if (this._isModified) {
+			const { value: res } = await this._dialogBox.showConfirm(text, 'warning');
+			if (!res) return;
+		}
+		const [dirPath, name] = await this._dialogBox.showOpenDialog(FILE_FILTERS);
+		if (dirPath === '') return;
+
+		const [msg, arg] = await this._callServer(method, dirPath, name);
+		this._handleServerResponse(msg, arg);
+	}
+
 	async _handleSaving(method, ...opts) {
 		const [msg, arg] = await this._callServer(method, this._editor.value(), ...opts);
+		this._handleServerResponse(msg, arg);
+	}
+
+	async _handleSavingDirectly(method, dlgTitle) {
+		const [dirPath, name] = await this._dialogBox.showSaveDialog(FILE_FILTERS);
+		if (dirPath === '') return;
+
+		const [msg, arg] = await this._callServer(method, this._editor.value(), dirPath, name);
 		this._handleServerResponse(msg, arg);
 	}
 
