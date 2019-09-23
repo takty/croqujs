@@ -3,7 +3,7 @@
  * SweetAlert2 (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-27
+ * @version 2019-09-22
  *
  */
 
@@ -15,12 +15,16 @@
 }
 
 .swal2-popup {
-	box-shadow: 0 0 0.25rem rgba(#000, 0.15), 0 0.25rem 0.75rem rgba(#000, 0.25);
+	border       : 1px solid #777;
+	border-radius: 4px;
+	box-shadow   : 0 0 32px rgba(#000, 0.35);
+
 	user-select: none;
 
 	font-family: $font-ui;
-	font-size: 1rem;
+	font-size: 14px;
 	color: rgba(#000, 0.95);
+	padding: 16px;
 
 	.swal2-content {
 		display: inline-block !important;
@@ -62,14 +66,16 @@
 		}
 	}
 	.swal2-styled {
-		margin: 0.5rem 0.75rem;
-		padding: 0 1rem;
-		min-width: 8rem;
-		min-height: 2.5rem;
+		margin: 0;
+		min-width       : 96px;
+		padding         : 8px 16px;
+		user-select     : none;
 
 		transition: 0.25s;
 
 		font-family: inherit;
+		font-size: 14px;
+		font-weight: normal;
 		line-height: 1;
 
 		&.swal2-confirm {
@@ -84,6 +90,12 @@
 			box-shadow: 0 0.25rem 0.75rem rgba(#000, 0.25);
 			outline: none;
 		}
+	}
+}
+
+.swal2-popup {
+	.swal2-actions {
+		> * + * { margin-left: 16px; }
 	}
 }
 

@@ -85,24 +85,24 @@ class DialogBox {
 		});
 	}
 
-	async showOpenDialog(filters) {
+	async showOpenDialog(filters, defExt) {
 		window.focus();
 		this._disableBackground();
 
 		const sender = this._study._callServer.bind(this._study);
-		const fsd = new FSDialog(new IpcFSProxy(sender), this._res.fileDialog, filters);
+		const fsd = new FSDialog(new IpcFSProxy(sender), this._res.fileDialog, filters, defExt);
 		const ret = await fsd.showOpenDialog();
 
 		this._enableBackground();
 		return ret;
 	}
 
-	async showSaveDialog(filters) {
+	async showSaveDialog(filters, defExt) {
 		window.focus();
 		this._disableBackground();
 
 		const sender = this._study._callServer.bind(this._study);
-		const fsd = new FSDialog(new IpcFSProxy(sender), this._res.fileDialog, filters);
+		const fsd = new FSDialog(new IpcFSProxy(sender), this._res.fileDialog, filters, defExt);
 		const ret = await fsd.showSaveDialog();
 
 		this._enableBackground();

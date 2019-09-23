@@ -84,7 +84,15 @@
             "open": "Open",
             "save": "Save",
             "saveAs": "Save As:",
-            "select": "Select"
-        }
+            "select": "Select",
+            "yes": "Yes",
+            "no": "No"
+        },
+        "title": {
+            "confirmSaveAs": "Confirm Save As"
+        },
+        "msg": {
+            "confirmOverwrite": " already exists.<br>Do you want to replace it?"
+        } 
     }
 }

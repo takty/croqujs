@@ -84,7 +84,15 @@
             "open": "開く", 
             "save": "保存", 
             "saveAs": "名前:",
-            "select": "選択"
-        }
+            "select": "選択",
+            "yes": "はい",
+            "no": "いいえ"
+        },
+        "title": {
+            "confirmSaveAs": "別名で保存の確認"
+        },
+        "msg": {
+            "confirmOverwrite": " は既に存在します。<br>上書きしますか？"
+        } 
     }
 }

@@ -3,7 +3,7 @@
  * File System Dialog
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-22
+ * @version 2019-09-23
  *
  */
 
@@ -13,16 +13,67 @@
 
 class FSDialog {
 
-	constructor(fsp, res, filter = null) {
+	constructor(fsp, res, filter = null, defaultExtension = '') {
 		this._fsp    = fsp;
 		this._res    = res;
 		this._filter = filter;
+		this._defExt = defaultExtension;
 		this._today  = this._getToday();
+	}
 
+	_constructElements() {
+		const ns = document.createElement('div');
+		ns.className = 'fs-dialog';
+		ns.innerHTML = `
+			<div class="file-dialog">
+				<div class="file-dialog-header">
+					<span class="back"></span><span class="current"></span><span class="button-row"><span class="new"></span><span class="select"></span></span>
+				</div>
+				<div class="file-dialog-main">
+					<ul class="list-item-file"></ul>
+				</div>
+				<div class="file-dialog-action">
+					<div class="input-row">
+						<label><span class="save-as-label"></span><input id="file-dialog-save-as" type="text" placeholder=""></label>
+						<select class="filter"></select>
+					</div>
+					<div class="button-row">
+						<button id="file-dialog-cancel"></button><button id="file-dialog-submit"></button>
+					</div>
+				</div>
+				<div class="file-dialog-dialog">
+					<div class="dialog">
+						<div class="file-dialog-header">
+							<div class="title"></div>
+						</div>
+						<div class="file-dialog-main">
+							<div class="message"></div>
+						</div>
+						<div class="file-dialog-action">
+							<div class="button-row">
+								<button id="file-dialog-yes"></button><button id="file-dialog-no" autofocus></button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		`;
+		document.body.appendChild(ns);
+	}
+
+	_destructElements() {
+		const ns = document.querySelector('.fs-dialog');
+		document.body.removeChild(ns);
+	}
+
+	_initialize() {
 		this._dialog      = document.querySelector('.file-dialog');
 		this._btnBack     = this._dialog.querySelector('.file-dialog-header .back');
 		this._current     = this._dialog.querySelector('.file-dialog-header .current');
 		const btnSelect   = this._dialog.querySelector('.file-dialog-header .select');
+		this._fdHeader    = this._dialog.querySelector('.file-dialog-header');
+		this._fdMain      = this._dialog.querySelector('.file-dialog-main');
+		this._fdAction    = this._dialog.querySelector('.file-dialog-action');
 		this._list        = this._dialog.querySelector('.list-item-file');
 		const labSaveAs   = this._dialog.querySelector('.save-as-label');
 		this._inputSaveAs = this._dialog.querySelector('#file-dialog-save-as');
@@ -30,11 +81,12 @@ class FSDialog {
 		this._btnSubmit   = this._dialog.querySelector('#file-dialog-submit');
 		this._selFilter   = this._dialog.querySelector('.filter');
 
-		btnSelect.textContent       = this._res.label.select;
-		labSaveAs.textContent       = this._res.label.saveAs;
+		btnSelect.textContent = this._res.label.select;
+		labSaveAs.textContent = this._res.label.saveAs;
 		this._btnCancel.textContent = this._res.label.cancel;
 
 		if (this._filter) {
+			while (this._selFilter.firstChild) this._selFilter.removeChild(this._selFilter.firstChild);
 			for (let f of this._filter) {
 				const o = document.createElement('option');
 				o.textContent = f.name;
@@ -42,45 +94,47 @@ class FSDialog {
 				this._selFilter.appendChild(o);
 			}
 		}
-
-		this._btnBack.addEventListener('click', async () => { this._onBack(); });		
+		this._btnBack.addEventListener('click', async () => { await this._onBack(); });
 		this._list.addEventListener('click', (e) => { this._onSelect(e); });
-		this._list.addEventListener('dblclick', () => { this._onSubmit(); });
+		this._list.addEventListener('dblclick', async () => { await this._onSubmit(); });
 		this._inputSaveAs.addEventListener('input', () => { this._onInput(); });
 		this._inputSaveAs.addEventListener('keydown', (e) => { this._onKeyDown(e); });
 		this._btnCancel.addEventListener('click', () => { this._onCancel(); });
-		this._btnSubmit.addEventListener('click', () => { this._onSubmit(); });
+		this._btnSubmit.addEventListener('click', async () => { await this._onSubmit(); });
 		this._selFilter.addEventListener('change', () => { this._onFilterChange(); });
 	}
 
 	async showOpenDialog() {
-		this._dialog.classList.add('open');
-		this._btnSubmit.textContent = this._res.label.open;
-
-		await this._fsp.initialize();
-		await this._update();
-		this._dialog.classList.add('visible');
-
-		return new Promise((resolve, reject) => {
-			this._onSubmitted = (dirPath, name) => { 
-				this._dialog.classList.remove('open');
-				this._dialog.classList.remove('visible');
-				resolve([dirPath, name]); 
-			};
-		});
+		this._constructElements();
+		this._initialize();
+		const ret = await this._show('open');
+		this._destructElements();
+		return ret;
 	}
 
 	async showSaveDialog() {
-		this._dialog.classList.add('save');
-		this._btnSubmit.textContent = this._res.label.save;
+		this._constructElements();
+		this._initialize();
+		const ret = await this._show('save');
+		this._destructElements();
+		return ret;
+	}
+
+	async _show(type) {
+		this._dialog.classList.add(type);
+		this._btnSubmit.textContent = this._res.label[type];
 
 		await this._fsp.initialize();
 		await this._update();
 		this._dialog.classList.add('visible');
 
-		return new Promise((resolve, reject) => {
-			this._onSubmitted = (dirPath, name) => { 
-				this._dialog.classList.remove('save');
+		const fdHH = this._fdHeader.offsetHeight;
+		const fdAH = this._fdAction.offsetHeight;
+		this._fdMain.style.maxHeight = `calc(100% - ${fdHH}px - ${fdAH}px)`;
+
+		return new Promise((resolve) => {
+			this._onSubmitted = (dirPath, name) => {
+				this._dialog.classList.remove(type);
 				this._dialog.classList.remove('visible');
 				resolve([dirPath, name]);
 			};
@@ -91,7 +145,7 @@ class FSDialog {
 		const p = await this._fsp.getParentDirectory();
 		if (p) {
 			this._fsp.setCurrentDirectory(p);
-			this._update();
+			await this._update();
 		}
 	}
 
@@ -99,9 +153,12 @@ class FSDialog {
 		const li = e.target.parentElement;
 		if (!li.classList.contains('item-file') || li.classList.contains('header')) return;
 
-		this._selected = JSON.parse(e.target.parentElement.dataset.file);
+		const idx = parseInt(e.target.parentElement.dataset.idx);
+		this._selected = this._fileItems[idx];
 		this._btnSubmit.disabled = false;
-		this._inputSaveAs.value = this._selected.name;
+		if (this._selected.type === 'file') {
+			this._inputSaveAs.value = this._selected.name;
+		}
 
 		for (let it of this._list.children) it.classList.remove('selected');
 		e.target.parentElement.classList.add('selected');
@@ -140,7 +197,7 @@ class FSDialog {
 		const es = (this._filter) ? this._filter[this._selFilter.selectedIndex].extensions : null;
 		for (let it of this._list.children) {
 			if (it.classList.contains('header')) continue;
-			const fileItem = JSON.parse(it.dataset.file);
+			const fileItem = this._fileItems[parseInt(it.dataset.idx)];
 			const match = (es && fileItem.type === 'file') ? this._matchExtension(fileItem.name, es) : true;
 			if (match) {
 				it.classList.remove('hidden');
@@ -154,36 +211,54 @@ class FSDialog {
 		this._onSubmitted('', '');
 	}
 
-	_onSubmit() {
-		if (this._selected) {
-			if (this._selected.type === 'dir') {
-				this._fsp.setCurrentDirectory(this._selected);
-				this._update();
-			} else if (this._selected.type === 'file') {
-				this._onSubmitted(this._fsp.getCurrentDirectory().path, this._selected.name);
+	async _onSubmit() {
+		if (this._selected && this._selected.type === 'dir') {
+			this._fsp.setCurrentDirectory(this._selected);
+			await this._update();
+		} else {
+			if (this._dialog.classList.contains('open')) {
+				if (this._selected && this._selected.type === 'file') {
+					this._onSubmitted(this._fsp.getCurrentDirectory().path, this._selected.name);
+				}
+			} else if (this._dialog.classList.contains('save')) {
+				let name = this._inputSaveAs.value;
+				if (this._defExt !== '' && name.indexOf('.') === -1) {
+					name += '.' + this._defExt;
+					this._inputSaveAs.value = name;
+				}
+				if (this._existFile(name)) {
+					if (!await this._confirmOverwrite(name)) return;
+				}
+				this._onSubmitted(this._fsp.getCurrentDirectory().path, name);
 			}
-		} else if (this._dialog.classList.contains('save')) {
-			this._onSubmitted(this._fsp.getCurrentDirectory().path, this._inputSaveAs.value);
 		}
 	}
 
 	async _update() {
+		while (this._list.firstChild) this._list.removeChild(this._list.firstChild);
+		this._fileItems = [];
+		this._selected = null;
+		if (this._dialog.classList.contains('open')) {
+			this._btnSubmit.disabled = true;
+			this._inputSaveAs.value = '';
+		} else if (this._dialog.classList.contains('save')) {
+			this._btnSubmit.disabled = (this._inputSaveAs.value.trim() === '');
+		}
+
 		const pd = await this._fsp.getParentDirectory();
 		this._btnBack.textContent = pd ? pd.name : '';
 		this._btnBack.style.display = pd ? '' : 'none';
 		this._current.textContent = this._fsp.getCurrentDirectory().name;
 
-		this._list.innerHTML = '';
 		this._addListHeader();
-		this._selected = null;
-		this._btnSubmit.disabled = true;
 
 		const es = (this._filter) ? this._filter[this._selFilter.selectedIndex].extensions : null;
 
-		const its = await this._fsp.getFiles();
-		for (let it of its) {
+		this._fileItems = await this._fsp.getFiles();
+		for (let i = 0; i < this._fileItems.length; i += 1) {
+			const it = this._fileItems[i];
 			const match = (es && it.type === 'file') ? this._matchExtension(it.name, es) : true;
-			this._addListItem(it, match);
+			this._addListItem(it, match, i);
 		}
 	}
 
@@ -196,6 +271,14 @@ class FSDialog {
 		return false;
 	}
 
+	_existFile(name) {
+		const lcName = name.toLowerCase();
+		for (let fi of this._fileItems) {
+			if (fi.name.toLowerCase() === lcName) return true;
+		}
+		return false;
+	}
+
 	_addListHeader() {
 		const ls = this._res.listHeader;
 		const li = document.createElement('li');
@@ -204,13 +287,13 @@ class FSDialog {
 		this._list.insertBefore(li, this._list.firstChild);
 	}
 
-	_addListItem(it, match) {
+	_addListItem(it, match, idx) {
 		const li = document.createElement('li');
 		li.classList.add('item-file');
 		li.classList.add(it.type);
 		if (it.type === 'file' && it.readOnly) li.classList.add('readonly');
 		if (!match) li.classList.add('hidden');
-		li.dataset.file = JSON.stringify(it);
+		li.dataset.idx = idx;
 
 		const name = document.createElement('span');
 		name.className = 'name';
@@ -219,7 +302,7 @@ class FSDialog {
 		const size = document.createElement('span');
 		size.className = 'size';
 		size.textContent = this._makeSizeString(it);
-		
+
 		const timeStamp = document.createElement('span');
 		timeStamp.className = 'timestamp';
 		timeStamp.textContent = this._makeTimeStampString(it);
@@ -261,6 +344,34 @@ class FSDialog {
 		if (d.length < 2) d = '0' + d;
 		const date = y + '-' + m + '-' + d;
 		return date;
+	}
+
+	async _confirmOverwrite(name) {
+		const dd      = document.querySelector('.file-dialog-dialog');
+		const title   = dd.querySelector('.title');
+		const message = dd.querySelector('.message');
+		const fns     = document.createElement('span');
+		const btnYes  = dd.querySelector('#file-dialog-yes');
+		const btnNo   = dd.querySelector('#file-dialog-no');
+
+		title.textContent   = this._res.title.confirmSaveAs;
+		message.innerHTML   = this._res.msg.confirmOverwrite;
+		fns.textContent     = name;
+		message.insertBefore(fns, message.firstChild);
+		btnYes.textContent  = this._res.label.yes;
+		btnNo.textContent   = this._res.label.no;
+
+		btnYes.onclick = () => { this._onConfirmed(true); };
+		btnNo.onclick  = () => { this._onConfirmed(false); };
+
+		dd.classList.add('visible');
+
+		return await new Promise((resolve) => {
+			this._onConfirmed = (res) => {
+				dd.classList.remove('visible');
+				resolve(res);
+			};
+		});
 	}
 
 }

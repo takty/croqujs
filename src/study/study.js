@@ -14,11 +14,7 @@
 const { ipcRenderer } = require('electron');
 const promiseIpc = require('electron-promise-ipc');
 
-const FILE_FILTERS = [
-	{ name: 'JavaScript', extensions: ['js'] },
-	{ name: 'All Files', extensions: ['*'] }
-];
-
+const DEFAULT_EXT = 'js';
 const USE_BROWSER_FS_DIALOG = true;
 
 
@@ -40,9 +36,9 @@ class Study {
 			e.returnValue = this._res.msg.confirmExit;
 		}
 
-		window.addEventListener('keydown',  (e) => {
-			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) e.preventDefault();
-		});
+		// window.addEventListener('keydown',  (e) => {
+		// 	if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) e.preventDefault();
+		// });
 
 		this._loadPlugin(this._lang);
 		this._initFileDrop();
@@ -615,7 +611,7 @@ class Study {
 			const { value: res } = await this._dialogBox.showConfirm(text, 'warning');
 			if (!res) return;
 		}
-		const [dirPath, name] = await this._dialogBox.showOpenDialog(FILE_FILTERS);
+		const [dirPath, name] = await this._dialogBox.showOpenDialog(this._res.fileFilters, DEFAULT_EXT);
 		if (dirPath === '') return;
 
 		const [msg, arg] = await this._callServer(method, dirPath, name);
@@ -628,7 +624,7 @@ class Study {
 	}
 
 	async _handleSavingDirectly(method, dlgTitle) {
-		const [dirPath, name] = await this._dialogBox.showSaveDialog(FILE_FILTERS);
+		const [dirPath, name] = await this._dialogBox.showSaveDialog(this._res.fileFilters, DEFAULT_EXT);
 		if (dirPath === '') return;
 
 		const [msg, arg] = await this._callServer(method, this._editor.value(), dirPath, name);
