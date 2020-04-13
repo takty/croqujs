@@ -50,7 +50,9 @@ class Field {
 		if (!this._frame) return;
 		try {
 			this._container.removeChild(this._frame);
-		} catch (e) { }
+		} catch (e) {
+			console.error(e);
+		}
 		this._frame = null;
 	}
 

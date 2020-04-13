@@ -68,6 +68,7 @@ class Main {
 			if (!FS().existsSync(path)) return null;
 			if (FS().statSync(path).isDirectory()) return null;
 		} catch (e) {
+			console.error(e);
 			return null;
 		}
 		return path;
