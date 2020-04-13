@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-03
+ * @version 2020-04-13
  *
  */
 
@@ -26,18 +26,22 @@ class ErrorTranslator {
 	translateJa(msg) {
 		if (msg.startsWith('Uncaught ReferenceError')) {
 			const m = msg.substr(msg.indexOf(': ') + 2);
-			return m.replace('is not defined', 'は定義されていません。打ち間違えていませんか？<div>（参照エラー）' + msg + '</div>');
+			const t = m.replace(' is not defined', '');
+			return '「' + t + '」は定義されていません。打ち間違えていませんか？<div>（参照エラー）' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught RangeError')) {
 			let m = msg.substr(msg.indexOf(': ') + 2);
 			if (m.startsWith('Maximum call stack size exceeded')) {
-				m = '関数の呼び出しの深さが、最大を超えています。再帰呼び出しを間違えていませんか？';
+				m = '関数呼び出しが深くなりすぎています。再帰呼び出しの部分を間違えていませんか？';
 			}
 			return m + '<div>（範囲エラー）' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught SyntaxError')) {
 			let m = msg.substr(msg.indexOf(': ') + 2);
-			if (m.startsWith('Unexpected identifier')) {
+			if (m.startsWith('Unexpected token')) {
+				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
+				m = '「' + t + '」を何かと打ち間違えているか、何かが抜けていませんか？';
+			} else if (m.startsWith('Unexpected identifier')) {
 				m = '打ち間違えているか、何かが抜けていませんか？';
 			} else if (m.startsWith('Unexpected string')) {
 				m = '打ち間違えているか、何かが抜けていませんか？';
@@ -60,21 +64,25 @@ class ErrorTranslator {
 			} else if (m === 'Missing initializer in const declaration') {
 				m = '定数の宣言に値がありません。';
 			} else if (m.startsWith('Identifier \'') && m.endsWith('\' has already been declared')) {
-				m = m.replace('Identifier \'', '').replace('\' has already been declared', '');
-				m = 'すでに付けられている名前「' + m + '」をもう一度付けようとしています。';
+				const t = m.replace('Identifier \'', '').replace('\' has already been declared', '');
+				m = 'すでに付けられている名前「' + t + '」をもう一度使おうとしています。';
 			}
 			return m + '<div>（文法エラー）' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught TypeError')) {
 			let m = msg.substr(msg.indexOf(': ') + 2);
 			if (m.endsWith('is not a function')) {
-				m = '関数ではない ' + m.replace('is not a function', 'を呼び出そうとしています。打ち間違えていませんか？');
+				const t = m.replace(' is not a function', '');
+				m = '関数ではない「' + t + '」を呼び出そうとしています。打ち間違えていませんか？';
 			} else if (m.endsWith('is not a constructor')) {
-				m = 'コンストラクタではない ' + m.replace('is not a constructor', 'を new をつけて呼び出そうとしています。打ち間違えていませんか？');
+				const t = m.replace(' is not a constructor', '');
+				m = 'コンストラクタではない「' + t + '」を、「new」を付けて呼び出そうとしています。打ち間違えていませんか？';
 			} else if (m.startsWith('Cannot read property ') && m.endsWith(' of undefined')) {
-				m = '定義されていないオブジェクトのプロパティ ' + m.replace(/.*'(.*)'.*/, (m, s1) => s1) + ' を使おうとしています。直前を打ち間違えていませんか？';
+				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
+				m = '何もセットされていない変数の、プロパティ「' + t + '」を使おうとしています。直前を打ち間違えていませんか？';
 			} else if (m.startsWith('Cannot set property ') && m.endsWith(' of undefined')) {
-				m = '定義されていないオブジェクトのプロパティ ' + m.replace(/.*'(.*)'.*/, (m, s1) => s1) + ' にセットしようとしています。直前を打ち間違えていませんか？';
+				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
+				m = '何もセットされていない変数の、プロパティ「' + t + '」にセットしようとしています。直前を打ち間違えていませんか？';
 			} else if (m.startsWith('Assignment to constant variable.')) {
 				m = '定数に値をもう一度セットしようとしています。一度セットされた定数を変えることはできません。';
 			}
