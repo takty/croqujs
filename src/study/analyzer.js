@@ -3,7 +3,7 @@
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2020-04-10
  *
  */
 
@@ -23,8 +23,12 @@ function analyze(code) {
 		})(node, state, override);
 	}
 
-	const FE = 'FunctionExpression', AFE = 'ArrowFunctionExpression', CE = 'ClassExpression', ME = 'MemberExpression';
-	const IF_STMT = 'IfStatement', ID = 'Identifier';
+	const FE      = 'FunctionExpression';
+	const AFE     = 'ArrowFunctionExpression';
+	const CE      = 'ClassExpression';
+	const ME      = 'MemberExpression';
+	const IF_STMT = 'IfStatement';
+	const ID      = 'Identifier';
 
 	const fnLocs    = [];
 	const ifLocs    = [];
@@ -34,6 +38,7 @@ function analyze(code) {
 	const varLocs   = [];
 	const letLocs   = [];
 	const constLocs = [];
+	let   success   = true;
 
 	try {
 		const ast = acorn.parse(code, { locations: true });
@@ -109,6 +114,7 @@ function analyze(code) {
 		if (!es.startsWith('SyntaxError') && !es.startsWith('UnexpectedToken')) {
 			console.error(e);
 		}
+		success = false;
 	}
 	const fnStarts = [];
 	let lastEnd = -1;
@@ -118,7 +124,7 @@ function analyze(code) {
 			lastEnd = loc[1].line - 1;
 		}
 	}
-	return { fnLocs, fnStarts, ifLocs, forLocs, fnNames, varLocs, letLocs, constLocs };
+	return { fnLocs, fnStarts, ifLocs, forLocs, fnNames, varLocs, letLocs, constLocs, success };
 }
 
 if (typeof module === 'object') {

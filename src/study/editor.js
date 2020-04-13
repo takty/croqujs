@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-09
+ * @version 2020-04-13
  *
  */
 
@@ -512,12 +512,12 @@ class Editor {
 		const bgn = { line: line, ch: 0 };
 		const end = { line: line, ch: str.length };
 
-		const text = this._doFormat(doc.getRange(bgn, end))
+		const [text, doIndent] = this._doFormat(doc.getRange(bgn, end))
 		if (text === false) return;
 		if (1 < text.split('\n').length) return;
 		this._comp.operation(() => {
 			doc.replaceRange(text, bgn, end);
-			this._comp.indentLine(line);
+			if (this._codeStructure.success && doIndent) this._comp.indentLine(line);
 		});
 	}
 
@@ -526,16 +526,26 @@ class Editor {
 		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
 		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
 		try {
-			const headSlashSlash = text.match(/^(\s*\/\/)/);
+			const indent = text.match(/^(\s+)/);
+			const commentIndent = text.match(/^(\s*\/\/)/);
 			text = js_beautify(text, opts);
 			text = text.replace(/(\S+)\s*\/\//m, '$1  //');  // Make the blank before the comment two blanks
-			if (headSlashSlash) {
-				text = text.replace(/^\s*\/\//, headSlashSlash.groups[0]);
+			if (commentIndent) {
+				if (commentIndent[0].startsWith('//')) {
+					text = text.replace(/^\/\//, commentIndent[0]);
+				} else {
+					text = text.replace(/^\s*\/\/\s*/, commentIndent[0] + ' ');
+				}
+				return [text, false];
+			} else if (indent) {
+				text = text.replace(/^\s+/, indent[0]);
+				return [text, false];
 			}
-			return text;
+			return [text, true];
 		} catch (e) {
+			console.error(e);
 		}
-		return false;
+		return [false, false];
 	}
 
 
