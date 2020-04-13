@@ -77,10 +77,10 @@ class ErrorTranslator {
 			} else if (m.endsWith('is not a constructor')) {
 				const t = m.replace(' is not a constructor', '');
 				m = 'コンストラクタではない「' + t + '」を、「new」を付けて呼び出そうとしています。打ち間違えていませんか？';
-			} else if (m.startsWith('Cannot read property ') && m.endsWith(' of undefined')) {
+			} else if (m.startsWith('Cannot read property ') && (m.endsWith(' of undefined') || m.endsWith(' of null'))) {
 				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
 				m = '何もセットされていない変数の、プロパティ「' + t + '」を使おうとしています。直前を打ち間違えていませんか？';
-			} else if (m.startsWith('Cannot set property ') && m.endsWith(' of undefined')) {
+			} else if (m.startsWith('Cannot set property ') && (m.endsWith(' of undefined') || m.endsWith(' of null'))) {
 				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
 				m = '何もセットされていない変数の、プロパティ「' + t + '」にセットしようとしています。直前を打ち間違えていませんか？';
 			} else if (m.startsWith('Assignment to constant variable.')) {
