@@ -3,7 +3,7 @@
  * Backup (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-14
+ * @version 2020-04-14
  *
  */
 
@@ -120,7 +120,6 @@ class Backup {
 				child_process.spawn('attrib', ['+H', dir]);
 			}
 		} catch (e) {
-			console.error(e);
 			return dir;
 		}
 		return dir;
