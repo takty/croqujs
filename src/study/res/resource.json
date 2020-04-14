@@ -32,10 +32,10 @@
         "Powered by:",
         "    - Acorn v7.1.1",
         "    - CodeMirror v5.52.2",
-        "    - Electron v8.2.1",
+        "    - Electron v8.2.2",
         "    - js-beautify v1.11.0",
         "    - JSHint v2.11.0",
-        "    - SweetAlert2 v9.10.10",
+        "    - SweetAlert2 v9.10.11",
         "    - Tern v0.24.3",
         "    - Inconsolata-dz v001.010"]
 }
