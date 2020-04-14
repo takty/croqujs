@@ -78,6 +78,16 @@ class DialogBox {
 					document.getElementById('swal-checkbox').checked
 				];
 			},
+			showClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-show',
+				icon    : 'swal2-icon-show'
+			},
+			hideClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-hide',
+				icon    : 'swal2-icon-hide'
+			}
 		}).then((res) => {
 			this._enableBackground();
 			return res;
