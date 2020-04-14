@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-13
+ * @version 2020-04-14
  *
  */
 
@@ -529,7 +529,7 @@ class Editor {
 			const indent = text.match(/^(\s+)/);
 			const commentIndent = text.match(/^(\s*\/\/)/);
 			text = js_beautify(text, opts);
-			text = text.replace(/(\S+)\s*\/\//m, '$1  //');  // Make the blank before the comment two blanks
+			text = this._formatCommentWhitespace(text);
 			if (commentIndent) {
 				if (commentIndent[0].startsWith('//')) {
 					text = text.replace(/^\/\//, commentIndent[0]);
@@ -546,6 +546,42 @@ class Editor {
 			console.error(e);
 		}
 		return [false, false];
+	}
+
+	_formatCommentWhitespace(text) {
+		const m = text.match(/\S+\s*(\/\/.+)$/);
+		if (!m) return text;
+
+		let state      = '';
+		let lastIdx    = -1;
+		let isLastEsc  = false;
+		let slashCount = 0;
+
+		for (let i = 0; i < text.length; i += 1) {
+			const c = text[i];
+			if (!isLastEsc && (c === "'" || c === '"')) {
+				if (state === '') {
+					state = c;
+					slashCount = 0;
+				} else if (state === c) {
+					state = '';
+					lastIdx = i;
+				}
+			} else if (state === '' && c === '/') {
+				slashCount += 1;
+				if (slashCount === 2) break;
+			} else {
+				slashCount = 0;
+			}
+			if (isLastEsc) isLastEsc = false;
+			else if (!isLastEsc && c === '\\') isLastEsc = true;
+		}
+		if (state === '' && lastIdx !== -1) {
+			const head = text.substring(0, lastIdx);
+			const tail = text.substring(lastIdx);
+			text = head + tail.replace(/(\S+)\s*\/\/\s*(.+)$/, '$1  // $2');  // Make the blank before the comment two blanks
+		}
+		return text;
 	}
 
 
