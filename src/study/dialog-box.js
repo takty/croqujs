@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-09
+ * @version 2020-04-14
  *
  */
 
@@ -94,6 +94,16 @@ class DialogBox {
 			html: this._formatText(text),
 			icon: type,
 			allowOutsideClick: false,
+			showClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-show',
+				icon    : 'swal2-icon-show'
+			},
+			hideClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-hide',
+				icon    : 'swal2-icon-hide'
+			}
 		});
 	}
 
