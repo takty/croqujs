@@ -25,7 +25,6 @@
     },
     "about": ["Croqujs %VERSION_MAJOR%",
         "/krō-ˈkē/",
-        "",
         "by Takuto Yanagida @ Space-Time Inc.",
         "v%VERSION%",
         "",
@@ -37,5 +36,8 @@
         "    - JSHint v2.11.0",
         "    - SweetAlert2 v9.10.11",
         "    - Tern v0.24.3",
-        "    - Inconsolata-dz v001.010"]
+        "    - Inconsolata-dz v001.010",
+        "",
+        "* \"https://ip-api.com/\" is used internally to make",
+        "<code>navigator.geolocation.getCurrentPosition</code> available."]
 }

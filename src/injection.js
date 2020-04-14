@@ -3,12 +3,14 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2020-04-14
  *
  */
 
 
 (function () {
+	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
+
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
 	const URL = window.location.href.replace(window.location.hash, '');
 
@@ -39,9 +41,13 @@
 		return true;
 	});
 
-	window.console = ((orig) => {
+
+	// -------------------------------------------------------------------------
+
+
+	function createPseudoConsole(orig) {
 		const MAX_SENT_OUTPUT_COUNT = 100;
-		const MSG_INTERVAL = 200;
+		const MSG_INTERVAL = 200;  // 200 IS THE BEST!
 
 		const outputCache = [];
 		let sendOutputTimeout = null;
@@ -69,7 +75,7 @@
 			// DO NOT MODIFY THE FOLLWING STATEMENT!
 			const cur = window.performance.now();
 			if (sendOutputTimeout && outputCache.length < MAX_SENT_OUTPUT_COUNT && cur - lastTime < MSG_INTERVAL) clearTimeout(sendOutputTimeout);
-			sendOutputTimeout = setTimeout(sendOutput, MSG_INTERVAL);  // 200 IS THE BEST!
+			sendOutputTimeout = setTimeout(sendOutput, MSG_INTERVAL);
 		};
 
 		return {
@@ -98,6 +104,48 @@
 				orig.error(...vs);
 			}
 		};
-	})(window.console);
+	}
+
+	window.console = createPseudoConsole(window.console);
+
+
+	// -------------------------------------------------------------------------
+
+
+	function createPseudoGetCurrentPosition() {
+		return function (success, error) {
+			fetch('http://ip-api.com/json/', {
+				mode       : 'cors',
+				cache      : 'no-cache',
+				credentials: 'same-origin',
+				headers    : { 'Content-Type': 'application/json; charset=utf-8', },
+				referrer   : 'no-referrer',
+			}).then(response => {
+				return response.json();
+			}).then(r => {
+				success({
+					coords: {
+						latitude        : r.lat,
+						longitude       : r.lon,
+						altitude        : null,
+						accuracy        : 0,
+						altitudeAccuracy: null,
+						heading         : null,
+						speed           : null,
+					},
+					timestamp: null,
+				})
+			}).catch(e => {
+				if (error) error({
+					code: 2,
+					message: e.message,
+				});
+			});
+		}
+	}
+
+	if (IS_ELECTRON) {
+		navigator.geolocation.getCurrentPosition = createPseudoGetCurrentPosition();
+	}
 
 })();
