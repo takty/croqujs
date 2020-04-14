@@ -78,29 +78,32 @@
 			sendOutputTimeout = setTimeout(sendOutput, MSG_INTERVAL);
 		};
 
+		const stringify = (vs) => {
+			for (let i = 0; i < vs.length; i += 1) {
+				if (typeof vs[i] === 'object') vs[i] = JSON.stringify(vs[i], null, '\t');
+			}
+			return vs.toString();
+		};
+
 		return {
 			dir: (obj) => {
-				if (typeof require === 'function') {
-					cacheOutput(require('util').inspect(obj), 'std');
-				} else {
-					cacheOutput(obj.toString(), 'std');
-				}
+				cacheOutput(JSON.stringify(obj, null, '\t'), 'std');
 				orig.dir(obj);
 			},
 			log: (...vs) => {
-				cacheOutput(vs.toString(), 'std');
+				cacheOutput(stringify(vs), 'std');
 				orig.log(...vs);
 			},
 			info: (...vs) => {
-				cacheOutput(vs.toString(), 'std');
+				cacheOutput(stringify(vs), 'std');
 				orig.info(...vs);
 			},
 			warn: (...vs) => {
-				cacheOutput(vs.toString(), 'std');
+				cacheOutput(stringify(vs), 'std');
 				orig.warn(...vs);
 			},
 			error: (...vs) => {
-				cacheOutput(vs.toString(), 'err');
+				cacheOutput(stringify(vs), 'err');
 				orig.error(...vs);
 			}
 		};

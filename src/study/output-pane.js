@@ -3,7 +3,7 @@
  * Output Pane
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-11-21
+ * @version 2020-04-14
  *
  */
 
@@ -121,7 +121,7 @@ class OutputPane {
 			const e = document.createElement('div');
 			e.className = m.type;
 			const c = (m.count > 1) ? ('<span class="count">' + m.count + '</span>') : '';
-			e.innerHTML = c + m.msg;
+			e.innerHTML = c + this._format(m.msg);
 			inner.appendChild(e);
 		}
 		this._elm.replaceChild(inner, this._elm.firstChild);
@@ -131,6 +131,12 @@ class OutputPane {
 			this._setEnabled(true);
 			this._stEnabled = null;
 		}, 200);
+	}
+
+	_format(text) {
+		text = text.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+		text = text.replace(/\n/g, '<br>');
+		return text;
 	}
 
 	_cloneLines(keptCount) {
