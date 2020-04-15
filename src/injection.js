@@ -3,14 +3,12 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-14
+ * @version 2020-04-15
  *
  */
 
 
 (function () {
-	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
-
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
 	const URL = window.location.href.replace(window.location.hash, '');
 
@@ -110,45 +108,5 @@
 	}
 
 	window.console = createPseudoConsole(window.console);
-
-
-	// -------------------------------------------------------------------------
-
-
-	function createPseudoGetCurrentPosition() {
-		return function (success, error) {
-			fetch('http://ip-api.com/json/', {
-				mode       : 'cors',
-				cache      : 'no-cache',
-				credentials: 'same-origin',
-				headers    : { 'Content-Type': 'application/json; charset=utf-8', },
-				referrer   : 'no-referrer',
-			}).then(response => {
-				return response.json();
-			}).then(r => {
-				success({
-					coords: {
-						latitude        : r.lat,
-						longitude       : r.lon,
-						altitude        : null,
-						accuracy        : 0,
-						altitudeAccuracy: null,
-						heading         : null,
-						speed           : null,
-					},
-					timestamp: null,
-				})
-			}).catch(e => {
-				if (error) error({
-					code: 2,
-					message: e.message,
-				});
-			});
-		}
-	}
-
-	if (IS_ELECTRON) {
-		navigator.geolocation.getCurrentPosition = createPseudoGetCurrentPosition();
-	}
 
 })();
