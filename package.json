@@ -40,7 +40,7 @@
     "jshint": "2.11.0",
     "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
     "moment": "^2.24.0",
-    "sweetalert2": "9.10.11",
+    "sweetalert2": "9.10.12",
     "tern": "0.24.3"
   }
 }
