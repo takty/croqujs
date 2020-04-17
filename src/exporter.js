@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-19
+ * @version 2020-04-17
  *
  */
 
@@ -352,7 +352,6 @@ class Exporter {
 		try {
 			return FS().readFileSync(filePath, 'utf-8');
 		} catch (e) {
-			console.error(e);
 			return null;
 		}
 	}
