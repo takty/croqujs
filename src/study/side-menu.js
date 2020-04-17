@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2018-12-19
+ * @version 2020-04-17
  *
  */
 
@@ -47,6 +47,9 @@ class SideMenu {
 			this._addAccelerator(mis[i]);
 		}
 		this._setShortcuts();
+
+		const ais = this._elm.querySelectorAll('*[data-alt-cmd]');
+		for (let i = 0; i < ais.length; i += 1) this._setAltCommand(ais[i]);
 	}
 
 	_setItem(mi) {
@@ -102,6 +105,15 @@ class SideMenu {
 			mi.appendChild(se);
 			se.innerText = ac;
 		}
+	}
+
+	_setAltCommand(mi) {
+		const cmd = mi.dataset.altCmd;
+		const doClose = !mi.classList.contains('stay');
+		mi.addEventListener('mouseup', (e) => {
+			e.preventDefault();
+			if (e.altKey) this._study.executeCommand(cmd, doClose);
+		});
 	}
 
 	_setShortcuts() {

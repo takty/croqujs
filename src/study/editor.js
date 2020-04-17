@@ -593,9 +593,10 @@ class Editor {
 		return this._comp;
 	}
 
-	refresh() {
+	refresh(updateCodeStructureView = false) {
 		this._comp.refresh();
 		this._updateLineNumberGutter();
+		if (updateCodeStructureView) this._updateCodeStructureView();
 	}
 
 	enabled(flag) {

@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2020-04-17
  *
  */
 
@@ -48,6 +48,18 @@ $font-console: Inconsolata, 'Hiragino Kaku Gothic ProN', Meiryo, 'Yu Gothic', Yu
 @font-face {
 	font-family: 'Inconsolata';
 	src: url('Inconsolata-dz.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'LaMono';
+	font-weight: 400;
+	src: url('LaMono-Regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'LaMono';
+	font-weight: 700;
+	src: url('LaMono-Bold.ttf') format('truetype');
 }
 
 html, body {

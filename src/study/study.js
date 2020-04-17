@@ -506,6 +506,14 @@ class Study {
 				cfg.setItem('language', 'en');
 				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
 			}
+
+			// Experimental
+			if (cmd === 'toggleLamono') {
+				const ff = this._editor.fontFamily();
+				if (ff.indexOf('LaMono') === -1) this._editor.fontFamily('LaMono, ' + this._res.fontSet);
+				else this._editor.fontFamily(this._res.fontSet);
+				setTimeout(() => { this._editor.refresh(true); }, 0);
+			}
 		}, 0);
 	}
 
