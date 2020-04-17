@@ -79,8 +79,15 @@
 		const stringify = (vs) => {
 			const ss = [];
 			for (let i = 0; i < vs.length; i += 1) {
-				if (typeof vs[i] === 'object') ss.push(JSON.stringify(vs[i], null, '\t'));
-				else ss.push(vs[i]);
+				let s = vs[i];
+				if (typeof vs[i] === 'object') {
+					s = JSON.stringify(vs[i], null, '\t');
+					if (s === '{}') {
+						const to = vs[i].toString();
+						if (to !== '[object Object]') s = to;
+					}
+				}
+				ss.push(s);
 			}
 			return ss.toString();
 		};
