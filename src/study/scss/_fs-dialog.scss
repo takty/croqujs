@@ -3,22 +3,38 @@
  * File Dialog (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-23
+ * @version 2020-04-19
  *
  */
 
 
-.file-dialog {
+.fs-dialog {
 	position: absolute;
 	top     : 0;
 	left    : 0;
 	right   : 0;
 	bottom  : 0;
+	z-index : 999;
+
+	background-color: rgba(#000, 0.4);
+}
+
+.file-dialog {
+	position: absolute;
+	top     : 5%;
+	left    : 5%;
+	right   : 5%;
+	bottom  : 5%;
 	z-index : 1000;
 
 	display       : none;
 	flex-direction: column;
-	
+
+	border       : 1px solid #777;
+	box-shadow   : 0 0 32px rgba(#000, 0.35);
+	border-radius: 4px;
+	overflow     : hidden;
+
 	background-color         : #fff;
 	font-family              : $font-ui;
 	font-size                : 14px;
@@ -79,18 +95,30 @@
 	> button + button { margin-left: 16px; }
 
 	> button {
-		&:not([disabled]) { box-shadow: 0 2px 2px rgba(#000, 0.15); }
 		min-width       : 96px;
 		padding         : 8px 16px;
 		user-select     : none;
+		transition      : 0.25s;
 
-		border          : 1px solid #ccc;
-		border-radius   : 4px;
-		background-color: #fff;
+		border          : 0;
+		border-radius   : 0.25em;
+		background-color: #b5b5b6;
+		color           : #fff;
 
 		font-family     : inherit;
 		text-align      : center;
 		line-height     : 1;
+
+		&:hover { background-color: #898989; }
+		&:focus {
+			box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.25);
+			outline: none;
+		}
+
+		&.confirm {
+			background-color: #f5a200;
+			&:hover { background-color: #f18400; }
+		}
 	}
 }
 
@@ -152,7 +180,7 @@
 
 		.new {
 			width   : 30px;
-			height  : 30px; 
+			height  : 30px;
 			position: relative;
 
 			&::before, &::after {
@@ -221,15 +249,15 @@
 
 		> * {
 			display    : table-cell;
-			white-space: nowrap; 
+			white-space: nowrap;
 			padding    : 12px 16px;
 
 			user-select: none;
 			cursor     : normal;
 		}
 		&:nth-child(2n + 1) { background-color: #f7f7f7; }
-		.name { 
-			width        : 100%; 
+		.name {
+			width        : 100%;
 			max-width    : 8rem;
 			text-overflow: ellipsis;
 			overflow     : hidden;
@@ -252,7 +280,7 @@
 
 .file-dialog-action {
 	padding         : 16px;
-	
+
 	background-color: #f7f7f7;
 	box-shadow      : 0 -1px 2px rgba(#000, 0.15);
 
@@ -266,7 +294,7 @@
 		display: none;
 		&.visible { display: block; }
 		z-index: 1;
-	
+
 		&::before {
 			content: '';
 			position: absolute;
@@ -274,7 +302,7 @@
 			left: 0;
 			right: 0;
 			bottom: 0;
-	
+
 			background-color: rgba(#000, 0.5);
 		}
 	}
