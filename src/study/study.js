@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-17
+ * @version 2020-04-19
  *
  */
 
@@ -533,6 +533,8 @@ class Study {
 			this._dialogBox.showAlert(this._res.msg['error'] + arg, 'error');
 		} else if (msg === 'error') {
 			this._addErrorMessage(arg);
+		} else if (msg === 'open_dir') {
+			this._handleOpeningDirectly(this._res.msg.confirmOpen, 'doOpenDirectly', arg);
 		}
 	}
 
@@ -594,7 +596,7 @@ class Study {
 		e.preventDefault();
 		if (e.dataTransfer.files.length > 0) {
 			const filePath = e.dataTransfer.files[0].path;
-			this._handleOpening(this._res.msg.confirmOpen, 'doFileDropped', filePath);
+			this._handleOpening(this._res.msg.confirmOpen, 'doFileDropped', filePath, USE_BROWSER_FS_DIALOG);
 		}
 	}
 
@@ -615,12 +617,12 @@ class Study {
 		this._handleServerResponse(msg, arg);
 	}
 
-	async _handleOpeningDirectly(text, method) {
+	async _handleOpeningDirectly(text, method, currentDir = null) {
 		if (this._isModified) {
 			const { value: res } = await this._dialogBox.showConfirm(text, 'warning');
 			if (!res) return;
 		}
-		const [dirPath, name] = await this._dialogBox.showOpenDialog(this._res.fileFilters, DEFAULT_EXT);
+		const [dirPath, name] = await this._dialogBox.showOpenDialog(this._res.fileFilters, DEFAULT_EXT, currentDir);
 		if (dirPath === '') return;
 
 		const [msg, arg] = await this._callServer(method, dirPath, name);

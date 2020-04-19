@@ -3,7 +3,7 @@
  * File System Dialog
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-23
+ * @version 2020-04-19
  *
  */
 
@@ -38,7 +38,7 @@ class FSDialog {
 						<select class="filter"></select>
 					</div>
 					<div class="button-row">
-						<button id="file-dialog-cancel"></button><button id="file-dialog-submit"></button>
+						<button class="confirm" id="file-dialog-submit"></button><button id="file-dialog-cancel"></button>
 					</div>
 				</div>
 				<div class="file-dialog-dialog">
@@ -104,27 +104,27 @@ class FSDialog {
 		this._selFilter.addEventListener('change', () => { this._onFilterChange(); });
 	}
 
-	async showOpenDialog() {
+	async showOpenDialog(currentDir = null) {
 		this._constructElements();
 		this._initialize();
-		const ret = await this._show('open');
+		const ret = await this._show('open', currentDir);
 		this._destructElements();
 		return ret;
 	}
 
-	async showSaveDialog() {
+	async showSaveDialog(currentDir = null) {
 		this._constructElements();
 		this._initialize();
-		const ret = await this._show('save');
+		const ret = await this._show('save', currentDir);
 		this._destructElements();
 		return ret;
 	}
 
-	async _show(type) {
+	async _show(type, currentDir = null) {
 		this._dialog.classList.add(type);
 		this._btnSubmit.textContent = this._res.label[type];
 
-		await this._fsp.initialize();
+		await this._fsp.initialize(currentDir);
 		await this._update();
 		this._dialog.classList.add('visible');
 
@@ -422,8 +422,8 @@ class IpcFSProxy extends FSProxy {
 		this._sender = sender;
 	}
 
-	async initialize() {
-		const fi = await this._sender('FS_getCurrentDirectory');
+	async initialize(currentDir = null) {
+		const fi = await this._sender('FS_getCurrentDirectory', currentDir);
 		this.setCurrentDirectory(fi);
 	}
 

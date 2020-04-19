@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-22
+ * @version 2020-04-19
  *
  */
 
@@ -179,7 +179,7 @@ class Twin {
 		return this._openFile(PATH().join(dirPath, name));
 	}
 
-	doFileDropped(path) {
+	doFileDropped(path, isHandledByRenderer) {
 		try {
 			const isDir = FS().statSync(path).isDirectory();
 			if (!isDir) return this._openFile(path);
@@ -193,7 +193,10 @@ class Twin {
 				}
 			});
 			if (fps.length === 1) return this._openFile(fps[0]);
-			if (fps.length > 1)   return this.doOpen(path);
+			if (fps.length > 1) {
+				if (isHandledByRenderer) return ['open_dir', path];
+				return this.doOpen(path);
+			}
 		} catch (e) {
 			if (e.code !== 'ENOENT' && e.code !== 'EPERM') return this._returnAlertError(e, path);
 		}
@@ -408,7 +411,8 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 
-	FS_getCurrentDirectory() {
+	FS_getCurrentDirectory(path = null) {
+		if (path) return FSR.getCurrentDirectory(path);
 		if (this._filePath) return FSR.getCurrentDirectory(PATH().dirname(this._filePath));
 		return FSR.getCurrentDirectory();
 	}
