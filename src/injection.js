@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2020-04-17
  *
  */
 
@@ -39,9 +39,13 @@
 		return true;
 	});
 
-	window.console = ((orig) => {
+
+	// -------------------------------------------------------------------------
+
+
+	function createPseudoConsole(orig) {
 		const MAX_SENT_OUTPUT_COUNT = 100;
-		const MSG_INTERVAL = 200;
+		const MSG_INTERVAL = 200;  // 200 IS THE BEST!
 
 		const outputCache = [];
 		let sendOutputTimeout = null;
@@ -69,35 +73,49 @@
 			// DO NOT MODIFY THE FOLLWING STATEMENT!
 			const cur = window.performance.now();
 			if (sendOutputTimeout && outputCache.length < MAX_SENT_OUTPUT_COUNT && cur - lastTime < MSG_INTERVAL) clearTimeout(sendOutputTimeout);
-			sendOutputTimeout = setTimeout(sendOutput, MSG_INTERVAL);  // 200 IS THE BEST!
+			sendOutputTimeout = setTimeout(sendOutput, MSG_INTERVAL);
+		};
+
+		const stringify = (vs) => {
+			const ss = [];
+			for (let i = 0; i < vs.length; i += 1) {
+				let s = vs[i];
+				if (typeof vs[i] === 'object') {
+					s = JSON.stringify(vs[i], null, '\t');
+					if (s === '{}') {
+						const to = vs[i].toString();
+						if (to !== '[object Object]') s = to;
+					}
+				}
+				ss.push(s);
+			}
+			return ss.toString();
 		};
 
 		return {
 			dir: (obj) => {
-				if (typeof require === 'function') {
-					cacheOutput(require('util').inspect(obj), 'std');
-				} else {
-					cacheOutput(obj.toString(), 'std');
-				}
+				cacheOutput(JSON.stringify(obj, null, '\t'), 'std');
 				orig.dir(obj);
 			},
 			log: (...vs) => {
-				cacheOutput(vs.toString(), 'std');
+				cacheOutput(stringify(vs), 'std');
 				orig.log(...vs);
 			},
 			info: (...vs) => {
-				cacheOutput(vs.toString(), 'std');
+				cacheOutput(stringify(vs), 'std');
 				orig.info(...vs);
 			},
 			warn: (...vs) => {
-				cacheOutput(vs.toString(), 'std');
+				cacheOutput(stringify(vs), 'std');
 				orig.warn(...vs);
 			},
 			error: (...vs) => {
-				cacheOutput(vs.toString(), 'err');
+				cacheOutput(stringify(vs), 'err');
 				orig.error(...vs);
 			}
 		};
-	})(window.console);
+	}
+
+	window.console = createPseudoConsole(window.console);
 
 })();

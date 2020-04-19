@@ -3,7 +3,7 @@
  * SweetAlert2 (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-22
+ * @version 2020-04-14
  *
  */
 
@@ -39,6 +39,12 @@
 	#swal2-content {
 		display: inline-block !important;
 		text-align: left;
+		max-width: 100%;
+
+		code {
+			font-family: $font-console;
+			font-size: 0.85rem;
+		}
 	}
 	.swal2-input {
 		font-family: $font-console;

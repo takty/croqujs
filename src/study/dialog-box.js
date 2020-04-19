@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-22
+ * @version 2020-04-14
  *
  */
 
@@ -62,7 +62,7 @@ class DialogBox {
 		this._disableBackground();
 		return Swal.fire({
 			title: '',
-			type: type,
+			icon: type,
 			allowOutsideClick: false,
 			confirmButtonText: 'OK',
 			showCancelButton: true,
@@ -79,6 +79,16 @@ class DialogBox {
 					document.getElementById('swal-checkbox').checked
 				];
 			},
+			showClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-show',
+				icon    : 'swal2-icon-show'
+			},
+			hideClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-hide',
+				icon    : 'swal2-icon-hide'
+			}
 		}).then((res) => {
 			this._enableBackground();
 			return res;
@@ -117,8 +127,18 @@ class DialogBox {
 		return Object.assign(opt, {
 			title: '',
 			html: this._formatText(text),
-			type: type,
+			icon: type,
 			allowOutsideClick: false,
+			showClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-show',
+				icon    : 'swal2-icon-show'
+			},
+			hideClass: {
+				popup   : '',
+				backdrop: 'swal2-backdrop-hide',
+				icon    : 'swal2-icon-hide'
+			}
 		});
 	}
 

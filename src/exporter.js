@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-19
+ * @version 2020-04-17
  *
  */
 
@@ -305,6 +305,7 @@ class Exporter {
 		try {
 			cont = FS().readFileSync(from, 'utf-8');
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 		try {
@@ -315,8 +316,12 @@ class Exporter {
 				try {
 					FS().writeFileSync(to, cont);
 					return true;
-				} catch (e1) {}
+				} catch (e1) {
+					console.error(e1);
+					return false;
+				}
 			}
+			console.error(e);
 			return false;
 		}
 		return true;
@@ -326,17 +331,21 @@ class Exporter {
 		const nd = PATH().dirname(dirPath);
 		try {
 			FS().mkdirSync(nd);
-			return true;
 		} catch (e) {
 			if (e.code === 'ENOENT') {
 				this._makeParentDir(nd);
 				try {
 					FS().mkdirSync(nd);
 					return true;
-				} catch(e1) {}
+				} catch(e1) {
+					console.error(e1);
+					return false;
+				}
 			}
+			console.error(e);
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	_readFile(filePath) {

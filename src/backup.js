@@ -3,7 +3,7 @@
  * Backup (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-01-14
+ * @version 2020-04-14
  *
  */
 
@@ -46,6 +46,7 @@ class Backup {
 			const to = PATH().join(backupDir, name + this._lastTimeStampStr + ext);
 			FS().writeFile(to, text, (err) => { if (err) console.log(err); });
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 		this._digest = digest;
@@ -66,6 +67,7 @@ class Backup {
 			const to = PATH().join(backupDir, name + this._lastTimeStampStr + '.log');
 			FS().writeFile(to, log, (err) => { if (err) console.log(err); });
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 		return true;
@@ -89,6 +91,7 @@ class Backup {
 			const to = PATH().join(backupDir, name + this._lastTimeStampStr + ext);
 			FS().writeFileSync(to, oldText);
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 		this._digest = digest;
