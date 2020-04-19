@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-15
+ * @version 2020-04-17
  *
  */
 
@@ -79,10 +79,19 @@
 		};
 
 		const stringify = (vs) => {
+			const ss = [];
 			for (let i = 0; i < vs.length; i += 1) {
-				if (typeof vs[i] === 'object') vs[i] = JSON.stringify(vs[i], null, '\t');
+				let s = vs[i];
+				if (typeof vs[i] === 'object') {
+					s = JSON.stringify(vs[i], null, '\t');
+					if (s === '{}') {
+						const to = vs[i].toString();
+						if (to !== '[object Object]') s = to;
+					}
+				}
+				ss.push(s);
 			}
-			return vs.toString();
+			return ss.toString();
 		};
 
 		return {

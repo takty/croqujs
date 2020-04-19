@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-14
+ * @version 2020-04-17
  *
  */
 
@@ -131,7 +131,6 @@ class Study {
 			}
 			analyze();
 		});
-		// ec.on('drop', (cm, e) => { this._onFileDropped(e); });
 		ec.on('focus', () => { this._sideMenu.close(); });
 		ec.on('copy', (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
 		ec.on('cut',  (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
@@ -506,6 +505,14 @@ class Study {
 			} else if (cmd === 'setLanguageEn') {
 				cfg.setItem('language', 'en');
 				this._dialogBox.showAlert(this._res.msg.alertNextTime, 'info');
+			}
+
+			// Experimental
+			if (cmd === 'toggleLamono') {
+				const ff = this._editor.fontFamily();
+				if (ff.indexOf('LaMono') === -1) this._editor.fontFamily('LaMono, ' + this._res.fontSet);
+				else this._editor.fontFamily(this._res.fontSet);
+				setTimeout(() => { this._editor.refresh(true); }, 0);
 			}
 		}, 0);
 	}

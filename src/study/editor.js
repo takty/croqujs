@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-14
+ * @version 2020-04-17
  *
  */
 
@@ -511,9 +511,10 @@ class Editor {
 
 		const bgn = { line: line, ch: 0 };
 		const end = { line: line, ch: str.length };
+		const org = doc.getRange(bgn, end);
 
-		const [text, doIndent] = this._doFormat(doc.getRange(bgn, end))
-		if (text === false) return;
+		const [text, doIndent] = this._doFormat(org)
+		if (text === false || text === org) return;
 		if (1 < text.split('\n').length) return;
 		this._comp.operation(() => {
 			doc.replaceRange(text, bgn, end);
@@ -592,9 +593,10 @@ class Editor {
 		return this._comp;
 	}
 
-	refresh() {
+	refresh(updateCodeStructureView = false) {
 		this._comp.refresh();
 		this._updateLineNumberGutter();
+		if (updateCodeStructureView) this._updateCodeStructureView();
 	}
 
 	enabled(flag) {
