@@ -52,8 +52,6 @@ class Twin {
 		promiseIpc.on('callServer_' + this._id, ([msg, ...args], ev) => { return this[msg](...args); });
 
 		this._createStudyWindow();
-		// this._studyWin.show();
-		// this._studyWin.webContents.toggleDevTools();
 	}
 
 	_createStudyWindow() {

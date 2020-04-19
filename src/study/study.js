@@ -36,10 +36,6 @@ class Study {
 			e.returnValue = this._res.msg.confirmExit;
 		}
 
-		// window.addEventListener('keydown',  (e) => {
-		// 	if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) e.preventDefault();
-		// });
-
 		this._loadPlugin(this._lang);
 		this._initFileDrop();
 		this._initialize();
