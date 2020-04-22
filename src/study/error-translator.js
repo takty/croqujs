@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-13
+ * @version 2020-04-22
  *
  */
 
@@ -25,9 +25,15 @@ class ErrorTranslator {
 
 	translateJa(msg) {
 		if (msg.startsWith('Uncaught ReferenceError')) {
-			const m = msg.substr(msg.indexOf(': ') + 2);
-			const t = m.replace(' is not defined', '');
-			return '「' + t + '」は定義されていません。打ち間違えていませんか？<div>（参照エラー）' + msg + '</div>';
+			let m = msg.substr(msg.indexOf(': ') + 2);
+			if (m.endsWith(' is not defined')) {
+				const t = m.replace(' is not defined', '');
+				m = '「' + t + '」は定義されていません。打ち間違えていませんか？';
+			} else if (m.startsWith('Cannot access \'') && m.endsWith('\' before initialization')) {
+				const t = m.replace('Cannot access \'', '').replace('\' before initialization', '');
+				m = '「' + t + '」に何も値をセットしないで使おうとしています。';
+			}
+			return m + '<div>（参照エラー）' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught RangeError')) {
 			let m = msg.substr(msg.indexOf(': ') + 2);
@@ -62,7 +68,7 @@ class ErrorTranslator {
 			} else if (m === 'Illegal return statement') {
 				m = 'return文がここにあるのはおかしいです。';
 			} else if (m === 'Missing initializer in const declaration') {
-				m = '定数の宣言に値がありません。';
+				m = '定数を作ろうとしているのに，何も値をセットしていません。';
 			} else if (m.startsWith('Identifier \'') && m.endsWith('\' has already been declared')) {
 				const t = m.replace('Identifier \'', '').replace('\' has already been declared', '');
 				m = 'すでに付けられている名前「' + t + '」をもう一度使おうとしています。';
