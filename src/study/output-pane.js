@@ -3,7 +3,7 @@
  * Output Pane
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-14
+ * @version 2020-04-22
  *
  */
 
@@ -25,6 +25,9 @@ class OutputPane {
 		this._stOutput = null;
 		this._stEnabled = null;
 
+		this._errorCount = 0;
+		this._clickEvents = [];
+
 		const con = new Worker('console.js');
 		con.addEventListener('message', (e) => { this._addMessages(e.data); }, false);
 		this._console = (type, msgs = false) => { con.postMessage(JSON.stringify({ type, msgs })); };
@@ -32,7 +35,13 @@ class OutputPane {
 
 	initialize() {
 		this._elm.innerHTML = '<div></div>';
+		this._errorCount = 0;
+		this._clickEvents = [];
 		this._setEnabled(false);
+	}
+
+	getErrorCount() {
+		return this._errorCount;
 	}
 
 	toggle() {
@@ -51,7 +60,7 @@ class OutputPane {
 		this._console('output', msgs);
 	}
 
-	setError(msg, className, onClick) {
+	addError(msg, className, onClick) {
 		const e = document.createElement('div');
 		e.className = className;
 		if (msg.indexOf('<') === -1) {
@@ -62,11 +71,14 @@ class OutputPane {
 		if (onClick) {
 			e.addEventListener('click', onClick);
 			e.style.cursor = 'pointer';
+			e.id = 'output-pane-' + this._errorCount;
+			this._clickEvents[e.id] = onClick;
 		}
 		const inner = this._cloneLines(MAX_SIZE - 1);
 		this._elm.replaceChild(inner, this._elm.firstChild);
 		this._elm.firstChild.appendChild(e);
 		this._setEnabled(true);
+		this._errorCount += 1;
 	}
 
 	_addMessages(msgs) {
@@ -145,6 +157,12 @@ class OutputPane {
 		const removedSize = Math.min(size, size - keptCount);
 		for (let i = 0; i < removedSize; i += 1) {
 			inner.removeChild(inner.firstChild);
+		}
+		for (let i = 0; i < inner.children.length; i += 1) {
+			const cn = inner.children[i];
+			if (!cn.id) continue;
+			const e = this._clickEvents[cn.id];
+			if (e) cn.addEventListener('click', e);
 		}
 		return inner;
 	}
