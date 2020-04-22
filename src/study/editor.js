@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-17
+ * @version 2020-04-22
  *
  */
 
@@ -87,6 +87,7 @@ class Editor {
 				return e;
 			},
 			historyEventDelay: 200,
+			phrases: this._owner._res.editorPhrase,
 		};
 	}
 

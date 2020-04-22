@@ -72,5 +72,6 @@
         {"name": "JavaScript", "extensions": ["js"]},
         {"name": "All Files", "extensions": ["*"]}
     ],
-    "readOnly": "Read Only"
+    "readOnly": "Read Only",
+    "editorPhrase": {}
 }
