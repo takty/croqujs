@@ -31,7 +31,7 @@ class ErrorTranslator {
 				m = '「' + t + '」が何なのか分かりません。打ち間違えていませんか？';
 			} else if (m.startsWith('Cannot access \'') && m.endsWith('\' before initialization')) {
 				const t = m.replace('Cannot access \'', '').replace('\' before initialization', '');
-				m = '変数か定数「' + t + '」には値が一度もセットされていないのに、使おうとしています。打つ場所を間違えていませんか？';
+				m = '変数か定数「' + t + '」に値を一度もセットしていないのに、使おうとしています。打つ場所を間違えていませんか？';
 			} else if (m === 'invalid assignment left-hand side') {
 				m = '「=」の左側が正しくありません。打ち間違えていませんか？';
 			}
