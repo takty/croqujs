@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-10
+ * @version 2020-04-22
  *
  */
 
@@ -450,6 +450,17 @@ div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
 	opacity: 0;
 }
 
-.CodeMirror-dialog input {
-	font-family: $font-console;
+.CodeMirror-dialog {
+	z-index: 999+1;
+	background-color: $color-window;
+	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 2px rgba(#000, 0.25);
+
+	font-family: $font-ui;
+
+	button {
+		font-family: inherit;
+	}
+	input {
+		font-family: $font-console;
+	}
 }
