@@ -35,7 +35,7 @@
     "gulp-plumber": "^1.2.1",
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.0.0",
-    "gulp-sass": "^4.0.2",
+    "gulp-sass": "^4.1.0",
     "js-beautify": "1.11.0",
     "jshint": "2.11.0",
     "jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
