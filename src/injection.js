@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-17
+ * @version 2020-04-26
  *
  */
 
@@ -77,19 +77,48 @@
 		};
 
 		const stringify = (vs) => {
-			const ss = [];
-			for (let i = 0; i < vs.length; i += 1) {
-				let s = vs[i];
-				if (typeof vs[i] === 'object') {
-					s = JSON.stringify(vs[i], null, '\t');
-					if (s === '{}') {
-						const to = vs[i].toString();
-						if (to !== '[object Object]') s = to;
-					}
-				}
-				ss.push(s);
+			return vs.map((e) => { return toStr(e, ''); }).join(', ');
+		};
+
+		const toStr = (s, sp) => {
+			const ns = sp + '\t';
+			if (s === null)               return 'null';
+			if (typeof s === 'undefined') return 'undefined';
+			if (typeof s === 'boolean')   return s.toString();
+			if (typeof s === 'function')  return s.toString();
+			if (typeof s === 'symbol')    return s.toString();
+			if (typeof s === 'string')    return `"${s}"`;
+			if (typeof s === 'number') {
+				if (Number.isNaN(s))     return 'NaN';
+				if (!Number.isFinite(s)) return 'Infinity';
+				return JSON.stringify(s);
 			}
-			return ss.toString();
+			if (Array.isArray(s)) return '[' + s.map((e) => { return toStr(e, sp); }).join(', ') + ']';
+			if (s instanceof Int8Array)         return '[' + s.join(', ') + ']';
+			if (s instanceof Uint8Array)        return '[' + s.join(', ') + ']';
+			if (s instanceof Uint8ClampedArray) return '[' + s.join(', ') + ']';
+			if (s instanceof Int16Array)        return '[' + s.join(', ') + ']';
+			if (s instanceof Uint16Array)       return '[' + s.join(', ') + ']';
+			if (s instanceof Int32Array)        return '[' + s.join(', ') + ']';
+			if (s instanceof Uint32Array)       return '[' + s.join(', ') + ']';
+			if (s instanceof Float32Array)      return '[' + s.join(', ') + ']';
+			if (s instanceof Float64Array)      return '[' + s.join(', ') + ']';
+			if (s instanceof Set || s instanceof WeakSet) {
+				const vs = [];
+				for (let val of s) vs.push(ns + toStr(val, ns) + ',\n');
+				return `{\n` + vs.join('') + `${sp}}`;
+			}
+			if (s instanceof Map || s instanceof WeakMap) {
+				const vs = [];
+				for (let [key, val] of s) vs.push(ns + toStr(key, ns) + ': ' + toStr(val, ns) + ',\n');
+				return `{\n` + vs.join('') + `${sp}}`;
+			}
+			if (typeof s === 'object') {
+				const vs = [];
+				for (let key in s) vs.push(ns + toStr(key, ns) + ': ' + toStr(s[key], ns) + ',\n');
+				if (vs.length) return `{\n` + vs.join('') + `${sp}}`;
+			}
+			return s.toString();
 		};
 
 		return {
