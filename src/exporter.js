@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-17
+ * @version 2020-04-26
  *
  */
 
@@ -125,12 +125,14 @@ class Exporter {
 					pushTag(destFn);
 				} else {
 					const p = dec;
+					let q = dec;
 					if (!p.startsWith('http')) {
-						let res = this._copyFile(PATH().join(bp, p), PATH().join(dirPath, p));
-						if (!res) res = this._copyFile(PATH().join(__dirname, EXP_LIB_DIR, p), PATH().join(dirPath, p));
+						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(PATH().sep);
+						let res = this._copyFile(PATH().join(bp, p), PATH().join(dirPath, q));
+						if (!res) res = this._copyFile(PATH().join(__dirname, EXP_LIB_DIR, p), PATH().join(dirPath, q));
 						if (!res) return [false, p];
 					}
-					pushTag(p);
+					pushTag(q);
 				}
 			}
 			title = PATH().basename(filePath, '.js');
