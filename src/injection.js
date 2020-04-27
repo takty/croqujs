@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-17
+ * @version 2020-04-27
  *
  */
 
@@ -13,6 +13,8 @@
 
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
 	const URL = window.location.href.replace(window.location.hash, '');
+
+	const afterPermitted = {};
 
 	window.addEventListener('storage', (e) => {
 		if ('injection_' + ID !== e.key) return;
@@ -24,6 +26,8 @@
 			document.body.scrollTop = 0;
 		} else if (ma.message === 'window-fullscreen-left') {
 			document.body.style.overflow = 'visible';
+		} else if (ma.message === 'permission') {
+			if (afterPermitted[ma.params]) afterPermitted[ma.params]();
 		}
 	});
 
@@ -126,34 +130,39 @@
 
 	function createPseudoGetCurrentPosition() {
 		return function (success, error) {
-			fetch('http://ip-api.com/json/', {
-				mode       : 'cors',
-				cache      : 'no-cache',
-				credentials: 'same-origin',
-				headers    : { 'Content-Type': 'application/json; charset=utf-8', },
-				referrer   : 'no-referrer',
-			}).then(response => {
-				return response.json();
-			}).then(r => {
-				success({
-					coords: {
-						latitude        : r.lat,
-						longitude       : r.lon,
-						altitude        : null,
-						accuracy        : 0,
-						altitudeAccuracy: null,
-						heading         : null,
-						speed           : null,
-					},
-					timestamp: null,
-				})
-			}).catch(e => {
-				if (error) error({
-					code: 2,
-					message: e.message,
-				});
-			});
+			afterPermitted['geolocation'] = () => { actualGetCurrentPosition(success, error); };
+			window.localStorage.setItem('study_' + ID, JSON.stringify({ message: 'permission', params: 'geolocation' }));
 		}
+	}
+
+	function actualGetCurrentPosition(success, error) {
+		fetch('https://laccolla.com/api/geolocation/v1/', {
+			mode       : 'cors',
+			cache      : 'no-cache',
+			credentials: 'same-origin',
+			headers    : { 'Content-Type': 'application/json; charset=utf-8', },
+			referrer   : 'no-referrer',
+		}).then(response => {
+			return response.json();
+		}).then(r => {
+			success({
+				coords: {
+					latitude        : r.lat,
+					longitude       : r.lon,
+					altitude        : null,
+					accuracy        : 0,
+					altitudeAccuracy: null,
+					heading         : null,
+					speed           : null,
+				},
+				timestamp: null,
+			})
+		}).catch(e => {
+			if (error) error({
+				code: 2,
+				message: e.message,
+			});
+		});
 	}
 
 	if (IS_ELECTRON) {

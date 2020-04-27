@@ -58,7 +58,10 @@
         "cannotReadLibrary": "ファイル「%s」を読みこめませんでした。",
         "copyingAsImage": "画像としてコピー中...",
         "copiedAsImage": "画像としてコピーしました。",
-        "openFile": "ファイルを開きます。"
+        "openFile": "ファイルを開きます。",
+        "permission": {
+            "geolocation": "Croqujsに位置情報の利用を許可しますか？"
+        }
     },
     "btn": {
         "cancel": "キャンセル"
