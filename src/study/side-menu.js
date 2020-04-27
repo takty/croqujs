@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-17
+ * @version 2020-04-27
  *
  */
 
@@ -124,6 +124,9 @@ class SideMenu {
 			if (e.shiftKey) pks.push('shift');
 			pks.push(this._convertKey(e.key));
 			const ac = pks.sort().join('+');
+			if (this.IS_MAC && ac === 'c+cc' && !this._study._editor._comp.hasFocus()) {
+				return;  // for copying text in output pane on Mac
+			}
 			if (this._accs[ac]) {
 				e.preventDefault();
 				this._accs[ac]();
