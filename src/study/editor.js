@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-22
+ * @version 2020-04-30
  *
  */
 
@@ -561,7 +561,7 @@ class Editor {
 
 		for (let i = 0; i < text.length; i += 1) {
 			const c = text[i];
-			if (!isLastEsc && (c === "'" || c === '"')) {
+			if (!isLastEsc && (c === "'" || c === '"' || c === '`')) {
 				if (state === '') {
 					state = c;
 					slashCount = 0;
