@@ -3,7 +3,7 @@
  * Side Menu Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-27
+ * @version 2020-04-30
  *
  */
 
@@ -22,7 +22,7 @@ $menu-padding-v: 10px;
 	background-color: $color-window;
 	box-shadow: 0 2px 2px rgba(#000, 0.15), 2px 2px 2px rgba(#000, 0.25);
 
-	font-size: 15px;
+	font-size: 14px;
 	line-height: 1;
 	font-family: $font-ui;
 	-webkit-text-stroke-width: 0.1px;
@@ -104,7 +104,7 @@ $menu-padding-v: 10px;
 				> li.icon {
 					max-width: 28px;
 					max-height: 28px;
-					padding: 4px 6px;
+					padding: 3px 6px;
 
 					img {
 						width: 28px;
