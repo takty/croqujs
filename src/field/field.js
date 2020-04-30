@@ -3,7 +3,7 @@
  * Field (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-03-28
+ * @version 2020-04-30
  *
  */
 
@@ -18,16 +18,19 @@ class Field {
 
 	constructor() {
 		[this._id, ] = window.location.hash.replace('#', '').split(',');
+		this._msg_id = 'field_' + this._id;
 		this._winstate = new WinState(window, 'winstate_field');
 
 		this._container = document.createElement('div');
 		document.body.appendChild(this._container);
 
 		window.ondragover = window.ondrop = (e) => {e.preventDefault(); return false;};
-		window.addEventListener('storage', (e) => {
-			if ('field_' + this._id !== e.key) return;
-			window.localStorage.removeItem(e.key);
-			const ma = JSON.parse(e.newValue);
+		window.addEventListener('storage', () => {
+			const v = window.localStorage.getItem(this._msg_id);
+			if (!v) return;
+			window.localStorage.removeItem(this._msg_id);
+			const ma = JSON.parse(v);
+
 			if (ma.message === 'callFieldMethod' && this[ma.params.method]) {
 				this[ma.params.method](...ma.params.args);
 			}

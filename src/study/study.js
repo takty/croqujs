@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-27
+ * @version 2020-04-30
  *
  */
 
@@ -199,16 +199,19 @@ class Study {
 	}
 
 	_initFieldConnection() {
-		window.addEventListener('storage', (e) => {
-			if ('study_' + this._id !== e.key) return;
-			window.localStorage.removeItem(e.key);
-			const ma = JSON.parse(e.newValue);
+		const msg_id = 'study_' + this._id;
+		window.addEventListener('storage', () => {
+			const v = window.localStorage.getItem(msg_id);
+			if (!v) return;
+			window.localStorage.removeItem(msg_id);
+			const ma = JSON.parse(v);
+
 			if (ma.message === 'error') {
 				this._notifyServer('onStudyErrorOccurred', ma.params);
 				this._addErrorMessage(ma.params);
 			} else if (ma.message === 'output') {
 				this._outputPane.addOutput(ma.params);
-			} else if (ma.message === 'permission') {
+			} else if (ma.message === 'requestPermission') {
 				this._permissionHandling(ma.params);
 			}
 		});

@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-27
+ * @version 2020-04-30
  *
  */
 
@@ -12,14 +12,16 @@
 	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
 
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
+	const MSG_ID = 'injection_' + ID;
 	const URL = window.location.href.replace(window.location.hash, '');
 
 	const afterPermitted = {};
 
-	window.addEventListener('storage', (e) => {
-		if ('injection_' + ID !== e.key) return;
-		window.localStorage.removeItem(e.key);
-		const ma = JSON.parse(e.newValue);
+	window.addEventListener('storage', () => {
+		const v = window.localStorage.getItem(MSG_ID);
+		if (!v) return;
+		window.localStorage.removeItem(MSG_ID);
+		const ma = JSON.parse(v);
 
 		if (ma.message === 'window-fullscreen-entered') {
 			document.body.style.overflow = 'hidden';
@@ -160,7 +162,7 @@
 	function createPseudoGetCurrentPosition() {
 		return function (success, error) {
 			afterPermitted['geolocation'] = () => { actualGetCurrentPosition(success, error); };
-			window.localStorage.setItem('study_' + ID, JSON.stringify({ message: 'permission', params: 'geolocation' }));
+			window.localStorage.setItem('study_' + ID, JSON.stringify({ message: 'requestPermission', params: 'geolocation' }));
 		}
 	}
 
@@ -187,10 +189,7 @@
 				timestamp: null,
 			})
 		}).catch(e => {
-			if (error) error({
-				code: 2,
-				message: e.message,
-			});
+			if (error) error({ code: 2, message: e.message });
 		});
 	}
 
