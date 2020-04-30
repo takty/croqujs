@@ -3,7 +3,7 @@
  * Config
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2020-04-30
  *
  */
 
@@ -13,7 +13,7 @@
 
 class Config {
 
-	constructor(defaultConf = {}, key = 'config') {
+	constructor(defaultConf = {}, key = '$config') {
 		this._lsKey       = key;
 		this._defaultConf = defaultConf;
 		this._listeners   = [];

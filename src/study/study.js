@@ -21,7 +21,7 @@ class Study {
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
 
-		this._winstate = new WinState(window, 'winstate_study');
+		this._winstate = new WinState(window, '$winstate_study');
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
 		this._config.addEventListener((cfg) => this._configUpdated(cfg));
 		this._lang = this._config.getItem('language', 'ja');
@@ -32,6 +32,7 @@ class Study {
 			if (!this._isModified) return;
 			e.preventDefault();
 			e.returnValue = this._res.msg.confirmExit;
+			this._cleanLocalStorage();
 		}
 
 		window.addEventListener('keydown',  (e) => {
@@ -41,6 +42,14 @@ class Study {
 		this._loadPlugin(this._lang);
 		this._initFileDrop();
 		this._initialize();
+	}
+
+	_cleanLocalStorage() {
+		const keys = [];
+		for (let i = 0; i < window.localStorage.length; i += 1) keys.push(window.localStorage.key(i));
+		for (let key of keys) {
+			if (key[0] !== '$') window.localStorage.removeItem(key);
+		}
 	}
 
 	_initFileDrop() {
@@ -199,7 +208,7 @@ class Study {
 	}
 
 	_initFieldConnection() {
-		const msg_id = 'study_' + this._id;
+		const msg_id = '#study_' + this._id;
 		window.addEventListener('storage', () => {
 			const v = window.localStorage.getItem(msg_id);
 			if (!v) return;
@@ -223,7 +232,7 @@ class Study {
 			if (!res) return;
 			this._permissions[type] = true;
 		}
-		window.localStorage.setItem('injection_' + this._id, JSON.stringify({ message: 'permission', params: type }));
+		window.localStorage.setItem('#injection_' + this._id, JSON.stringify({ message: 'permission', params: type }));
 	}
 
 
@@ -239,7 +248,7 @@ class Study {
 	}
 
 	_callField(method, ...args) {
-		window.localStorage.setItem('field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
+		window.localStorage.setItem('#field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
 	}
 
 
@@ -400,7 +409,7 @@ class Study {
 		this._callField('alignWindow', x + w, y, w, h);
 
 		const state = { x: x + w, y: y, width: w, height: h };
-		window.localStorage.setItem('winstate_field', JSON.stringify(state));
+		window.localStorage.setItem('$winstate_field', JSON.stringify(state));
 	}
 
 	_cmdCopyAsImage() {

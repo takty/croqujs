@@ -18,8 +18,8 @@ class Field {
 
 	constructor() {
 		[this._id, ] = window.location.hash.replace('#', '').split(',');
-		this._msg_id = 'field_' + this._id;
-		this._winstate = new WinState(window, 'winstate_field');
+		this._msg_id = '#field_' + this._id;
+		this._winstate = new WinState(window, '$winstate_field');
 
 		this._container = document.createElement('div');
 		document.body.appendChild(this._container);
@@ -122,14 +122,14 @@ class Field {
 		if (this._isFullscreenEnabled) return;
 		this._isFullscreenEnabled = true;
 		if (!this._frame) return;
-		window.localStorage.setItem('injection_' + this._id, JSON.stringify({ message: 'window-fullscreen-entered' }));
+		window.localStorage.setItem('#injection_' + this._id, JSON.stringify({ message: 'window-fullscreen-entered' }));
 	}
 
 	onFullscreenLeft() {
 		if (!this._isFullscreenEnabled) return;
 		this._isFullscreenEnabled = false;
 		if (!this._frame) return;
-		window.localStorage.setItem('injection_' + this._id, JSON.stringify({ message: 'window-fullscreen-left' }));
+		window.localStorage.setItem('#injection_' + this._id, JSON.stringify({ message: 'window-fullscreen-left' }));
 	}
 
 }

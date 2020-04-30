@@ -12,7 +12,7 @@
 	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
 
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
-	const MSG_ID = 'injection_' + ID;
+	const MSG_ID = '#injection_' + ID;
 	const URL = window.location.href.replace(window.location.hash, '');
 
 	const afterPermitted = {};
@@ -43,7 +43,7 @@
 		const base = URL.replace('index.html', '');
 		info.fileName = info.url ? info.url.replace(base, '') : '';
 
-		window.localStorage.setItem('study_' + ID, JSON.stringify({ message: 'error', params: info }));
+		window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'error', params: info }));
 		return true;
 	});
 
@@ -63,7 +63,7 @@
 			const sub = outputCache.slice(Math.max(0, outputCache.length - MAX_SENT_OUTPUT_COUNT));
 			outputCache.length = 0;  // Clear old outputs after sending the newest MAX_SENT_OUTPUT_COUNT lines.
 			sendOutputTimeout = null;
-			window.localStorage.setItem('study_' + ID, JSON.stringify({ message: 'output', params: sub }));
+			window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'output', params: sub }));
 			lastTime = window.performance.now();
 		};
 
@@ -162,7 +162,7 @@
 	function createPseudoGetCurrentPosition() {
 		return function (success, error) {
 			afterPermitted['geolocation'] = () => { actualGetCurrentPosition(success, error); };
-			window.localStorage.setItem('study_' + ID, JSON.stringify({ message: 'requestPermission', params: 'geolocation' }));
+			window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'requestPermission', params: 'geolocation' }));
 		}
 	}
 
