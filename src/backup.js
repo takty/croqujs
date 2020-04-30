@@ -3,7 +3,7 @@
  * Backup (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-14
+ * @version 2020-04-30
  *
  */
 
@@ -58,7 +58,7 @@ class Backup {
 
 		this.backupText(text);
 
-		const log  = JSON.stringify(info);
+		const log  = JSON.stringify(info, null, '\t');
 		const ext  = PATH().extname(this._filePath);
 		const name = PATH().basename(this._filePath, ext);
 
