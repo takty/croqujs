@@ -1,7 +1,9 @@
 'use strict';
 
+const getBranchName = require('current-git-branch');
+const BRANCH_NAME = getBranchName();
+
 const REP_VERSION_MAJOR = '%VERSION_MAJOR%';
-const REP_VERSION_MINOR = '%VERSION_MINOR%';
 const REP_VERSION       = '%VERSION%';
 
 const fs       = require('fs-extra');
@@ -14,7 +16,7 @@ const config = require('./src/package.json');
 const moment = require('moment');
 
 const VERSION_MAJOR = config['version'].split('.')[0];
-const VERSION_MINOR = moment().format('YYMM.DD');
+const VERSION_MINOR = moment().format((BRANCH_NAME === 'master') ? 'YY.MM-D' : 'YY.MM-[dev]D');
 const VERSION       = VERSION_MAJOR + '.' + VERSION_MINOR;
 
 const PATH_STUDY_LIB = './app/study/lib/';
@@ -75,13 +77,20 @@ gulp.task('copy-src', (done) => {
 
 gulp.task('copy', gulp.series('copy-src', 'copy-lib'));
 
-gulp.task('version', () => {
+gulp.task('version-package', () => {
+	return gulp.src(['./src/package.json'])
+		.pipe($.jsonEditor({ 'version': VERSION }))
+		.pipe(gulp.dest('app'));
+});
+
+gulp.task('version-string', () => {
 	return gulp.src(['./src/study/study.html', './src/study/res/resource.json'], { base: './src' })
-		.pipe($.replace(REP_VERSION_MINOR, VERSION_MINOR))
 		.pipe($.replace(REP_VERSION_MAJOR, VERSION_MAJOR))
 		.pipe($.replace(REP_VERSION, VERSION))
 		.pipe(gulp.dest('app'));
 });
+
+gulp.task('version', gulp.series('version-package', 'version-string'));
 
 gulp.task('sass', () => {
 	return gulp.src(['src/**/scss/**/[^_]*.scss'])
