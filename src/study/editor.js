@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-30
+ * @version 2020-05-05
  *
  */
 
@@ -582,6 +582,8 @@ class Editor {
 			const head = text.substring(0, lastIdx);
 			const tail = text.substring(lastIdx);
 			text = head + tail.replace(/(\S+)\s*\/\/\s*(.+)$/, '$1  // $2');  // Make the blank before the comment two blanks
+		} else {
+			text = text.replace(/(\S+)\s*\/\//m, '$1  //');  // Make the blank before the comment two blanks
 		}
 		return text;
 	}
