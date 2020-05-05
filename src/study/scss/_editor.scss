@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-22
+ * @version 2020-05-05
  *
  */
 
@@ -311,7 +311,7 @@
 // Laccolla Styles for Used Addons ---------------------------------------------
 
 
-div.CodeMirror span.CodeMirror-matchingbracket {
+div.CodeMirror span.CodeMirror-matchingbracket:not(.cm-comment) {
 	color: inherit;
 	font-weight: bold;
 
@@ -330,7 +330,7 @@ div.CodeMirror span.CodeMirror-matchingbracket {
 	}
 }
 
-div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
+div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket:not(.cm-comment) {
 	&::before {
 		z-index: -1;
 		top    : 0;
@@ -342,6 +342,10 @@ div.CodeMirror .CodeMirror-activeline .CodeMirror-matchingbracket {
 		border: none;
 		background-color: rgba($L-Yellow, 0.65);
 	}
+}
+
+div.CodeMirror span.CodeMirror-matchingbracket.cm-comment {
+	color: $L-Gray;
 }
 
 .CodeMirror-focused .CodeMirror-activeline-background {
