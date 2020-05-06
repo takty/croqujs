@@ -16,7 +16,7 @@ const config = require('./src/package.json');
 const moment = require('moment');
 
 const VERSION_MAJOR = config['version'].split('.')[0];
-const VERSION_MINOR = moment().format((BRANCH_NAME === 'master') ? 'YY.MM-D' : 'YY.MM-[dev]D');
+const VERSION_MINOR = moment().format((BRANCH_NAME === 'master') ? 'YY.M-D' : 'YY.M-[dev]D');
 const VERSION       = VERSION_MAJOR + '.' + VERSION_MINOR;
 
 const PATH_STUDY_LIB = './app/study/lib/';

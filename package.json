@@ -18,7 +18,9 @@
   "license": "MIT",
   "homepage": "https://github.com/takty/croqujs#readme",
   "dependencies": {
-    "electron-promise-ipc": "^2.1.0"
+    "electron-log": "^4.1.2",
+    "electron-promise-ipc": "^2.1.0",
+    "electron-updater": "^4.3.1"
   },
   "devDependencies": {
     "acorn": "7.1.1",

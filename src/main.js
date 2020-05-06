@@ -3,7 +3,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-09-03
+ * @version 2020-05-06
  *
  */
 
@@ -16,6 +16,8 @@ const require_ = (path) => { let r; return () => { return r || (r = require(path
 const FS   = require_('fs');
 const PROC = require_('process');
 const Twin = require('./twin.js');
+
+require('./auto-updater');
 
 
 class Main {
