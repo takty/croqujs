@@ -16,6 +16,7 @@ const log = require('electron-log');
 
 log.transports.file.level = 'info';
 autoUpdater.logger = log;
+autoUpdater.allowPrerelease = ('%VERSION%'.match(/-\D/) !== null);
 
 log.info('App starting...');
 function logInfo(str) {

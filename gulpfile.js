@@ -84,7 +84,11 @@ gulp.task('version-package', () => {
 });
 
 gulp.task('version-string', () => {
-	return gulp.src(['./src/study/study.html', './src/study/res/resource.json'], { base: './src' })
+	return gulp.src([
+		'./src/study/study.html',
+		'./src/study/res/resource.json',
+		'./src/auto-updater.js'
+	], { base: './src' })
 		.pipe($.replace(REP_VERSION_MAJOR, VERSION_MAJOR))
 		.pipe($.replace(REP_VERSION, VERSION))
 		.pipe(gulp.dest('app'));
