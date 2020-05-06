@@ -3,7 +3,7 @@
  * SweetAlert2 (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-14
+ * @version 2020-05-06
  *
  */
 
@@ -19,7 +19,7 @@
 	user-select: none;
 
 	font-family: $font-ui;
-	font-size: 1rem;
+	font-size: $font-size;
 	color: rgba(#000, 0.95);
 
 	.swal2-content {
@@ -39,7 +39,7 @@
 
 		code {
 			font-family: $font-console;
-			font-size: 0.85rem;
+			font-size: 12px;
 		}
 	}
 	.swal2-input {
@@ -113,6 +113,7 @@
 	}
 	.swal2-checkbox-opt {
 		margin: 1rem auto;
+		&:last-child { margin-bottom: 0; }
 		display: flex;
 		align-items: center;
 		justify-content: center;

@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-22
+ * @version 2020-05-06
  *
  */
 
@@ -38,6 +38,7 @@ $color-handle: #d7d7d7;
 
 $font-ui     : "Lucida Grande", "Hiragino Sans", "Yu Gothic UI", "Meiryo UI", sans-serif;
 $font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
+$font-size   : 14px;
 
 
 @import 'editor';

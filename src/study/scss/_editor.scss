@@ -460,7 +460,7 @@ div.CodeMirror span.CodeMirror-matchingbracket.cm-comment {
 	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 2px rgba(#000, 0.25);
 
 	font-family: $font-ui;
-	font-size: 14px;
+	font-size: $font-size;
 
 	button {
 		font-family: inherit;
