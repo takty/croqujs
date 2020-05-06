@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-05
+ * @version 2020-05-06
  *
  */
 
@@ -460,6 +460,7 @@ div.CodeMirror span.CodeMirror-matchingbracket.cm-comment {
 	box-shadow: 0 0 2px rgba(#000, 0.15), 0 2px 2px rgba(#000, 0.25);
 
 	font-family: $font-ui;
+	font-size: 14px;
 
 	button {
 		font-family: inherit;
