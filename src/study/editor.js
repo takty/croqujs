@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-05
+ * @version 2020-05-06
  *
  */
 
@@ -65,7 +65,16 @@ class Editor {
 			indentUnit: 4,
 			indentWithTabs: true,
 			gutters: ['CodeMirror-lint-markers', 'CodeMirror-function-linenumbers', 'CodeMirror-linenumbers'],
-			extraKeys: { 'Ctrl-\\': 'autocomplete', 'Shift-Tab': 'indentLess' },
+			extraKeys: {
+				'Ctrl-\\'     : 'autocomplete',
+				'Shift-Tab'   : 'indentLess',
+				'F3'          : 'findPersistent',
+				'Shift-F3'    : 'findPersistentPrev',
+				'Ctrl-G'      : 'findPersistent',
+				'Ctrl-Shift-G': 'findPersistentPrev',
+				'Cmd-G'       : 'findPersistent',
+				'Cmd-Shift-G' : 'findPersistentPrev',
+			},
 			highlightSelectionMatches: true,
 			matchBrackets: true,
 			showCursorWhenSelecting: true,
@@ -403,7 +412,11 @@ class Editor {
 	initAutoComplete() {
 		this._ternServer = new CodeMirror.TernServer({ defs: this._defaultDefJsons });
 		this._comp.on('cursorActivity', (cm) => { this._ternServer.updateArgHints(cm); });
-		this._comp.setOption('extraKeys', { 'Ctrl-Tab': (cm) => { this._complete(cm, this._ternServer); } });
+
+		const ek = this._comp.getOption('extraKeys');
+		ek['Ctrl-Tab'] = (cm) => { this._complete(cm, this._ternServer); };
+		this._comp.setOption('extraKeys', ek);
+
 		const reg = /\w|\./;
 		let autoComp = null;
 		this._comp.on('keypress', (cm, e) => {
@@ -741,12 +754,12 @@ class Editor {
 
 	find() {
 		if (!this._isEnabled) return;
-		this._comp.execCommand('find');
+		this._comp.execCommand('findPersistent');
 	}
 
 	findNext() {
 		if (!this._isEnabled) return;
-		this._comp.execCommand('findNext');
+		this._comp.execCommand('findPersistentNext');
 	}
 
 	replace() {

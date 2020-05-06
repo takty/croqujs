@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-27
+ * @version 2020-05-06
  *
  */
 
@@ -84,6 +84,7 @@ class SideMenu {
 		const doClose = !mi.classList.contains('stay');
 
 		for (let ac of acc.toLowerCase().split(' ')) {
+			if (ac[0] === '!') continue;
 			if (ac[0] === '*') {
 				if (!this.IS_MAC) continue;
 				ac = ac.substr(1);
@@ -93,7 +94,7 @@ class SideMenu {
 		}
 		const modAcc = [];
 		for (let ac of acc.split(' ')) {
-			if (ac[0] === '*') ac = ac.substr(1);
+			if (ac[0] === '!' || ac[0] === '*') ac = ac.substr(1);
 			modAcc.push(ac);
 		}
 		let ac = modAcc.join(', ');
@@ -122,7 +123,7 @@ class SideMenu {
 			if (e.altKey) pks.push('alt');
 			if ((this.IS_MAC && e.metaKey) || (!this.IS_MAC && e.ctrlKey)) pks.push('cc');
 			if (e.shiftKey) pks.push('shift');
-			pks.push(this._convertKey(e.key));
+			pks.push(this._convertKey(e.key, e.keyCode));
 			const ac = pks.sort().join('+');
 			if (this.IS_MAC && ac === 'c+cc' && !this._study._editor._comp.hasFocus()) {
 				return;  // for copying text in output pane on Mac
@@ -134,9 +135,10 @@ class SideMenu {
 		});
 	}
 
-	_convertKey(key) {
+	_convertKey(key, code) {
 		key = key.toLowerCase();
-		if (key === '+') key = 'plus';
+		if (key === '+') return 'plus';
+		if (112 <= code && code <= 123) return 'f' + (code - 111);
 		return key;
 	}
 
