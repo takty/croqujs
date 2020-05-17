@@ -354,23 +354,27 @@ class Study {
 			msg = this._res.msg.cannotReadLibrary.replace('%s', info.msg);
 		} else {
 			const transMsg = new ErrorTranslator(this._lang).translate(info.msg);
-			const file = info.isUserCode ? '' : `(${info.fileName}) `;
-			msg = `${file}%lineno% [${info.col}] - ${transMsg}`;
-
-			if (!info.isUserCode) {
-				const lc = this._extractErrorLocation(info);
-				if (lc) {
-					info.line       = lc[0];
-					info.col        = lc[1];
-					info.isUserCode = true;
-					msg = `%lineno% [${info.col}] (${info.fileName}) - ${transMsg}`;
-				}
-			}
-			if (info.isUserCode && this._editor.isFunctionLineNumberEnabled()) {
-				const lnf = this._editor.getFunctionLineNumber(info.line - 1);
-				msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
+			if (info.isPromise) {
+				msg = `[in promise] - ${transMsg}`;
 			} else {
-				msg = msg.replace('%lineno%', info.line);
+				const file = info.isUserCode ? '' : `(${info.fileName}) `;
+				msg = `${file}%lineno% [${info.col}] - ${transMsg}`;
+
+				if (!info.isUserCode) {
+					const lc = this._extractErrorLocation(info);
+					if (lc) {
+						info.line       = lc[0];
+						info.col        = lc[1];
+						info.isUserCode = true;
+						msg = `%lineno% [${info.col}] (${info.fileName}) - ${transMsg}`;
+					}
+				}
+				if (info.isUserCode && this._editor.isFunctionLineNumberEnabled()) {
+					const lnf = this._editor.getFunctionLineNumber(info.line - 1);
+					msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
+				} else {
+					msg = msg.replace('%lineno%', info.line);
+				}
 			}
 		}
 		if (info.isUserCode) {

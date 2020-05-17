@@ -45,7 +45,11 @@
 		info.fileName = info.url ? info.url.replace(base, '') : '';
 
 		window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'error', params: info }));
-		return true;
+	});
+
+	window.addEventListener('unhandledrejection', (e) => {
+		const info = { msg: 'DOMException: ' + e.reason.message, isPromise: true, isUserCode: false };
+		window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'error', params: info }));
 	});
 
 
