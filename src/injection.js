@@ -122,6 +122,9 @@
 				for (let [key, val] of s) vs.push(ns + toStr(key, ns) + ': ' + toStr(val, ns) + ',\n');
 				return `{\n` + vs.join('') + `${sp}}`;
 			}
+			if (s instanceof DOMException) {
+				return s.toString();
+			}
 			if (typeof s === 'object') {
 				const vs = [];
 				for (let key in s) vs.push(ns + toStr(key, ns) + ': ' + toStr(s[key], ns) + ',\n');
