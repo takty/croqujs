@@ -60,7 +60,10 @@
         "copiedAsImage": "画像としてコピーしました。",
         "openFile": "ファイルを開きます。",
         "permission": {
-            "geolocation": "Croqujsに位置情報の利用を許可しますか？"
+            "geolocation": "Croqujsに位置情報の利用を許可しますか？",
+            "user_media_a": "Croqujsにマイクの利用を許可しますか？",
+            "user_media_v": "Croqujsにカメラの利用を許可しますか？",
+            "user_media_av": "Croqujsにマイクとカメラの利用を許可しますか？"
         }
     },
     "btn": {

@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-30
+ * @version 2020-05-17
  *
  */
 
@@ -29,7 +29,8 @@
 		} else if (ma.message === 'window-fullscreen-left') {
 			document.body.style.overflow = 'visible';
 		} else if (ma.message === 'permission') {
-			if (afterPermitted[ma.params]) afterPermitted[ma.params]();
+			const { type, result } = ma.params;
+			if (afterPermitted[type]) afterPermitted[type](result);
 		}
 	});
 
@@ -161,7 +162,7 @@
 
 	function createPseudoGetCurrentPosition() {
 		return function (success, error) {
-			afterPermitted['geolocation'] = () => { actualGetCurrentPosition(success, error); };
+			afterPermitted['geolocation'] = (result) => { if (result) actualGetCurrentPosition(success, error); };
 			window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'requestPermission', params: 'geolocation' }));
 		}
 	}
@@ -195,6 +196,31 @@
 
 	if (IS_ELECTRON) {
 		navigator.geolocation.getCurrentPosition = createPseudoGetCurrentPosition();
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	function createGetUserMediaWrapper(origFn) {
+		return function (constraints) {
+			const a = (constraints.audio === true || typeof constraints.audio === 'object');
+			const v = (constraints.video === true || typeof constraints.video === 'object');
+			if (!a && !v) throw new DOMException('TypeError');
+			const ps = 'user_media_' + (a ? 'a' : '') + (v ? 'v' : '');
+			const p = new Promise((resolve, reject) => {
+				afterPermitted[ps] = (result) => {
+					if (result) resolve();
+					else reject(new DOMException('NotAllowedError'));
+				};
+			});
+			window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'requestPermission', params: ps }));
+			return p.then(() => { return origFn(constraints); });
+		}
+	}
+
+	if (IS_ELECTRON) {
+		navigator.mediaDevices.getUserMedia = createGetUserMediaWrapper(navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices));
 	}
 
 })();

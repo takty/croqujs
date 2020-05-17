@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-30
+ * @version 2020-05-17
  *
  */
 
@@ -229,10 +229,23 @@ class Study {
 	async _permissionHandling(type) {
 		if (this._permissions[type] !== true) {
 			const { value: res } = await this._dialogBox.showConfirm(this._res.msg.permission[type], 'warning');
-			if (!res) return;
-			this._permissions[type] = true;
+			this._permissions[type] = res;
 		}
-		window.localStorage.setItem('#injection_' + this._id, JSON.stringify({ message: 'permission', params: type }));
+		if (this._permissions[type] === true) {
+			switch (type) {
+				case 'user_media_a':
+					if (this._permissions['user_media_v'] === true) this._permissions['user_media_av'] = true;
+					break;
+				case 'user_media_v':
+					if (this._permissions['user_media_a'] === true) this._permissions['user_media_av'] = true;
+					break;
+				case 'user_media_av':
+					this._permissions['user_media_a'] = true;
+					this._permissions['user_media_v'] = true;
+					break;
+			}
+		}
+		window.localStorage.setItem('#injection_' + this._id, JSON.stringify({ message: 'permission', params: { type: type, result: this._permissions[type] } }));
 	}
 
 

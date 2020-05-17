@@ -60,7 +60,10 @@
         "copiedAsImage": "Copied as an image.",
         "openFile": "Open a file.",
         "permission": {
-            "geolocation": "Allow Croqujs to access your location?"
+            "geolocation": "Allow Croqujs to access your location?",
+            "user_media_a": "Allow Croqujs to access your microphone?",
+            "user_media_v": "Allow Croqujs to access your camera?",
+            "user_media_av": "Allow Croqujs to access your microphone and camera?"
         }
     },
     "btn": {
