@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-14
+ * @version 2020-05-23
  *
  */
 
@@ -68,10 +68,10 @@ class DialogBox {
 			cancelButtonText: this._textCancel,
 			customClass: 'prompt-with-option',
 			focusConfirm: false,
-			html: '<div style="display: inline-block;">' + this._formatText(text) + '</div>' +
+			html: '<div style="display: inline-block;">' + text + '</div>' +
 				'<input id="swal-input" class="swal2-input" placeholder="' + placeholder + '" type="text" value="' + value + '">' +
 				'<label class="swal2-checkbox-opt"><input type="checkbox" id="swal-checkbox">' +
-				'<span class="swal2-label">' + this._formatText(optText) + '</span></label>',
+				'<span class="swal2-label">' + optText + '</span></label>',
 			preConfirm: () => {
 				return [
 					document.getElementById('swal-input').value,
@@ -101,7 +101,7 @@ class DialogBox {
 	_makeOption(text, type, opt = {}) {
 		return Object.assign(opt, {
 			title: '',
-			html: this._formatText(text),
+			html: text,
 			icon: type,
 			allowOutsideClick: false,
 			showClass: {
@@ -115,11 +115,6 @@ class DialogBox {
 				icon    : 'swal2-icon-hide'
 			}
 		});
-	}
-
-	_formatText(text) {
-		text = text.replace(/\n/g, '<br>');
-		return text.replace(/ /g, '&nbsp;');
 	}
 
 	_disableBackground() {
