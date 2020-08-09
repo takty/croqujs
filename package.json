@@ -19,17 +19,17 @@
 	"homepage": "https://github.com/takty/croqujs#readme",
 	"dependencies": {
 		"electron-log": "^4.2.2",
-		"electron-promise-ipc": "^2.1.0",
-		"electron-updater": "^4.3.1"
+		"electron-promise-ipc": "^2.2.1",
+		"electron-updater": "^4.3.4"
 	},
 	"devDependencies": {
-		"acorn": "7.3.1",
+		"acorn": "7.4.0",
 		"acorn-loose": "7.1.0",
 		"acorn-walk": "7.2.0",
-		"codemirror": "5.55.0",
+		"codemirror": "5.56.0",
 		"current-git-branch": "^1.1.0",
-		"electron": "^9.1.0",
-		"electron-builder": "^22.7.0",
+		"electron": "^9.2.0",
+		"electron-builder": "^22.8.0",
 		"fs-extra": "^9.0.1",
 		"glob": "^7.1.6",
 		"gulp": "^4.0.2",
@@ -41,10 +41,10 @@
 		"gulp-replace": "^1.0.0",
 		"gulp-sass": "^4.1.0",
 		"js-beautify": "1.11.0",
-		"jshint": "2.11.1",
+		"jshint": "2.12.0",
 		"jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
 		"moment": "^2.27.0",
-		"sweetalert2": "9.17.0",
+		"sweetalert2": "9.17.1",
 		"tern": "0.24.3"
 	}
 }
