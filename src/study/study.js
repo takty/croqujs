@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-17
+ * @version 2020-08-17
  *
  */
 
@@ -84,7 +84,7 @@ class Study {
 	}
 
 	async _initialize() {
-		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json']);//, (ret) => {
+		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json']);
 		this._res = Object.assign(rets[0], rets[1]);
 		this._initEditor();
 
