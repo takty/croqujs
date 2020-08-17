@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-17
+ * @version 2020-08-18
  *
  */
 
@@ -269,6 +269,10 @@
 	border-radius: 0 0 0 2px;
 	box-sizing: border-box;
 	width: 6px;
+}
+
+.CodeMirror.ime .CodeMirror-cursor {
+	width: 12px;
 }
 
 
