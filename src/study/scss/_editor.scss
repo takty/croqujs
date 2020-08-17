@@ -71,7 +71,8 @@
 	}
 	&::before {
 		content: '-';
-		left: 0;
+		position: absolute;
+		left: 5%;
 	}
 	&::after {
 		content: '>';
