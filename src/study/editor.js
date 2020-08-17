@@ -316,6 +316,7 @@ class Editor {
 		let downLine = -1, fromLine = -1, dragging = false;
 
 		this._comp.on('gutterClick', (cm, line, gut, e) => {
+			if (e.button !== 0) return;
 			if (!isGutter(e)) {
 				downLine = -1;
 				fromLine = -1;
@@ -324,6 +325,7 @@ class Editor {
 			}
 		});
 		this._elem.addEventListener('mousedown', (e) => {
+			if (e.button !== 0) return;
 			if (isGutter(e)) {
 				downLine = getLine(e);
 				dragging = true;
