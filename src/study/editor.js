@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-06
+ * @version 2020-08-17
  *
  */
 
@@ -42,11 +42,11 @@ class Editor {
 	}
 
 	async constructorSecond() {
-		this._defaultDefJsons = await loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json']);
-		this.initAutoComplete();
-
 		this.rulerEnabled(true);
 		this.functionLineNumberEnabled(false);
+
+		this._defaultDefJsons = await loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json']);
+		this.initAutoComplete();
 
 		this._comp.on('renderLine', (cm, line, elt) => {
 			if (!cm.getOption('lineWrapping')) return;
@@ -812,23 +812,31 @@ class Editor {
 	}
 
 	_updateLineNumberGutter() {
+		this._comp.clearGutter('CodeMirror-function-linenumbers');
 		if (this._isFunctionLineNumberEnabled) {
-			this._updateFuncLineNoGutter();
+			this._comp.setOption('lineNumbers', false);
+			this._comp.operation(() => {
+				const fl = document.getElementsByClassName('CodeMirror-function-linenumbers')[0];
+				fl.style.width = this._updateFuncLineNoGutter();
+				fl.style.display = '';
+				fl.parentElement.classList.add('function-linenumbers');
+			});
 		} else {
-			this._comp.clearGutter('CodeMirror-function-linenumbers');
 			this._comp.setOption('lineNumbers', true);
-			const fl = document.getElementsByClassName('CodeMirror-function-linenumbers')[0];
-			fl.style.display = 'none';
-			this._comp.refresh();
+			this._comp.operation(() => {
+				const fl = document.getElementsByClassName('CodeMirror-function-linenumbers')[0];
+				fl.style.display = 'none';
+				fl.parentElement.classList.remove('function-linenumbers');
+			});
 		}
+		this._comp.refresh();
 	}
 
 	_updateFuncLineNoGutter() {
-		this._lineNoByFunc = [];
-
 		const lineCount = this._comp.getDoc().lineCount();
-		const fnStarts = this._codeStructure.fnStarts;
+		const fnStarts  = this._codeStructure.fnStarts;
 
+		this._lineNoByFunc = [];
 		if (lineCount === 0 || !fnStarts || fnStarts.length === 0) {
 			this._lineNoByFunc.push([0, 1]);
 		} else {
@@ -842,30 +850,19 @@ class Editor {
 				local += 1;
 			}
 		}
-		const width = this._calcWidth(this._comp, lineCount);
-
-		this._comp.operation(() => {
-			if (this._comp.getOption('lineNumbers')) {
-				this._comp.setOption('lineNumbers', false);
+		this._lineNoByFunc.forEach((e, i) => {
+			const ln = document.createElement('div');
+			if (e[0] !== 0 && e[1] === 1) {
+				ln.innerHTML = e[0];
+				ln.classList.add('CodeMirror-function-number');
+			} else {
+				ln.innerHTML = e[1];
+				ln.classList.add('CodeMirror-function-linenumber');
 			}
-			this._comp.clearGutter('CodeMirror-function-linenumbers');
-			this._lineNoByFunc.forEach((e, i) => {
-				const ln = document.createElement('div');
-				if (e[0] !== 0 && e[1] === 1) {
-					ln.innerHTML = e[0];
-					ln.classList.add('CodeMirror-function-number');
-				} else {
-					ln.innerHTML = e[1];
-					ln.classList.add('CodeMirror-function-linenumber');
-				}
-				ln.classList.add((e[0] % 2 === 0) ? 'CodeMirror-function-odd' : 'CodeMirror-function-even');
-				this._comp.setGutterMarker(i, 'CodeMirror-function-linenumbers', ln);
-			});
-			const fl = document.getElementsByClassName('CodeMirror-function-linenumbers')[0];
-			fl.style.width = width;
-			fl.style.display = '';
-			this._comp.refresh();
+			ln.classList.add((e[0] % 2 === 0) ? 'CodeMirror-function-odd' : 'CodeMirror-function-even');
+			this._comp.setGutterMarker(i, 'CodeMirror-function-linenumbers', ln);
 		});
+		return this._calcWidth(this._comp, lineCount);
 	}
 
 	_calcWidth(cm, str) {

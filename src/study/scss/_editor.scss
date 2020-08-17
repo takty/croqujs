@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-06
+ * @version 2020-08-17
  *
  */
 
@@ -100,7 +100,7 @@
 
 .CodeMirror-gutters {  // includes right border
 	background-color: $color-window;
-	border-right: 16px solid rgba($L-Purple, 0.25);
+	border-right: 16px solid transparent;
 	border-left: 0;
 	height: 100%;
 	cursor: text;
@@ -116,10 +116,18 @@
 		height: 100%;
 		pointer-events: auto;
 		transition: 0.25s;
+		background-color: rgba($L-Purple, 0.25);
 	}
 	.CodeMirror:not(.simple) &:hover::after {
 		background-color: rgba($L-Purple, 0.45);
 		transition: 0.25s;
+	}
+	&.function-linenumbers {
+		&::after {
+			background-color: rgba($L-Purple, 0.25);
+			background-size: auto auto;
+			background-image: repeating-linear-gradient(135deg, transparent, transparent 8px, rgba($L-Purple, 0.25) 8px, rgba($L-Purple, 0.25) 16px )
+		}
 	}
 }
 
@@ -150,7 +158,7 @@
 }
 
 .CodeMirror-lint-markers {
-	 border-left: 4px solid $color-window;
+	border-left: 4px solid $color-window;
 }
 
 .CodeMirror-activeline-gutter .CodeMirror-linenumber {
