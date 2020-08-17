@@ -3,7 +3,7 @@
  * WinState (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-18
+ * @version 2020-08-17
  *
  */
 
@@ -47,17 +47,19 @@ class WinState {
 
 	_dump() {
 		if (this._win.document.fullscreenElement != null) return;
-		if (this._win.outerWidth === 0 || this._win.outerHeight === 0) return;
 
-		const x      = this._win.screenX;
-		const y      = this._win.screenY;
-		const width  = this._win.outerWidth;
-		const height = this._win.outerHeight;
-		if (this._state.x === x && this._state.y === y && this._state.width === width && this._state.height === height) return;
+		const w = this._win.outerWidth;
+		const h = this._win.outerHeight;
+		if (w === 0 || h === 0) return;
+
+		const x = this._win.screenX;
+		const y = this._win.screenY;
+		if (this._state.x === x && this._state.y === y && this._state.width === w && this._state.height === h) return;
+
 		this._state.x      = x;
 		this._state.y      = y;
-		this._state.width  = width;
-		this._state.height = height;
+		this._state.width  = w;
+		this._state.height = h;
 
 		this._config.setItem(this._key, JSON.stringify(this._state));
 	}
