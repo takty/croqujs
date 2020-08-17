@@ -3,7 +3,7 @@
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-10
+ * @version 2020-08-17
  *
  */
 
@@ -41,7 +41,7 @@ function analyze(code) {
 	let   success   = true;
 
 	try {
-		const ast = acorn.parse(code, { locations: true });
+		const ast = acorn.parse(code, { locations: true, ecmaVersion: 'latest' });
 		walk(ast, {
 			ClassDeclaration: (node, state, c) => {
 				fnNames.push(node.id.name);

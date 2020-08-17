@@ -1,3 +1,13 @@
+/**
+ *
+ * Gulpfile
+ *
+ * @author Takuto Yanagida @ Space-Time Inc.
+ * @version 2020-08-17
+ *
+ */
+
+
 'use strict';
 
 const getBranchName = require('current-git-branch');

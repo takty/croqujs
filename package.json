@@ -18,14 +18,14 @@
 	"license": "MIT",
 	"homepage": "https://github.com/takty/croqujs#readme",
 	"dependencies": {
-		"electron-log": "^4.2.2",
+		"electron-log": "^4.2.4",
 		"electron-promise-ipc": "^2.2.1",
 		"electron-updater": "^4.3.4"
 	},
 	"devDependencies": {
-		"acorn": "7.4.0",
-		"acorn-loose": "7.1.0",
-		"acorn-walk": "7.2.0",
+		"acorn": "8.0.1",
+		"acorn-loose": "8.0.0",
+		"acorn-walk": "8.0.0",
 		"codemirror": "5.56.0",
 		"current-git-branch": "^1.1.0",
 		"electron": "^9.2.0",
@@ -40,7 +40,7 @@
 		"gulp-rename": "^2.0.0",
 		"gulp-replace": "^1.0.0",
 		"gulp-sass": "^4.1.0",
-		"js-beautify": "1.11.0",
+		"js-beautify": "1.12.0",
 		"jshint": "2.12.0",
 		"jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
 		"moment": "^2.27.0",
