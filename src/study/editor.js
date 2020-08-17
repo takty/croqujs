@@ -91,7 +91,7 @@ class Editor {
 			specialChars: / /,
 			specialCharPlaceholder: (c) => {
 				const e = document.createElement('span');
-				e.innerHTML = '_';
+				e.textContent = '_';
 				e.className = 'cm-space';
 				return e;
 			},
@@ -853,10 +853,10 @@ class Editor {
 		this._lineNoByFunc.forEach((e, i) => {
 			const ln = document.createElement('div');
 			if (e[0] !== 0 && e[1] === 1) {
-				ln.innerHTML = e[0];
+				ln.textContent = e[0];
 				ln.classList.add('CodeMirror-function-number');
 			} else {
-				ln.innerHTML = e[1];
+				ln.textContent = e[1];
 				ln.classList.add('CodeMirror-function-linenumber');
 			}
 			ln.classList.add((e[0] % 2 === 0) ? 'CodeMirror-function-odd' : 'CodeMirror-function-even');
@@ -875,9 +875,9 @@ class Editor {
 		if (str.length === 0) str = '0';
 		const display = cm.display;
 		const test = display.measure.appendChild(_elt('div', _elt('div', document.createTextNode(str)), 'CodeMirror-function-linenumber CodeMirror-gutter-elt'));
-		const innerW = test.firstChild.offsetWidth;
-		const padding = test.offsetWidth - innerW;
-		const lineGutterWidth = display.lineGutter ? display.lineGutter.offsetWidth : 0;
+		const innerW = test.firstChild.clientWidth;
+		const padding = test.clientWidth - innerW;
+		const lineGutterWidth = display.lineGutter ? display.lineGutter.clientWidth : 0;
 		const lineNumWidth = Math.max(innerW, lineGutterWidth - padding) + 1 + padding;
 		return (lineNumWidth || 1) + 'px';
 	}
