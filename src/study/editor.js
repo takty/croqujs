@@ -24,6 +24,9 @@ class Editor {
 		this._isFunctionLineNumberEnabled = false;
 		this._isLineSelModeEnabled        = false;
 
+		this._lastLineNumWidth = 0;
+		this._lastLineNumChars = 0;
+
 		CodeMirror.keyMap.pcDefault['Shift-Ctrl-R'] = false;  // Directly Change the Key Map!
 		this._comp = new CodeMirror(domElm, this.codeMirrorOptions(this._owner._res.jsHintOpt));
 		this._comp.getMode().closeBrackets = '()[]\'\'""``';  // Must Overwrite JavaScript Mode Here!
@@ -611,6 +614,7 @@ class Editor {
 
 	refresh(updateCodeStructureView = false) {
 		this._comp.refresh();
+		this._lastLineNumWidth = 0;
 		this._updateLineNumberGutter();
 		if (updateCodeStructureView) this._updateCodeStructureView();
 	}
@@ -866,6 +870,9 @@ class Editor {
 	}
 
 	_calcWidth(cm, str) {
+		if (this._lastLineNumChars === str.length && this._lastLineNumWidth !== 0) {
+			return this._lastLineNumWidth + 'px';
+		}
 		const _elt = (tag, content, className) => {
 			var e = document.createElement(tag);
 			if (className) e.className = className;
@@ -879,7 +886,10 @@ class Editor {
 		const padding = test.clientWidth - innerW;
 		const lineGutterWidth = display.lineGutter ? display.lineGutter.clientWidth : 0;
 		const lineNumWidth = Math.max(innerW, lineGutterWidth - padding) + 1 + padding;
-		return (lineNumWidth || 1) + 'px';
+
+		this._lastLineNumChars = str.length;
+		this._lastLineNumWidth = (lineNumWidth || 1);
+		return this._lastLineNumWidth + 'px';
 	}
 
 };
