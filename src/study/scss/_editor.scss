@@ -58,25 +58,25 @@
 	&::after {
 		overflow: visible;
 		display: inline-block;
+		width: 0;
+		z-index: -1;
 
 		pointer-events: none;
-
-		width: 0;
 		white-space: nowrap;
+
 		color: $L-Red-15;
-		z-index: -1;
 		font-weight: normal;
+		text-shadow: #fff 0 0 4px;
+		transform: scaleX(0.8);
 	}
 	&::before {
 		content: '-';
 		left: 0;
-		transform: scaleX(0.8);
 	}
 	&::after {
 		content: '>';
 		position: absolute;
 		left: 25%;
-		transform: scaleX(0.95);
 	}
 }
 
@@ -380,6 +380,7 @@ div.CodeMirror span.CodeMirror-matchingbracket.cm-comment {
 	.cm-tab::before,
 	.cm-tab::after {
 		color: $L-Red-35;
+		text-shadow: none;
 	}
 	.cm-variable,
 	.cm-variable-2 {
