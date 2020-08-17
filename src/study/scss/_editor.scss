@@ -126,7 +126,7 @@
 		&::after {
 			background-color: rgba($L-Purple, 0.25);
 			background-size: auto auto;
-			background-image: repeating-linear-gradient(135deg, transparent, transparent 8px, rgba($L-Purple, 0.25) 8px, rgba($L-Purple, 0.25) 16px )
+			background-image: repeating-linear-gradient(135deg, transparent, transparent 8px, rgba($L-Purple, 0.15) 8px, rgba($L-Purple, 0.15) 16px )
 		}
 	}
 }
@@ -193,7 +193,7 @@
 
 .CodeMirror-function-linenumber,
 .CodeMirror-function-number {
-	padding: 0 6px 0 2px;
+	padding: 0 7px 0 1px;
 	min-width: 20px;
 	white-space: nowrap;
 }
@@ -201,7 +201,6 @@
 .CodeMirror-function-linenumber {
 	text-align: right;
 	color: $L-DarkGray;
-	font-style: italic;
 }
 
 .CodeMirror-function-number {
