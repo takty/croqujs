@@ -263,11 +263,9 @@
 
 
 .CodeMirror-cursor {
-	border-top:    2px solid rgba($L-Brown, 0.35);
-	border-left:   2px solid rgba($L-Brown, 0.35);
+	border-left:   2px solid rgba($L-Brown, 0.60);
 	border-bottom: 2px solid rgba($L-Brown, 0.35);
-	border-radius: 2px 0 0 2px;
-	background-color: rgba($L-Brown, 0.05);
+	border-radius: 0 0 0 2px;
 	box-sizing: border-box;
 	width: 6px;
 }
