@@ -659,7 +659,7 @@ class Editor {
 	rulerEnabled(flag) {
 		if (flag === undefined) return this._comp.getOption('rulers') !== null;
 		if (flag) {
-			this._comp.setOption('rulers', [...Array(3).keys()].map(i => ({ column: (i + 1) * 4, color: '#f6b0c5', lineStyle: 'dashed' })));
+			this._comp.setOption('rulers', [...Array(3).keys()].map(i => ({ column: (i + 1) * 4, color: 'rgba(230,30,88,0.15)', lineStyle: 'dashed', width: '2px' })));
 		} else {
 			this._comp.setOption('rulers', null);
 		}
