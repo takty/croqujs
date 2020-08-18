@@ -3,7 +3,7 @@
  * Gulpfile
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-17
+ * @version 2020-08-18
  *
  */
 
@@ -147,20 +147,11 @@ const buildOpts = {
 		appId: `com.stxst.${config.name}`,
 		copyright: 'Takuto Yanagida @ Space-Time Inc.',
 		buildVersion: VERSION,
-		fileAssociations: {
-			ext: 'js',
-			name: 'JavaScript',
-		},
+		fileAssociations: { ext: 'js', name: 'JavaScript' },
 		win: {
 			target: [
-				{
-					target: 'zip',
-					arch: ['x64', 'ia32']
-				},
-				{
-					target: 'nsis',
-					arch: ['x64', 'ia32']
-				},
+				{ target: 'zip',  arch: ['x64', 'ia32'] },
+				{ target: 'nsis', arch: ['x64', 'ia32'] },
 			],
 			icon: 'app/res/icon.ico',
 		},
@@ -173,14 +164,8 @@ const buildOpts = {
 		},
 		mac: {
 			target: [
-				{
-					target: 'zip',
-					arch: ['x64']
-				},
-				{
-					target: 'dmg',
-					arch: ['x64']
-				}
+				{ target: 'zip', arch: ['x64'] },
+				{ target: 'dmg', arch: ['x64'] },
 			],
 			icon: 'app/res/icon.icns',
 		},
