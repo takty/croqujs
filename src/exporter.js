@@ -19,13 +19,12 @@ global.acorn      = require('./study/lib/acorn/acorn.js');
 global.acorn.walk = require('./study/lib/acorn/walk.js');
 const analyze     = require('./study/analyzer.js');
 
-const HTML_HEAD1  = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
-const HTML_HEAD2  = '</head><body><script>';
-const HTML_FOOT   = '</script></body>';
-const EXP_LIB_DIR = 'exp_lib';
-const DEF_DIR     = 'def';
-const INJECTION   = 'injection.js';
-const EXP_EOL     = '\r\n';
+const HTML_HEAD1 = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
+const HTML_HEAD2 = '</head><body><script>';
+const HTML_FOOT  = '</script></body>';
+const DEF_DIR    = 'def';
+const INJECTION  = 'injection.js';
+const EXP_EOL    = '\r\n';
 
 
 class Exporter {
@@ -44,7 +43,6 @@ class Exporter {
 			} else {
 				let cont = null;
 				if (bp) cont = this._readFile(PATH().join(bp, p));
-				if (cont === null) cont = this._readFile(PATH().join(__dirname, EXP_LIB_DIR, p));
 				if (cont === null) return p;  // Error
 			}
 		}
@@ -128,8 +126,7 @@ class Exporter {
 					let q = dec;
 					if (!p.startsWith('http')) {
 						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(PATH().sep);
-						let res = this._copyFile(PATH().join(bp, p), PATH().join(dirPath, q));
-						if (!res) res = this._copyFile(PATH().join(__dirname, EXP_LIB_DIR, p), PATH().join(dirPath, q));
+						const res = this._copyFile(PATH().join(bp, p), PATH().join(dirPath, q));
 						if (!res) return [false, p];
 					}
 					pushTag(q);
@@ -140,10 +137,7 @@ class Exporter {
 		} else {
 			for (let dec of decs) {
 				const p = Array.isArray(dec) ? dec[0] : dec;
-				if (!p.startsWith('http')) {
-					const res = this._copyFile(PATH().join(__dirname, EXP_LIB_DIR, p), PATH().join(dirPath, p));
-					if (!res) return [false, p];
-				}
+				if (!p.startsWith('http')) return [false, p];
 				pushTag(p);
 			}
 		}
