@@ -35,23 +35,33 @@ class Study {
 			this._cleanLocalStorage();
 		}
 
-		let isImeOn = false;
-		window.addEventListener('keydown',  (e) => {
+		window.addEventListener('keydown', (e) => {
 			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) e.preventDefault();
+		});
+
+		this._initImeStateIndication();
+		this._loadPlugin(this._lang);
+		this._initFileDrop();
+		this._initialize();
+	}
+
+	_initImeStateIndication() {
+		let isImeOn = false;
+		let st = null;
+		const turnOffImeCursor = () => {
+			if (isImeOn) this._editor._elem.classList.remove('ime');
+			isImeOn = false;
+		}
+		window.addEventListener('keydown', (e) => {
 			if (this._editor._comp.hasFocus()) {
 				if (e.which === 229 || e.which === 0) {
 					if (!isImeOn) this._editor._elem.classList.add('ime');
 					isImeOn = true;
-				} else if (e.key.length === 1) {
-					if (isImeOn) this._editor._elem.classList.remove('ime');
-					isImeOn = false;
+					clearTimeout(st);
+					st = setTimeout(turnOffImeCursor, 1000);
 				}
 			}
 		});
-
-		this._loadPlugin(this._lang);
-		this._initFileDrop();
-		this._initialize();
 	}
 
 	_cleanLocalStorage() {
