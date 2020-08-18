@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2019-08-19
+ * @version 2020-08-18
  *
  */
 
@@ -76,6 +76,11 @@ class Twin {
 	}
 
 	_initializeDocument(text = '', filePath = null) {
+		this._tempFilePath = null;
+		if (filePath && filePath.trim().endsWith('.template.js')) {
+			this._tempFilePath = filePath;
+			filePath = null;
+		}
 		const readOnly = filePath ? ((FS().statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
 		const name     = filePath ? PATH().basename(filePath, PATH().extname(filePath)) : '';
 		const baseName = filePath ? PATH().basename(filePath) : '';
@@ -86,7 +91,7 @@ class Twin {
 		this._isModified = false;
 		this._backup.setFilePath(filePath);
 
-		const defJsons = this._loadDefJsons(text, filePath);
+		const defJsons = this._loadDefJsons(text, this._tempFilePath ?? filePath);
 
 		this.stop();
 		this._studyWin.show();
@@ -228,7 +233,7 @@ class Twin {
 			if (e.code !== 'ENOENT') return this._returnAlertError(e, fp);
 		}
 		if (writable) {
-			if (copy) return this._saveCopy(fp, text);
+			if (copy && this._tempFilePath === null) return this._saveCopy(fp, text);
 			else return this._save(fp, text);
 		}
 		// In Windows, the save dialog itself does not allow to select read only files.
@@ -242,6 +247,10 @@ class Twin {
 		this._backup.backupExistingFile(text, this._filePath);
 		try {
 			FS().writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
+			if (this._tempFilePath) {
+				this._exporter.copyLibraryOfTemplate(text, this._tempFilePath, PATH().dirname(this._filePath));
+				this._tempFilePath = null;
+			}
 
 			const name     = PATH().basename(this._filePath, PATH().extname(this._filePath));
 			const baseName = PATH().basename(this._filePath);
@@ -341,7 +350,7 @@ class Twin {
 	}
 
 	_execute(codeStr) {
-		const ret = this._exporter.checkLibraryReadable(codeStr, this._filePath);
+		const ret = this._exporter.checkLibraryReadable(codeStr, this._filePath ?? this._tempFilePath);
 		if (ret !== true) return this._returnExecutionError(ret);
 
 		this._clearTempPath();
@@ -349,7 +358,7 @@ class Twin {
 		try {
 			this._rmdirSync(expDir);
 			FS().mkdirSync(expDir);
-			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath, expDir, true);
+			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath ?? this._tempFilePath, expDir, true);
 			if (!success) return this._returnExecutionError(expPath);
 
 			const baseUrl = 'file:///' + expPath.replace(/\\/g, '/');

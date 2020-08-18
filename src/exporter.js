@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-26
+ * @version 2020-08-18
  *
  */
 
@@ -154,6 +154,34 @@ class Exporter {
 
 		FS().writeFileSync(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
 		return [true, expPath];
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	copyLibraryOfTemplate(codeText, tempFilePath, dirPath) {
+		const decs = this._extractUseDeclarations(codeText.split('\n'));
+
+		const bp = PATH().dirname(tempFilePath);
+		for (let dec of decs) {
+			if (Array.isArray(dec)) {
+				const p = dec[0];
+				if (p.startsWith('http')) return [false, p];
+				const destFn = PATH().basename(p, PATH().extname(p)) + '.lib.js';
+				const res = this._writeLibraryImmediately(PATH().join(bp, p), dec[1], PATH().join(dirPath, destFn));
+				if (!res) return [false, p];
+			} else {
+				const p = dec;
+				if (p.startsWith('http')) continue;
+				const destFn = dec.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(PATH().sep);
+				const destPath = PATH().join(dirPath, destFn);
+				if (FS().existsSync(destPath)) continue;
+				const res = this._copyFile(PATH().join(bp, p), destPath);
+				if (!res) return [false, p];
+			}
+		}
+		return [true];
 	}
 
 
