@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-17
+ * @version 2020-08-18
  *
  */
 
@@ -89,7 +89,6 @@ class Editor {
 			inputStyle: 'textarea',
 			lineWiseCopyCut: false,
 			lint: { options: jsHintOpt },
-			autofocus: true,
 			styleSelectedText: true,
 			specialChars: / /,
 			specialCharPlaceholder: (c) => {
