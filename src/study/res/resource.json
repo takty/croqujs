@@ -1,5 +1,5 @@
 {
-    "fontSet": "Inconsolata, \"Hiragino Sans\", \"Yu Gothic Medium\", Meiryo, monospace",
+    "fontSet": "Inconsolata, \"Hiragino Sans\", \"BIZ UDGothic\", \"Yu Gothic Medium\", Meiryo, monospace",
     "defaultExt": ".js",
     "jsHintOpt": {
         "bitwise": true,
