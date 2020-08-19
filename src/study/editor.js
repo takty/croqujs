@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-18
+ * @version 2020-08-19
  *
  */
 
@@ -172,8 +172,9 @@ class Editor {
 	}
 
 	_setCanvasSize() {
+		const cw = this._comp.defaultCharWidth();
 		const c = this._canvas;
-		const w = c.parentElement.clientWidth;
+		const w = Math.min(c.parentElement.clientWidth, cw * 64);
 		const h = c.parentElement.clientHeight;
 		if (c.width !== w || c.height !== h) {
 			c.style.opacity = 0;
