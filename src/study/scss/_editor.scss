@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-19
+ * @version 2020-08-28
  *
  */
 
@@ -46,10 +46,11 @@
 }
 
 .CodeMirror-selectedtext {
-	text-shadow: #fff -1px  1px 8px,
-				 #fff  1px -1px 8px,
-				 #fff  1px  1px 8px,
-				 #fff -1px -1px 8px !important;
+	text-shadow:
+		#fff -1px  1px 8px,
+		#fff  1px -1px 8px,
+		#fff  1px  1px 8px,
+		#fff -1px -1px 8px !important;
 }
 
 .cm-tab {
@@ -256,6 +257,21 @@
 		&:hover::before {
 			background-color: rgba($L-Purple, 0.65);
 		}
+	}
+}
+
+.cm-annotate-scrollbar-function-marker {
+	&::after {
+		content : '';
+		position: absolute;
+		left    : 1px;
+		right   : 2px;
+
+		background-color: hsla(40, 100%, 50%, 0.75);
+		border          : solid 2px rgba(#fff, 0.75);
+		border-radius   : 50%;
+
+		padding-bottom: calc(100% - 7px);
 	}
 }
 

@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-20
+ * @version 2020-08-28
  *
  */
 
@@ -46,6 +46,7 @@ class Editor {
 
 	async constructorSecond() {
 		this.rulerEnabled(true);
+		this._annotateScrollbar = this._comp.annotateScrollbar('cm-annotate-scrollbar-function-marker');
 		this.functionLineNumberEnabled(false);
 
 		this._defaultDefJsons = await loadJSON(['lib/tern/ecmascript.json', 'lib/tern/browser.json']);
@@ -832,6 +833,7 @@ class Editor {
 				fl.style.display = 'none';
 				fl.parentElement.classList.remove('function-linenumbers');
 			});
+			this._annotateScrollbar.update([]);
 		}
 		this._comp.refresh();
 	}
@@ -854,6 +856,15 @@ class Editor {
 				local += 1;
 			}
 		}
+
+		const as = [];
+		if (fnStarts) {
+			for (const fnIdx of fnStarts) {
+				as.push({ from: { line: fnIdx }, to: { line: fnIdx } });
+			}
+		}
+		this._annotateScrollbar.update(as);
+
 		this._lineNoByFunc.forEach((e, i) => {
 			const ln = document.createElement('div');
 			if (e[0] !== 0 && e[1] === 1) {
