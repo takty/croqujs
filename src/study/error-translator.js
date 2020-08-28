@@ -3,12 +3,9 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-04-22
+ * @version 2020-08-28
  *
  */
-
-
-'use strict';
 
 
 class ErrorTranslator {
@@ -35,7 +32,7 @@ class ErrorTranslator {
 			} else if (m === 'invalid assignment left-hand side') {
 				m = '「=」の左側が正しくありません。打ち間違えていませんか？';
 			}
-			return m + '<div>（参照エラー）' + msg + '</div>';
+			return '<span>参照エラー</span>' + m + '<div>' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught RangeError')) {
 			let m = msg.substr(msg.indexOf(': ') + 2);
@@ -50,7 +47,7 @@ class ErrorTranslator {
 			} else if (m === 'Array buffer allocation failed') {
 				m = '配列バッファを作ることが出来ません。サイズが大きすぎませんか？';
 			}
-			return m + '<div>（範囲エラー）' + msg + '</div>';
+			return '<span>範囲エラー</span>' + m + '<div>' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught SyntaxError')) {
 			let m = msg.substr(msg.indexOf(': ') + 2);
@@ -86,7 +83,7 @@ class ErrorTranslator {
 				const t = m.replace('Identifier \'', '').replace('\' has already been declared', '');
 				m = '名前「' + t + '」はすでに付けられているのに、もう一度使おうとしています。';
 			}
-			return m + '<div>（文法エラー）' + msg + '</div>';
+			return '<span>構文エラー</span>' + m + '<div>' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught TypeError')) {
 			let m = msg.substr(msg.indexOf(': ') + 2);
@@ -105,17 +102,37 @@ class ErrorTranslator {
 			} else if (m.startsWith('Assignment to constant variable.')) {
 				m = '定数なのに、値をもう一度セットしようとしています。';
 			}
-			return m + '<div>（型エラー）' + msg + '</div>';
+			return '<span>型エラー</span>' + m + '<div>' + msg + '</div>';
 		}
 		if (msg.startsWith('Uncaught Error')) {
-			let m = 'エラー: ' + msg.substr(msg.indexOf(': ') + 2);
-			return m + '<div>（エラー）' + msg + '</div>';
+			const m = msg.substr(msg.indexOf(': ') + 2);
+			return '<span>エラー</span>' + m + '<div>' + msg + '</div>';
 		}
-		return msg.replace('Uncaught ', '') + '<div>（エラー）' + msg + '</div>';
+		return '<span>エラー</span>' + msg.replace('Uncaught ', '') + '<div>' + msg + '</div>';
 	}
 
 	translateEn(msg) {
-		return msg.replace('Uncaught ', '');
+		if (msg.startsWith('Uncaught ReferenceError')) {
+			const m = msg.substr(msg.indexOf(': ') + 2);
+			return '<span>ReferenceError</span>' + m;
+		}
+		if (msg.startsWith('Uncaught RangeError')) {
+			const m = msg.substr(msg.indexOf(': ') + 2);
+			return '<span>RangeError</span>' + m;
+		}
+		if (msg.startsWith('Uncaught SyntaxError')) {
+			const m = msg.substr(msg.indexOf(': ') + 2);
+			return '<span>SyntaxError</span>' + m;
+		}
+		if (msg.startsWith('Uncaught TypeError')) {
+			const m = msg.substr(msg.indexOf(': ') + 2);
+			return '<span>TypeError</span>' + m;
+		}
+		if (msg.startsWith('Uncaught Error')) {
+			const m = msg.substr(msg.indexOf(': ') + 2);
+			return '<span>Error</span>' + m;
+		}
+		return '<span>Error</span>' + msg.replace('Uncaught ', '');
 	}
 
 }

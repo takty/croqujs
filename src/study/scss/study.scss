@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-06
+ * @version 2020-08-28
  *
  */
 
@@ -111,6 +111,17 @@ html, body {
 	div.err {
 		color: $L-Red;
 
+		span {
+			display: inline-block;
+
+			margin-right: 0.5rem;
+			padding: (1rem - 0.85rem) / 2 0.25rem;
+
+			border-radius: 0.25rem;
+			background-color: $L-Red;
+			color: #fff;
+			font-size: 0.85rem;
+		}
 		div {
 			color: $L-Gray;
 			font-size: 0.8em;
