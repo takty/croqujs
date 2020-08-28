@@ -55,7 +55,7 @@
         "enterLibName": "Enter a library name to which export.",
         "includeUsedLibs": "Include '@use'd libraries",
         "libName": "A library name...",
-        "cannotReadLibrary": "The file '%s' cannot be read.",
+        "cannotReadLibrary": "<span>CroqujsError</span>The file '%s' cannot be read.",
         "copyingAsImage": "Copying as an image now...",
         "copiedAsImage": "Copied as an image.",
         "openFile": "Open a file.",

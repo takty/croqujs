@@ -55,7 +55,7 @@
         "enterLibName": "エクスポートするライブラリ名を入力してください。",
         "includeUsedLibs": "'@use'されたライブラリを含める",
         "libName": "ライブラリ名...",
-        "cannotReadLibrary": "ファイル「%s」を読みこめませんでした。",
+        "cannotReadLibrary": "<span>Croqujsエラー</span>ファイル「%s」を読みこめませんでした。",
         "copyingAsImage": "画像としてコピー中...",
         "copiedAsImage": "画像としてコピーしました。",
         "openFile": "ファイルを開きます。",
