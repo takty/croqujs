@@ -25,7 +25,7 @@ class ErrorTranslator {
 			let m = msg.substr(msg.indexOf(': ') + 2);
 			if (m.endsWith(' is not defined')) {
 				const t = m.replace(' is not defined', '');
-				m = '「' + t + '」が何なのか分かりません。打ち間違えていませんか？';
+				m = '「' + t + '」が何か分かりません。打ち間違えていませんか？';
 			} else if (m.startsWith('Cannot access \'') && m.endsWith('\' before initialization')) {
 				const t = m.replace('Cannot access \'', '').replace('\' before initialization', '');
 				m = '変数か定数「' + t + '」に値を一度もセットしていないのに、使おうとしています。打つ場所を間違えていませんか？';
