@@ -3,7 +3,7 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-28
+ * @version 2020-09-15
  *
  */
 
@@ -309,8 +309,8 @@
 	}
 	.cm-atom,
 	.cm-number,
-	.cm-string,
-	.cm-string-2 {  // String quoted by back quotes (`)
+	.cm-string:not(.cm-property),
+	.cm-string-2:not(.cm-property) {  // String quoted by back quotes (`)
 		color: $L-Orange;
 		font-weight: bold;
 		text-shadow: $L-Yellow 0 0 0.25em;
