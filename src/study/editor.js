@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-28
+ * @version 2020-09-15
  *
  */
 
@@ -18,11 +18,13 @@ class Editor {
 		this._codeStructure   = {};
 		this._ternServer      = null;
 		this._defaultDefJsons = [];
+		this._formatOpts      = {};
 
 		this._isEnabled                   = true;
 		this._isReadOnly                  = false;
 		this._isFunctionLineNumberEnabled = false;
 		this._isLineSelModeEnabled        = false;
+		this._isAutoIndentEnabled         = false;
 
 		this._lastLineNumWidth = 0;
 		this._lastLineNumChars = 0;
@@ -496,7 +498,15 @@ class Editor {
 	// -------------------------------------------------------------------------
 
 
+	autoIndentEnabled(flag) {
+		this._isAutoIndentEnabled = flag;
+	}
+
 	initAutoFormat() {
+		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
+		this._formatOpts = Object.assign({}, this._owner._res.jsBeautifyOpt);
+		Object.assign(this._formatOpts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
+
 		const doc = this._comp.getDoc();
 		let changedLine = -1;
 
@@ -509,7 +519,8 @@ class Editor {
 					this._formatLine(line - flc + i);
 				}
 			}
-			changedLine = line;
+			const from = changeObj.from.line;
+			if (line === from) changedLine = line;
 		});
 		this._comp.on('cursorActivity', () => {
 			const { line } = doc.getCursor('head');
@@ -526,13 +537,12 @@ class Editor {
 
 		const str = doc.getLine(line);
 		if (!str) return;
-
 		const bgn = { line: line, ch: 0 };
 		const end = { line: line, ch: str.length };
-		const org = doc.getRange(bgn, end);
+		const orig = doc.getRange(bgn, end) + '\n';
 
-		const [text, doIndent] = this._doFormat(org)
-		if (text === false || text === org) return;
+		const [text, doIndent] = this._doFormat(orig)
+		if (text === false || text === orig) return;
 		if (1 < text.split('\n').length) return;
 		this._comp.operation(() => {
 			doc.replaceRange(text, bgn, end);
@@ -540,15 +550,13 @@ class Editor {
 		});
 	}
 
-	_doFormat(text) {
-		const useTab = this._comp.getOption('indentWithTabs'), tabSize = this._comp.getOption('tabSize');
-		const opts = Object.assign({}, this._owner._res.jsBeautifyOpt);
-		Object.assign(opts, { indent_char: (useTab ? '\t' : ' '), indent_size: (useTab ? 1 : tabSize), indent_with_tabs: useTab });
+	_doFormat(text, force = false) {
 		try {
-			const indent = text.match(/^(\s+)/);
+			const indent = this._isAutoIndentEnabled ? false : text.match(/^(\s+)/);
 			const commentIndent = text.match(/^(\s*\/\/)/);
-			text = js_beautify(text, opts);
+			text = js_beautify(text, this._formatOpts);
 			text = this._formatCommentWhitespace(text);
+			if (force) return [text, true];
 			if (commentIndent) {
 				if (commentIndent[0].startsWith('//')) {
 					text = text.replace(/^\/\//, commentIndent[0]);
@@ -742,19 +750,18 @@ class Editor {
 			end = doc.getCursor('to');
 			curPos = Object.assign({}, end);
 			if (bgn.line < end.line && end.ch === 0) end.line = Math.max(bgn.line, end.line - 1);
-			bgn.ch = 0;
-			end.ch = doc.getLine(end.line).length;
 		} else {
+			const str = doc.getLine(line);
+			if (!str) return;
 			curPos = { line, ch };
 			bgn = { line: line, ch: 0 };
-			end = { line: line, ch: doc.getLine(line).length };
+			end = { line: line, ch: str.length };
 		}
-		const text = this._doFormat(doc.getRange(bgn, end))
-		if (text === false) return;
-		this._comp.operation(() => {
-			doc.replaceRange(text, bgn, end);
-			if (curPos !== false) doc.setCursor(curPos);
-		});
+		const flc = end.line - bgn.line + 1;
+		for (let i = 0; i < flc; i += 1) {
+			this._formatLine(bgn.line + i);
+		}
+		if (curPos !== false) doc.setCursor(curPos);
 	}
 
 	find() {
