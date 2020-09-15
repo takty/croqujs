@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-18
+ * @version 2020-09-16
  *
  */
 
@@ -22,7 +22,7 @@ class Study {
 		if (this._id) this._id = this._id.replace('#', '');
 
 		this._winstate = new WinState(window, '$winstate_study');
-		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, language: 'ja' });
+		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, autoIndent: true, language: 'ja' });
 		this._config.addEventListener((cfg) => this._configUpdated(cfg));
 		this._lang = this._config.getItem('language', 'ja');
 		this._permissions = {};
@@ -295,6 +295,7 @@ class Study {
 		this._editor.lineHeight(parseInt(cfg.lineHeight, 10) + '%');
 		this._editor.fontSize(parseInt(cfg.fontSize, 10));
 		this._editor.functionLineNumberEnabled(cfg.functionLineNumber);
+		this._editor.autoIndentEnabled(cfg.autoIndent);
 
 		const pane = document.querySelector('.sub');
 		pane.style.fontSize = parseInt(cfg.fontSize, 10) + 'px';
@@ -557,6 +558,7 @@ class Study {
 			else if (cmd === 'lineHeightReset')  cfg.setItem('lineHeight', 165);
 			else if (cmd === 'toggleSoftWrap')   cfg.setItem('softWrap', !cfg.getItem('softWrap'));
 			else if (cmd === 'toggleFnLineNum')  cfg.setItem('functionLineNumber', !cfg.getItem('functionLineNumber'));
+			else if (cmd === 'toggleAutoIndent') cfg.setItem('autoIndent', !cfg.getItem('autoIndent'));
 			else if (cmd === 'toggleOutputPane') this._outputPane.toggle();
 
 			if (cmd === 'setLanguageJa') {

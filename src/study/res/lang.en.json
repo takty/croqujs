@@ -24,6 +24,7 @@
             "toggleComment": "Toggle Comments",
             "format": "Format",
             "copyAsImage": "Copy As Image",
+            "toggleAutoIndent": "Auto-Indent",
         "code": "Code",
             "run": "Run",
             "stop": "Stop",

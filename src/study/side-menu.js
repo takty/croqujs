@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-06
+ * @version 2020-09-16
  *
  */
 
@@ -188,6 +188,7 @@ class SideMenu {
 	reflectConfig(conf) {
 		this._setChecked('toggleSoftWrap', conf.softWrap);
 		this._setChecked('toggleFnLineNum', conf.functionLineNumber);
+		this._setChecked('toggleAutoIndent', conf.autoIndent);
 		if (conf.language === 'ja') {
 			this._setChecked('setLanguageJa', true);
 			this._setChecked('setLanguageEn', false);

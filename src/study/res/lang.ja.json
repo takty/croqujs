@@ -24,6 +24,7 @@
             "toggleComment": "コメントの切り替え",
             "format": "フォーマット",
             "copyAsImage": "画像としてコピー",
+            "toggleAutoIndent": "自動インデント",
         "code": "コード",
             "run": "実行",
             "stop": "停止",
