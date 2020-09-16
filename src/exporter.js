@@ -3,7 +3,7 @@
  * Exporter
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-18
+ * @version 2020-09-16
  *
  */
 
@@ -20,7 +20,7 @@ global.acorn.walk = require('./study/lib/acorn/walk.js');
 const analyze     = require('./study/analyzer.js');
 
 const HTML_HEAD1 = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
-const HTML_HEAD2 = '</head><body><script>';
+const HTML_HEAD2 = '</head><body><script>"use strict";';
 const HTML_FOOT  = '</script></body>';
 const DEF_DIR    = 'def';
 const INJECTION  = 'injection.js';
