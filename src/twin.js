@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-20
+ * @version 2020-09-28
  *
  */
 
@@ -326,7 +326,7 @@ class Twin {
 		this._fieldWin.close();
 	}
 
-	async doRun(text) {  // for Promise Test
+	async doRun(text) {
 		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
@@ -340,7 +340,7 @@ class Twin {
 		}
 	}
 
-	async doRunWithoutWindow(text) {  // for Promise Test
+	async doRunWithoutWindow(text) {
 		if (this._isModified) this._backup.backupText(text);
 		this._codeCache = text;
 
