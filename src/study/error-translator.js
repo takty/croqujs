@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-09-16
+ * @version 2020-09-27
  *
  */
 
@@ -67,6 +67,9 @@ class ErrorTranslator {
 			} else if (m.endsWith('is not a constructor')) {
 				const t = m.replace(' is not a constructor', '');
 				m = '「' + t + '」はコンストラクターではないので、「new」を付けて呼び出せません。<b>間違えて入力していませんか？</b>';
+			} else if (m.startsWith('Class constructor ') && m.endsWith(" cannot be invoked without 'new'")) {
+				const t = m.replace('Class constructor ', '').replace(" cannot be invoked without 'new'", '');
+				m = '「' + t + '」はコンストラクターなのに、「new」がありません。<b>「new」を忘れたり、間違えて入力したりしていませんか？</b>';
 			} else if (m.endsWith('is not iterable')) {
 				const t = m.replace(' is not iterable', '');
 				m = '「' + t + '」は配列などのように繰り返せるものではないので、for文では使えません。<b>間違えて入力していませんか？</b>';
