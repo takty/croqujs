@@ -1,6 +1,6 @@
 /**
  *
- * Code Analyzer (JS)
+ * Function Extractor (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
  * @version 2020-09-28

@@ -17,7 +17,7 @@ const PATH = require_('path');
 
 global.acorn       = require('./study/lib/acorn/acorn.js');
 global.acorn.walk  = require('./study/lib/acorn/walk.js');
-const analyze      = require('./analyzer.js');
+const analyze      = require('./extractor.js');
 
 const HTML_HEAD1 = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TITLE%</title>';
 const HTML_HEAD2 = '</head><body><script>"use strict";';
