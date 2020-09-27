@@ -1,18 +1,18 @@
 {
-  "name": "croqujs",
-  "version": "5.0.0",
-  "description": "The Playground for JavaScript",
-  "productName": "Croqujs",
-  "main": "main.js",
-  "author": "Takuto Yanagida",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/takty/croqujs.git"
-  },
-  "dependencies": {
-    "electron-log": "^4.2.0",
-    "electron-promise-ipc": "^2.1.0",
-    "electron-updater": "^4.3.1"
-  }
+	"name": "croqujs",
+	"version": "5.0.0",
+	"description": "The Playground for JavaScript",
+	"productName": "Croqujs",
+	"main": "main.js",
+	"author": "Takuto Yanagida",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/takty/croqujs.git"
+	},
+	"dependencies": {
+		"electron-log": "^4.2.4",
+		"electron-promise-ipc": "^2.2.1",
+		"electron-updater": "^4.3.5"
+	}
 }
