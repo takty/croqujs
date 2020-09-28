@@ -48,7 +48,13 @@ class Twin {
 		this._codeCache = '';
 
 		ipcMain.on('notifyServer_' + this._id, (ev, msg, ...args) => { this[msg](...args); });
-		promiseIpc.on('callServer_' + this._id, ([msg, ...args], ev) => { return this[msg](...args); });
+		promiseIpc.on('callServer_' + this._id, ([msg, ...args], ev) => {
+			try {
+				return this[msg](...args);
+			} catch (e) {
+				console.error(e);
+			}
+		});
 
 		this._createStudyWindow();
 		// this._studyWin.show();
@@ -75,7 +81,11 @@ class Twin {
 		this._fieldWin.setMenu(null);
 		this._fieldWin.on('closed', () => { this._fieldWin = null; });
 		return new Promise(resolve => {
-			this._fieldWin.once('ready-to-show', () => { resolve(); });
+			const st = setTimeout(() => { resolve(); }, 200);
+			this._fieldWin.once('ready-to-show', () => {
+				clearTimeout(st);
+				resolve();
+			});
 		});
 	}
 
@@ -332,12 +342,9 @@ class Twin {
 
 		if (!this._fieldWin) {
 			await this._createFieldWindow();
-			this._fieldWin.show();
-			return this._execute(text);
-		} else {
-			if (!this._fieldWin.isVisible()) this._fieldWin.show();
-			return this._execute(text);
 		}
+		this._fieldWin.show();
+		return this._execute(text);
 	}
 
 	async doRunWithoutWindow(text) {
@@ -346,11 +353,10 @@ class Twin {
 
 		if (!this._fieldWin) {
 			await this._createFieldWindow();
-			return this._execute(text);
 		} else {
 			this._fieldWin.hide();
-			return this._execute(text);
 		}
+		return this._execute(text);
 	}
 
 	_execute(codeStr) {
