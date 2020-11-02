@@ -346,6 +346,13 @@
 	.cm-variable-3 { color: $L-Cyan; }  // Not Used (for TypeScript)
 }
 
+.CodeMirror .CodeMirror-activeline {
+	.cm-variable:not(.CodeMirror-selectedtext),
+	.cm-variable-2:not(.CodeMirror-selectedtext) {
+		border-radius: 0;
+	}
+}
+
 
 // Laccolla Styles for Used Addons ---------------------------------------------
 
