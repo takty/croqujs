@@ -3,7 +3,7 @@
  * Gulpfile
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-08-18
+ * @version 2020-11-03
  *
  */
 
@@ -57,6 +57,11 @@ gulp.task('copy-jshint', (done) => {
 	done();
 });
 
+gulp.task('copy-jsqr', (done) => {
+	copySync('./node_modules/jsqr/dist/jsQR.js', PATH_STUDY_LIB + 'jsqr/jsQR.js');
+	done();
+});
+
 gulp.task('copy-sweetalert2', (done) => {
 	copySync('./node_modules/sweetalert2/dist/sweetalert2.min.*', PATH_STUDY_LIB + 'sweetalert2/');
 	done();
@@ -73,6 +78,7 @@ gulp.task('copy-lib', gulp.parallel(
 	'copy-codemirror',
 	'copy-js-beautify',
 	'copy-jshint',
+	'copy-jsqr',
 	'copy-sweetalert2',
 	'copy-tern',
 ));
