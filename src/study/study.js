@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-11-02
+ * @version 2020-11-04
  *
  */
 
@@ -43,6 +43,8 @@ class Study {
 		this._loadPlugin(this._lang);
 		this._initFileDrop();
 		this._initialize();
+
+		this._qcr = new QrCodeReader(document.getElementById('qcr'));
 	}
 
 	_initImeStateIndication() {
@@ -529,7 +531,7 @@ class Study {
 
 		const minmax = (val, min, max) => Math.min(max, Math.max(min, val));
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			const cfg = this._config;
 
 			if (this._executeCommandFile(cmd)) return;
@@ -626,6 +628,9 @@ class Study {
 			case 'exportAsWebPage':
 				this._handleSaving('doExportAsWebPage');
 				return true;
+			case 'qcr':
+				this._onReadQrCode();
+				return true;
 		}
 		return false;
 	}
@@ -657,6 +662,28 @@ class Study {
 
 	async _handleSaving(method, ...opts) {
 		const [msg, arg] = await this._callServer(method, this._editor.value(), ...opts);
+		this._handleServerResponse(msg, arg);
+	}
+
+	async _onReadQrCode() {
+		const d = await this._qcr.start();
+		const ls = d.split('\n').map(e => { return e.trim(); });
+		if (1 < ls.length && ls[0] === 'croqujs-template') {
+			this._openRemoteTemplate(ls);
+		}
+	}
+
+	async _openRemoteTemplate(ls) {
+		const msgKey = 'confirmOpenRemoteTemplate';
+		let text = this._isModified ? this._res.msg[msgKey + '_Before'] : '';
+		if (2 < ls.length) {
+			text += this._res.msg[msgKey + '_Title'].replace('%s', ls[2]);
+		} else {
+			text += this._res.msg[msgKey];
+		}
+		const { value: res } = await this._dialogBox.showConfirm(text, 'warning');
+		if (!res) return;
+		const [msg, arg] = await this._callServer('doOpenRemoteTemplate', ls[1]);
 		this._handleServerResponse(msg, arg);
 	}
 

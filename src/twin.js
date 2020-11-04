@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-11-03
+ * @version 2020-11-04
  *
  */
 
@@ -42,10 +42,11 @@ class Twin {
 		this._isReadOnly = false;
 		this._isModified = false;
 
-		this._backup    = new Backup();
-		this._exporter  = new Exporter();
-		this._tempDirs  = [];
-		this._codeCache = '';
+		this._backup     = new Backup();
+		this._exporter   = new Exporter();
+		this._tempDirs   = [];
+		this._tempDirsSt = [];
+		this._codeCache  = '';
 
 		ipcMain.on('notifyServer_' + this._id, (ev, msg, ...args) => { this[msg](...args); });
 		promiseIpc.on('callServer_' + this._id, ([msg, ...args], ev) => {
@@ -57,8 +58,8 @@ class Twin {
 		});
 
 		this._createStudyWindow();
-		// this._studyWin.show();
-		// this._studyWin.webContents.toggleDevTools();
+		this._studyWin.show();
+		this._studyWin.webContents.toggleDevTools();
 	}
 
 	_createStudyWindow() {
@@ -299,7 +300,7 @@ class Twin {
 		this._studyWin = null;
 		if (this._fieldWin) this._fieldWin.close();
 
-		this._clearTempPath();
+		this._clearTempPath(true);
 	}
 
 	doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
@@ -326,6 +327,36 @@ class Twin {
 			return ['success_export', 'exportedAsWebPage'];
 		} catch (e) {
 			return this._returnAlertError(e, expDir);
+		}
+	}
+
+	async doOpenRemoteTemplate(url) {
+		const dir = this._getTempPath('croqujs-template', false);
+		const fetch = require('node-fetch');
+		try {
+			FS().mkdirSync(dir);
+			const res = await fetch(url);
+			const zipPath = PATH().join(dir, 'temp.zip');
+			const dest = FS().createWriteStream(zipPath);
+			await new Promise((resolve, reject) => {
+				res.body.pipe(dest);
+				res.body.on('error', (err) => {
+					reject(err);
+				});
+				dest.on('finish', resolve);
+			});
+			const extract = require('extract-zip');
+			await extract(zipPath, { dir: dir });
+			FS().unlinkSync(zipPath);
+
+			const files = FS().readdirSync(dir);
+			const ts = files.filter(e => e.endsWith('.template.js'));
+			if (ts.length && ts[0]) {
+				return this._openFile(PATH().join(dir, ts[0]));
+			}
+			return ['nop'];
+		} catch (e) {
+			return this._returnAlertError(e, dir);
 		}
 	}
 
@@ -362,10 +393,12 @@ class Twin {
 	}
 
 	_execute(codeStr) {
+		console.log(this._tempFilePath);
+		console.log(this._filePath);
 		const ret = this._exporter.checkLibraryReadable(codeStr, this._filePath ?? this._tempFilePath);
 		if (ret !== true) return this._returnExecutionError(ret);
 
-		this._clearTempPath();
+		this._clearTempPath(false);
 		const expDir = this._getTempPath();
 		try {
 			this._rmdirSync(expDir);
@@ -403,15 +436,21 @@ class Twin {
 		FS().rmdirSync(dirPath);
 	}
 
-	_getTempPath() {
+	_getTempPath(baseName = 'croqujs', shortTerm = true) {
 		const tmpdir = OS().tmpdir();
-		const name = 'croqujs-' + Date.now();
+		const name = baseName + '-' + Date.now();
 		const path = PATH().join(tmpdir, name);
-		this._tempDirs.push(path);
+		if (shortTerm) this._tempDirsSt.push(path);
+		else this._tempDirs.push(path);
 		return path;
 	}
 
-	_clearTempPath() {
+	_clearTempPath(all) {
+		for (let td of this._tempDirsSt) this._rmdirSync(td);
+		this._tempDirsSt = [];
+
+		if (!all) return;
+
 		for (let td of this._tempDirs) this._rmdirSync(td);
 		this._tempDirs = [];
 	}

@@ -3,7 +3,7 @@
  * QR Code Reader
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-11-03
+ * @version 2020-11-04
  *
  */
 
@@ -13,44 +13,57 @@
 
 class QrCodeReader {
 
-	constructor() {
-		this._video = document.querySelector('#camera');
-		this._canvas = document.querySelector('#picture');
-		this._ctx = canvas.getContext('2d');
+	constructor(container) {
+		this._container = container;
+		this._container.addEventListener('click', () => {
+			this.stop();
+		});
+		this._cam = document.querySelector('#qcr-camera');
+		this._temp = document.querySelector('#qcr-temp');
+		this._ctx = this._temp.getContext('2d');
+
+		this._isRunning = false;
 	}
 
-	start() {
+	async start() {
+		this._container.classList.add('visible');
 		const cs = {
 			audio: false,
-			video: {
-				width: 320,
-				height: 240,
-				facingMode: 'user',  // Front camera
-			}
+			video: { width: 320, height: 240, facingMode: 'user' }
 		};
-		navigator.mediaDevices.getUserMedia(cs)
-			.then((stream) => {
-				this._video.srcObject = stream;
-				this._video.onloadedmetadata = (e) => {
-					this._video.play();
-					this._detect();
-				};
-			}).catch((err) => {
-				console.log(err.name + ': ' + err.message);
-			});
+		const stream = await navigator.mediaDevices.getUserMedia(cs);
+		this._cam.srcObject = stream;
+
+		await new Promise(res => {
+			this._cam.addEventListener('loadedmetadata', (e) => { res(); }, { once: true });
+		});
+		this._isRunning = true;
+		this._cam.play();
+		const res = await this._detect();
+		this.stop();
+		return res;
 	}
-	
+
+	stop() {
+		this._container.classList.remove('visible');
+		this._isRunning = false;
+		this._cam.pause();
+	}
+
 	_detect() {
-		this._ctx.drawImage(this._video, 0, 0, this._canvas.width, this._canvas.height);
-	
-		const imageData = this._ctx.getImageData(0, 0, this._canvas.width, this._canvas.height);
-		const code = jsQR(imageData.data, this._canvas.width, this._canvas.height);
-	
-		if (code) {
-			this._video.pause();
-			return code.data;
+		this._ctx.drawImage(this._cam, 0, 0, this._temp.width, this._temp.height);
+		const img = this._ctx.getImageData(0, 0, this._temp.width, this._temp.height);
+		const qr = jsQR(img.data, this._temp.width, this._temp.height);
+
+		if (qr) {
+			this._cam.pause();
+			return qr.data;
 		} else {
-			setTimeout(() => { this._detect(); }, 300);
+			if (!this._isRunning) return;
+			return new Promise(r => {
+				setTimeout(() => { r(this._detect()); }, 300);
+			});
 		}
 	}
+
 }

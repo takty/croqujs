@@ -10,7 +10,7 @@
             "export": "エクスポート",
                 "exportAsWebPage": "ウェブページとしてエクスポート",
                 "exportAsLibrary": "ライブラリとしてエクスポート",
-            "exit": "終了",
+            "qcr": "QRコードの読み取り...",
         "edit": "編集",
             "undo": "元に戻す",
             "redo": "やり直す",
@@ -48,7 +48,12 @@
         "confirmNew": "プログラムが保存されていません。<br>本当に新規作成しますか？",
         "confirmExit": "プログラムが保存されていません。<br>本当に終了しますか？",
         "confirmOpen": "プログラムが保存されていません。<br>本当に開きますか？",
-        "confirmReadOnly": "読み込み専用ファイルなので，上書き保存できません。<br>別のファイル名を指定しますか？",
+
+        "confirmOpenRemoteTemplate_Before": "プログラムが保存されていません。<br>",
+        "confirmOpenRemoteTemplate_Title": "テンプレート「%s」を開きますか？",
+        "confirmOpenRemoteTemplate": "テンプレートを開きますか？",
+
+		"confirmReadOnly": "読み込み専用ファイルなので，上書き保存できません。<br>別のファイル名を指定しますか？",
         "alertNextTime": "次回起動時に反映されます。",
         "error": "エラーが発生しました。",
         "exportedAsWebPage": "ウェブページとしてエクスポートされました。",
