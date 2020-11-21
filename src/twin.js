@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-11-03
+ * @version 2020-11-21
  *
  */
 
@@ -13,7 +13,6 @@
 
 const electron = require('electron');
 const { ipcMain, BrowserWindow, dialog, clipboard, nativeImage } = electron;
-const promiseIpc = require('electron-promise-ipc');
 const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
 const OS       = require_('os');
@@ -48,7 +47,7 @@ class Twin {
 		this._codeCache = '';
 
 		ipcMain.on('notifyServer_' + this._id, (ev, msg, ...args) => { this[msg](...args); });
-		promiseIpc.on('callServer_' + this._id, ([msg, ...args], ev) => {
+		ipcMain.handle('callServer_' + this._id, (ev, msg, ...args) => {
 			try {
 				return this[msg](...args);
 			} catch (e) {
@@ -62,7 +61,7 @@ class Twin {
 	}
 
 	_createStudyWindow() {
-		this._studyWin = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: true } });
+		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, preload: `${__dirname}/study/preload.js` } });
 		this._studyWin.loadURL(`file://${__dirname}/study/study.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {

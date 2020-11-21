@@ -11,10 +11,6 @@
 'use strict';
 
 
-const { ipcRenderer } = require('electron');
-const promiseIpc = require('electron-promise-ipc');
-
-
 class Study {
 
 	constructor() {
@@ -28,7 +24,7 @@ class Study {
 		this._permissions = {};
 		this._permissionRequests = [];
 
-		ipcRenderer.on('windowClose', () => this.executeCommand('close'));
+		window.ipc.on('windowClose', () => this.executeCommand('close'));
 		window.onbeforeunload = (e) => {
 			if (!this._isModified) return;
 			e.preventDefault();
@@ -282,11 +278,11 @@ class Study {
 
 
 	_notifyServer(msg, ...args) {
-		ipcRenderer.send('notifyServer_' + this._id, msg, ...args);
+		window.ipc.send('notifyServer_' + this._id, msg, ...args);
 	}
 
 	_callServer(msg, ...args) {
-		return promiseIpc.send('callServer_' + this._id, [msg, ...args]);
+		return window.ipc.invoke('callServer_' + this._id, msg, ...args);
 	}
 
 	_callField(method, ...args) {
