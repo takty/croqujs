@@ -3,7 +3,7 @@
  * ErrorTranslator
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-09-27
+ * @version 2021-01-29
  *
  */
 
@@ -70,9 +70,12 @@ class ErrorTranslator {
 			} else if (m.startsWith('Class constructor ') && m.endsWith(" cannot be invoked without 'new'")) {
 				const t = m.replace('Class constructor ', '').replace(" cannot be invoked without 'new'", '');
 				m = '「' + t + '」はコンストラクターなのに、「new」がありません。<b>「new」を忘れたり、間違えて入力したりしていませんか？</b>';
+			} else if (m.endsWith('is not a function or its return value is not iterable')) {
+				const t = m.replace(' is not a function or its return value is not iterable', '');
+				m = '「' + t + '」は関数ではないか、戻り値が配列のような繰り返せるものではないので、for文では使えません。<b>間違えて入力していませんか？</b>';
 			} else if (m.endsWith('is not iterable')) {
 				const t = m.replace(' is not iterable', '');
-				m = '「' + t + '」は配列などのように繰り返せるものではないので、for文では使えません。<b>間違えて入力していませんか？</b>';
+				m = '「' + t + '」は配列のような繰り返せるものではないので、for文では使えません。<b>間違えて入力していませんか？</b>';
 			} else if (m.startsWith('Cannot read property ') && (m.endsWith(' of undefined') || m.endsWith(' of null'))) {
 				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
 				m = '変数が空なので、プロパティ「' + t + '」は使えません。<b>直前を間違えて入力していませんか？</b>';
