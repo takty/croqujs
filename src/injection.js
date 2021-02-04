@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2020-05-17
+ * @version 2021-02-04
  *
  */
 
@@ -83,7 +83,7 @@
 			} else {
 				outputCache.push({ msg, type, count: 1 });
 			}
-			// DO NOT MODIFY THE FOLLWING STATEMENT!
+			// DO NOT MODIFY THE FOLLOWING STATEMENT!
 			const cur = window.performance.now();
 			if (sendOutputTimeout && outputCache.length < MAX_SENT_OUTPUT_COUNT && cur - lastTime < MSG_INTERVAL) clearTimeout(sendOutputTimeout);
 			sendOutputTimeout = setTimeout(sendOutput, MSG_INTERVAL);
@@ -118,12 +118,12 @@
 			if (s instanceof Float64Array)      return '[' + s.join(', ') + ']';
 			if (s instanceof Set || s instanceof WeakSet) {
 				const vs = [];
-				for (let val of s) vs.push(ns + toStr(val, ns) + ',\n');
+				for (const val of s) vs.push(ns + toStr(val, ns) + ',\n');
 				return `{\n` + vs.join('') + `${sp}}`;
 			}
 			if (s instanceof Map || s instanceof WeakMap) {
 				const vs = [];
-				for (let [key, val] of s) vs.push(ns + toStr(key, ns) + ': ' + toStr(val, ns) + ',\n');
+				for (const [key, val] of s) vs.push(ns + toStr(key, ns) + ': ' + toStr(val, ns) + ',\n');
 				return `{\n` + vs.join('') + `${sp}}`;
 			}
 			if (s instanceof DOMException) {
@@ -131,7 +131,7 @@
 			}
 			if (typeof s === 'object') {
 				const vs = [];
-				for (let key in s) vs.push(ns + toStr(key, ns) + ': ' + toStr(s[key], ns) + ',\n');
+				for (const [key, val] of Object.entries(s)) vs.push(ns + toStr(key, ns) + ': ' + toStr(val, ns) + ',\n');
 				if (vs.length) return `{\n` + vs.join('') + `${sp}}`;
 			}
 			return s.toString();
@@ -139,24 +139,24 @@
 
 		return {
 			dir: (obj) => {
-				cacheOutput(JSON.stringify(obj, null, '\t'), 'std');
 				orig.dir(obj);
+				cacheOutput(JSON.stringify(obj, null, '\t'), 'std');
 			},
 			log: (...vs) => {
-				cacheOutput(stringify(vs), 'std');
 				orig.log(...vs);
+				cacheOutput(stringify(vs), 'std');
 			},
 			info: (...vs) => {
-				cacheOutput(stringify(vs), 'std');
 				orig.info(...vs);
+				cacheOutput(stringify(vs), 'std');
 			},
 			warn: (...vs) => {
-				cacheOutput(stringify(vs), 'std');
 				orig.warn(...vs);
+				cacheOutput(stringify(vs), 'std');
 			},
 			error: (...vs) => {
-				cacheOutput(stringify(vs), 'err');
 				orig.error(...vs);
+				cacheOutput(stringify(vs), 'err');
 			}
 		};
 	}
