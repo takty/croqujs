@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida @ Space-Time Inc.
- * @version 2021-01-29
+ * @version 2021-02-04
  *
  */
 
@@ -77,7 +77,7 @@ class Twin {
 	}
 
 	_createFieldWindow() {
-		this._fieldWin = new BrowserWindow({ show: false });
+		this._fieldWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true } });
 		this._fieldWin.loadURL(`file://${__dirname}/field/field.html#${this._id}`);
 		this._fieldWin.setMenu(null);
 		this._fieldWin.on('closed', () => { this._fieldWin = null; });
