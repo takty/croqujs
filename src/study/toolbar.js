@@ -2,7 +2,7 @@
  *
  * Toolbar
  *
- * @author Takuto Yanagida @ Space-Time Inc.
+ * @author Takuto Yanagida
  * @version 2019-08-18
  *
  */

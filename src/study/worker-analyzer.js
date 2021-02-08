@@ -2,7 +2,7 @@
  *
  * Code Analyzer Worker (JS)
  *
- * @author Takuto Yanagida @ Space-Time Inc.
+ * @author Takuto Yanagida
  * @version 2018-11-28
  *
  */

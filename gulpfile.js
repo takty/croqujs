@@ -2,7 +2,7 @@
  *
  * Gulpfile
  *
- * @author Takuto Yanagida @ Space-Time Inc.
+ * @author Takuto Yanagida
  * @version 2020-08-18
  *
  */
@@ -145,7 +145,7 @@ const builder = require('electron-builder');
 const buildOpts = {
 	config: {
 		appId: `com.stxst.${config.name}`,
-		copyright: 'Takuto Yanagida @ Space-Time Inc.',
+		copyright: 'Takuto Yanagida',
 		buildVersion: VERSION,
 		fileAssociations: { ext: 'js', name: 'JavaScript' },
 		win: {

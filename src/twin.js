@@ -2,7 +2,7 @@
  *
  * Twin (JS)
  *
- * @author Takuto Yanagida @ Space-Time Inc.
+ * @author Takuto Yanagida
  * @version 2021-02-04
  *
  */

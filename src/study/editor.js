@@ -2,7 +2,7 @@
  *
  * Editor: Editor Component Wrapper for CodeMirror
  *
- * @author Takuto Yanagida @ Space-Time Inc.
+ * @author Takuto Yanagida
  * @version 2021-01-29
  *
  */
