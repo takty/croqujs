@@ -27,7 +27,7 @@
 		"acorn-walk": "8.0.2",
 		"codemirror": "5.59.2",
 		"current-git-branch": "^1.1.0",
-		"electron": "^11.2.2",
+		"electron": "^11.2.3",
 		"electron-builder": "^22.9.1",
 		"fs-extra": "^9.1.0",
 		"glob": "^7.1.6",
