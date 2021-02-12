@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida
- * @version 2021-02-04
+ * @version 2021-02-11
  *
  */
 
@@ -93,7 +93,7 @@
 			return vs.map((e) => { return toStr(e, ''); }).join(', ');
 		};
 
-		const toStr = (s, sp) => {
+		const toStr = (s, sp, os = []) => {
 			const ns = sp + '\t';
 			if (s === null)               return 'null';
 			if (typeof s === 'undefined') return 'undefined';
@@ -106,7 +106,9 @@
 				if (!Number.isFinite(s)) return 'Infinity';
 				return JSON.stringify(s);
 			}
-			if (Array.isArray(s)) return '[' + s.map((e) => { return toStr(e, sp); }).join(', ') + ']';
+			if (os.includes(s)) return s.toString();
+			os.push(s);
+			if (Array.isArray(s)) return '[' + s.map(e => toStr(e, sp, os)).join(', ') + ']';
 			if (s instanceof Int8Array)         return '[' + s.join(', ') + ']';
 			if (s instanceof Uint8Array)        return '[' + s.join(', ') + ']';
 			if (s instanceof Uint8ClampedArray) return '[' + s.join(', ') + ']';
@@ -116,22 +118,25 @@
 			if (s instanceof Uint32Array)       return '[' + s.join(', ') + ']';
 			if (s instanceof Float32Array)      return '[' + s.join(', ') + ']';
 			if (s instanceof Float64Array)      return '[' + s.join(', ') + ']';
+			if (s instanceof DOMException)      return s.toString();
+
 			if (s instanceof Set || s instanceof WeakSet) {
 				const vs = [];
-				for (const val of s) vs.push(ns + toStr(val, ns) + ',\n');
+				for (const val of s) vs.push(ns + toStr(val, ns, os) + ',\n');
 				return `{\n` + vs.join('') + `${sp}}`;
 			}
 			if (s instanceof Map || s instanceof WeakMap) {
 				const vs = [];
-				for (const [key, val] of s) vs.push(ns + toStr(key, ns) + ': ' + toStr(val, ns) + ',\n');
+				for (const [key, val] of s) {
+					vs.push(ns + toStr(key, ns, os) + ': ' + toStr(val, ns, os) + ',\n');
+				}
 				return `{\n` + vs.join('') + `${sp}}`;
-			}
-			if (s instanceof DOMException) {
-				return s.toString();
 			}
 			if (typeof s === 'object') {
 				const vs = [];
-				for (const [key, val] of Object.entries(s)) vs.push(ns + toStr(key, ns) + ': ' + toStr(val, ns) + ',\n');
+				for (const [key, val] of Object.entries(s)) {
+					vs.push(ns + toStr(key, ns, os) + ': ' + toStr(val, ns, os) + ',\n');
+				}
 				if (vs.length) return `{\n` + vs.join('') + `${sp}}`;
 			}
 			return s.toString();
