@@ -3,7 +3,7 @@
  * Toolbar Style
  *
  * @author Takuto Yanagida
- * @version 2019-03-27
+ * @version 2021-02-24
  *
  */
 
@@ -25,6 +25,7 @@ $size-toolbar-button: 40px;
 	.btn {
 		box-sizing: border-box;
 		cursor: default;
+		user-select: none;
 
 		margin: 0 0 2px 0;
 		padding: 0 12px;
