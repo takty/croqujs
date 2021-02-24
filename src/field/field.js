@@ -3,7 +3,7 @@
  * Field (JS)
  *
  * @author Takuto Yanagida
- * @version 2020-04-30
+ * @version 2021-02-24
  *
  */
 
@@ -65,10 +65,10 @@ class Field {
 	}
 
 	onKeyDown(e) {  // Called also from injection.js
-		if (e.which === 122 || (e.ctrlKey && e.metaKey && e.which === 70)) {  // F11, Cmd+Ctrl+F
+		if (e.key === 'F11' || (e.ctrlKey && e.metaKey && e.key === 'f')) {  // F11, Cmd+Ctrl+F
 			e.preventDefault();
 			this.setFullscreenEnabled(!this._isFullscreenEnabled);
-		} else if ((e.ctrlKey && e.which === 84) || (e.metaKey && e.which === 84)) {  // Ctrl+T, Cmd+T
+		} else if ((e.ctrlKey || e.metaKey) && e.key === 't') {  // Ctrl+T, Cmd+T
 			this.closeProgram();
 			window.close();
 		}

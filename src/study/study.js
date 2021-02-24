@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida
- * @version 2020-11-21
+ * @version 2021-02-24
  *
  */
 
@@ -33,7 +33,7 @@ class Study {
 		}
 
 		window.addEventListener('keydown', (e) => {
-			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.keyCode === 'A'.charCodeAt(0)) e.preventDefault();
+			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.key === 'a') e.preventDefault();
 		});
 
 		this._initImeStateIndication();
@@ -49,15 +49,13 @@ class Study {
 			if (isImeOn) this._editor._elem.classList.remove('ime');
 			isImeOn = false;
 		}
-		window.addEventListener('keydown', (e) => {
-			if (this._editor._comp.hasFocus()) {
-				if (e.which === 229 || e.which === 0) {
-					if (!isImeOn) this._editor._elem.classList.add('ime');
-					isImeOn = true;
-					clearTimeout(st);
-					st = setTimeout(turnOffImeCursor, 1000);
-				}
-			}
+		window.addEventListener('compositionstart', (e) => {
+			if (!isImeOn) this._editor._elem.classList.add('ime');
+			isImeOn = true;
+		});
+		window.addEventListener('compositionend', (e) => {
+			clearTimeout(st);
+			st = setTimeout(turnOffImeCursor, 1000);
 		});
 	}
 
@@ -133,6 +131,7 @@ class Study {
 		this._handleServerResponse(msg, arg);
 
 		navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
+		window.focus();
 	}
 
 	_initEditor() {
