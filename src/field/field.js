@@ -24,7 +24,7 @@ class Field {
 		this._container = document.createElement('div');
 		document.body.appendChild(this._container);
 
-		window.ondragover = window.ondrop = (e) => {e.preventDefault(); return false;};
+		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
 		window.addEventListener('storage', () => {
 			const v = window.localStorage.getItem(this._msg_id);
 			if (!v) return;
@@ -71,6 +71,8 @@ class Field {
 		} else if ((e.ctrlKey || e.metaKey) && e.key === 't') {  // Ctrl+T, Cmd+T
 			this.closeProgram();
 			window.close();
+		} else if (e.key === 'F12') {
+			window.localStorage.setItem('#study_' + this._id, JSON.stringify({ message: 'toggleDevTools' }));
 		}
 	}
 

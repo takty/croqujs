@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-02-04
+ * @version 2021-02-24
  *
  */
 
@@ -137,6 +137,14 @@ class Twin {
 
 	onStudyProgramClosed() {
 		this.stop();
+	}
+
+	onStudyToggleDevTools() {
+		this._studyWin.webContents.toggleDevTools();
+	}
+
+	onStudyToggleDevToolsField() {
+		if (this._fieldWin) this._fieldWin.webContents.toggleDevTools();
 	}
 
 	_returnAlertError(e, dir) {

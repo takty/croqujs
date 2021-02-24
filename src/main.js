@@ -3,14 +3,14 @@
  * Main (JS)
  *
  * @author Takuto Yanagida
- * @version 2020-05-06
+ * @version 2021-02-24
  *
  */
 
 
 'use strict';
 
-const { app, globalShortcut } = require('electron');
+const { app } = require('electron');
 const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
 const FS   = require_('fs');
@@ -44,18 +44,11 @@ class Main {
 			this._createWindow(this._macPath ? this._macPath : this._getArgPath());
 			this._macPath = null;
 			this._isReady = true;
-			globalShortcut.register('CmdOrCtrl+F12', () => {
-				for (let g of this._gs) { if (g._fieldWin) g._fieldWin.webContents.toggleDevTools(); }
-			});
-			globalShortcut.register('CmdOrCtrl+Shift+F12', () => {
-				for (let g of this._gs) g._studyWin.webContents.toggleDevTools();
-			});
 		});
 		app.on('second-instance', (e, argv, workDir) => {
 			this._createWindow(this._getArgPath(argv));
 		});
 		app.on('window-all-closed', () => {
-			globalShortcut.unregisterAll();
 			app.quit();
 		});
 	}

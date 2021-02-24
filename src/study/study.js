@@ -34,6 +34,7 @@ class Study {
 
 		window.addEventListener('keydown', (e) => {
 			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.key === 'a') e.preventDefault();
+			if ((e.ctrlKey || e.metaKey) && e.key === 'F12') this._notifyServer('onStudyToggleDevTools');
 		});
 
 		this._initImeStateIndication();
@@ -239,6 +240,8 @@ class Study {
 			} else if (ma.message === 'requestPermission') {
 				this._permissionRequests.push(ma.params);
 				if (this._permissionRequests.length === 1) this._handlePermission();
+			} else if (ma.message === 'toggleDevTools') {
+				this._notifyServer('onStudyToggleDevToolsField');
 			}
 		});
 	}
