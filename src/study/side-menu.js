@@ -3,7 +3,7 @@
  * Side Menu
  *
  * @author Takuto Yanagida
- * @version 2020-09-16
+ * @version 2021-02-24
  *
  */
 
@@ -18,7 +18,7 @@ class SideMenu {
 
 		this._study = study;
 		this._res   = res;
-		this._accs  = {}
+		this._map   = {}
 
 		this._elm = document.querySelector('.side-menu');
 		this._elm.style.display = 'none';
@@ -90,7 +90,7 @@ class SideMenu {
 				ac = ac.substr(1);
 			}
 			const key = ac.split('+').sort().join('+');
-			this._accs[key] = () => { this._study.executeCommand(cmd, doClose); }
+			this._map[key] = () => { this._study.executeCommand(cmd, doClose); }
 		}
 		const modAcc = [];
 		for (let ac of acc.split(' ')) {
@@ -123,22 +123,21 @@ class SideMenu {
 			if (e.altKey) pks.push('alt');
 			if ((this.IS_MAC && e.metaKey) || (!this.IS_MAC && e.ctrlKey)) pks.push('cc');
 			if (e.shiftKey) pks.push('shift');
-			pks.push(this._convertKey(e.key, e.keyCode));
+			pks.push(this._convertKey(e.key));
 			const ac = pks.sort().join('+');
 			if (this.IS_MAC && ac === 'c+cc' && !this._study._editor._comp.hasFocus()) {
 				return;  // for copying text in output pane on Mac
 			}
-			if (this._accs[ac]) {
+			if (this._map[ac]) {
 				e.preventDefault();
-				this._accs[ac]();
+				this._map[ac]();
 			}
 		});
 	}
 
-	_convertKey(key, code) {
+	_convertKey(key) {
 		key = key.toLowerCase();
 		if (key === '+') return 'plus';
-		if (112 <= code && code <= 123) return 'f' + (code - 111);
 		return key;
 	}
 
