@@ -3,7 +3,7 @@
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida
- * @version 2021-01-29
+ * @version 2021-02-24
  *
  */
 
@@ -107,6 +107,7 @@ class Editor {
 
 	initCaret() {
 		const cursor = document.querySelector('.CodeMirror-cursor');
+		if (!cursor) return;
 		window.addEventListener('blur', () => {
 			cursor.style.visibility = 'hidden';  // hide cursor on mac
 			this._comp.setOption('cursorBlinkRate', -1);
@@ -137,15 +138,10 @@ class Editor {
 	}
 
 	initWheelZoom() {
-		let isCtrl = false;
-
 		this._elem.addEventListener('wheel', (e) => {
-			if (!this._isEnabled || !isCtrl) return;
+			if (!this._isEnabled || !e.ctrlKey) return;
 			this._owner.executeCommand(e.deltaY > 0 ? 'fontSizeMinus' : 'fontSizePlus');
 		}, { passive: true });
-		this._elem.addEventListener('keydown', (e) => { if (e.which === 17) { isCtrl = (e.type === 'keydown'); } });
-		this._elem.addEventListener('keyup',   (e) => { if (e.which === 17) { isCtrl = (e.type === 'keydown'); } });
-		this._comp.on('blur', () => { isCtrl = false; });
 	}
 
 
@@ -345,7 +341,7 @@ class Editor {
 		});
 		this._elem.addEventListener('mousemove', (e) => {
 			if (!dragging) return;
-			if (e.which === 0) {
+			if (e.buttons === 0) {
 				dragging = false;
 			} else {
 				this._select(fromLine, getLine(e));
@@ -419,6 +415,7 @@ class Editor {
 
 
 	initAutoComplete() {
+		this._isDotTyped = false;
 		this._ternServer = new CodeMirror.TernServer({ defs: this._defaultDefJsons });
 		this._comp.on('cursorActivity', (cm) => { this._ternServer.updateArgHints(cm); });
 
@@ -429,11 +426,12 @@ class Editor {
 		const reg = /\w|\./;
 		let autoComp = null;
 		this._comp.on('keypress', (cm, e) => {
-			if (reg.test(String.fromCharCode(e.charCode))) {
+			if (reg.test(e.key)) {
+				if (e.key === '.') this._isDotTyped = true;
 				if (autoComp) clearTimeout(autoComp);
 				autoComp = setTimeout(() => {
 					const elm = document.querySelector('.CodeMirror-hints');
-					if (!elm) this._autoCompActivated = true;
+					if (!elm && e.key !== '.') this._isDotTyped = false;
 					this._complete(cm, this._ternServer);
 				}, 500);
 			} else {
@@ -470,20 +468,17 @@ class Editor {
 		ts.request(cm, { type: 'completions', types: true, includeKeywords: true }, (error, data) => {
 			if (error) return;
 			const from = data.start, to = data.end;
-			if (this._autoCompActivated) {
-				this._autoCompActivated = false;
-				if (from.line === to.line && to.ch - from.ch === 1) {
-					const pc = this._comp.getDoc().getRange(CodeMirror.Pos(from.line, from.ch - 1), CodeMirror.Pos(to.line, to.ch - 1));
-					if (pc !== '.') return;
-				}
+			if (from.line !== to.line) return;
+			const len = to.ch - from.ch;
+			if (!this._isDotTyped && len < 3) return;
+
+			const list = [];
+			for (const c of data.completions) {
+				let className = this._typeToIcon(c.type);
+				if (data.guess) className += ' CodeMirror-Tern-guess';
+				list.push({ text: c.name, displayText: c.displayName || c.name, className: className, data: c });
 			}
-			const completions = [];
-			for (let completion of data.completions) {
-				let className = this._typeToIcon(completion.type);
-				if (data.guess) className += ' ' + 'CodeMirror-Tern-' + 'guess';
-				completions.push({ text: completion.name, displayText: completion.displayName || completion.name, className: className, data: completion });
-			}
-			c({ from: from, to: to, list: completions });
+			c({ from, to, list });
 		});
 	}
 
