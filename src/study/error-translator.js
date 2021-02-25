@@ -1,9 +1,9 @@
 /**
  *
- * ErrorTranslator
+ * Error Translator
  *
  * @author Takuto Yanagida
- * @version 2021-01-29
+ * @version 2021-02-25
  *
  */
 
@@ -144,6 +144,8 @@ class ErrorTranslator {
 				m = 'ここにreturn文を置くことはできません。<b>入力する場所を間違えていませんか？</b>';
 			} else if (m === 'Unexpected end of input') {
 				m = 'プログラムは途中なのに、ファイルが終わってしまいました。<b>中カッコ {} を入力するのを間違えたり、忘れたりしていませんか？</b>';
+			} else if (m === 'await is only valid in async function') {
+				m = 'awaitを付けた関数呼び出しは、async関数の中でしかできません。<b>functionの前にasyncを付け忘れていませんか？</b>';
 			} else if (m.startsWith('Identifier \'') && m.endsWith('\' has already been declared')) {
 				const t = m.replace('Identifier \'', '').replace('\' has already been declared', '');
 				m = '名前「' + t + '」は既に別の場所で使われているので、同じ名前を付けることは出来ません。<b>間違えて入力していませんか？</b>';
