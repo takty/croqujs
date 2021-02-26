@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida
- * @version 2020-08-28
+ * @version 2021-02-27
  *
  */
 
@@ -98,7 +98,7 @@ html, body {
 	height: 0;
 	font-family: $font-console;
 
-	> div > div {  /* Output Pane -> innner -> items */
+	> div > div {  /* Output Pane -> inner -> items */
 		margin: 4px;
 		word-wrap: break-word;
 		line-height: 1.35;
@@ -106,6 +106,29 @@ html, body {
 
 	div.std {
 		color: $color-text;
+		[class ^= 'type'] {
+			border-radius: 0.25em;
+			margin: 0 1px;
+			padding: 1px;
+
+			background-color: rgba($color-text, 0.05);
+			&:hover { background-color: rgba($color-text, 0.1); }
+		}
+		.type-set,
+		.type-weakset,
+		.type-map,
+		.type-weakmap,
+		.type-object {
+			display: inline-block;
+			vertical-align: top;
+
+			background-color: transparent;
+			border: 1px solid rgba($color-text, 0.1);
+			&:hover {
+				background-color: transparent;
+				border-color: rgba($color-text, 0.5);
+			}
+		}
 	}
 
 	div.err {

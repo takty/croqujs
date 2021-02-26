@@ -90,5 +90,28 @@
         "No": "いいえ",
         "All": "すべて",
         "Stop": "やめる"
-    }
+    },
+	"typeLabels": [
+		{"type": "boolean", "label": "真偽値"},
+		{"type": "function", "label": "関数"},
+		{"type": "symbol", "label": "シンボル"},
+		{"type": "string", "label": "文字列"},
+		{"type": "number", "label": "数値"},
+		{"type": "array", "label": "配列"},
+		{"type": "array-int8", "label": "8ビット符号付き整数配列"},
+		{"type": "array-uint8", "label": "8ビット符号なし整数配列"},
+		{"type": "array-uint8clamped", "label": "制約付き8ビット符号なし整数配列"},
+		{"type": "array-int16", "label": "16ビット符号付き整数配列"},
+		{"type": "array-uint16", "label": "16ビット符号なし整数配列"},
+		{"type": "array-int32", "label": "32ビット符号付き整数配列"},
+		{"type": "array-uint32", "label": "32ビット符号なし整数配列"},
+		{"type": "array-float32", "label": "32ビット浮動小数点数配列"},
+		{"type": "array-float64", "label": "64ビット浮動小数点数配列"},
+		{"type": "array-domexception", "label": "DOM例外"},
+		{"type": "set", "label": "セット"},
+		{"type": "weakset", "label": "弱参照セット"},
+		{"type": "map", "label": "マップ"},
+		{"type": "weakmap", "label": "弱参照マップ"},
+		{"type": "object", "label": "オブジェクト"}
+	]
 }

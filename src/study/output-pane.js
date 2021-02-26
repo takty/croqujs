@@ -3,7 +3,7 @@
  * Output Pane
  *
  * @author Takuto Yanagida
- * @version 2020-04-22
+ * @version 2021-02-26
  *
  */
 
@@ -17,8 +17,9 @@ const DELAY    = 100;
 
 class OutputPane {
 
-	constructor() {
+	constructor(res) {
 		const ELM_ID = 'output-pane';
+		this._res = res;
 
 		this._elm = document.getElementById(ELM_ID);
 		this._msgsCache = [];
@@ -134,6 +135,7 @@ class OutputPane {
 			e.className = m.type;
 			const c = (m.count > 1) ? ('<span class="count">' + m.count + '</span>') : '';
 			e.innerHTML = c + this._format(m.msg);
+			this._assignTypeLabel(e);
 			inner.appendChild(e);
 		}
 		this._elm.replaceChild(inner, this._elm.firstChild);
@@ -143,6 +145,13 @@ class OutputPane {
 			this._setEnabled(true);
 			this._stEnabled = null;
 		}, 200);
+	}
+
+	_assignTypeLabel(msgElm) {
+		for (const { type, label } of this._res.typeLabels) {
+			const es = msgElm.getElementsByClassName('type-' + type);
+			for (const e of es) e.title = label;
+		}
 	}
 
 	_format(text) {

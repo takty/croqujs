@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida
- * @version 2021-02-11
+ * @version 2021-02-27
  *
  */
 
@@ -90,56 +90,57 @@
 		};
 
 		const stringify = (vs) => {
-			return vs.map((e) => { return toStr(e, ''); }).join(', ');
+			return vs.map((e) => { return toStruct(e); }).join(', ');
 		};
 
-		const toStr = (s, sp, os = []) => {
-			const ns = sp + '\t';
-			if (s === null)               return 'null';
-			if (typeof s === 'undefined') return 'undefined';
-			if (typeof s === 'boolean')   return s.toString();
-			if (typeof s === 'function')  return s.toString();
-			if (typeof s === 'symbol')    return s.toString();
-			if (typeof s === 'string')    return `"${s}"`;
-			if (typeof s === 'number') {
-				if (Number.isNaN(s))     return 'NaN';
-				if (!Number.isFinite(s)) return 'Infinity';
-				return JSON.stringify(s);
-			}
-			if (os.includes(s)) return s.toString();
+		const toStruct = (s, os = []) => {
+			if (s === null)               return '<span class="type-null">null</span>';
+			if (typeof s === 'undefined') return '<span class="type-undefined">undefined</span>';
+			if (typeof s === 'string')    return `<span class="type-string">${s}</span>`;
+			if (typeof s === 'boolean')   return `<span class="type-boolean">${s.toString()}</span>`;
+			if (typeof s === 'function')  return `<span class="type-function">${s.toString()}</span>`;
+			if (typeof s === 'symbol')    return `<span class="type-symbol">${s.toString()}</span>`;
+			if (typeof s === 'number')    return `<span class="type-number">${s.toString()}</span>`;
+			if (os.includes(s)) return `<span class="type">${s.toString()}</span>`;
 			os.push(s);
-			if (Array.isArray(s)) return '[' + s.map(e => toStr(e, sp, os)).join(', ') + ']';
-			if (s instanceof Int8Array)         return '[' + s.join(', ') + ']';
-			if (s instanceof Uint8Array)        return '[' + s.join(', ') + ']';
-			if (s instanceof Uint8ClampedArray) return '[' + s.join(', ') + ']';
-			if (s instanceof Int16Array)        return '[' + s.join(', ') + ']';
-			if (s instanceof Uint16Array)       return '[' + s.join(', ') + ']';
-			if (s instanceof Int32Array)        return '[' + s.join(', ') + ']';
-			if (s instanceof Uint32Array)       return '[' + s.join(', ') + ']';
-			if (s instanceof Float32Array)      return '[' + s.join(', ') + ']';
-			if (s instanceof Float64Array)      return '[' + s.join(', ') + ']';
-			if (s instanceof DOMException)      return s.toString();
 
-			if (s instanceof Set || s instanceof WeakSet) {
-				const vs = [];
-				for (const val of s) vs.push(ns + toStr(val, ns, os) + ',\n');
-				return `{\n` + vs.join('') + `${sp}}`;
+			if (Array.isArray(s)) return `<span class="type-array">[${s.map(e => toStruct(e, os)).join(', ')}]</span>`;
+			const arrayLikes = {
+				int8        : Int8Array,
+				uint8       : Uint8Array,
+				uint8clamped: Uint8ClampedArray,
+				int16       : Int16Array,
+				uint16      : Uint16Array,
+				int32       : Int32Array,
+				uint32      : Uint32Array,
+				float32     : Float32Array,
+				float64     : Float64Array,
+			};
+			for (const [cls, proto] of Object.entries(arrayLikes)) {
+				if (!(s instanceof proto)) continue;
+				return `<span class="type-array-${cls}">[${s.join(', ')}]</span>`;
 			}
-			if (s instanceof Map || s instanceof WeakMap) {
-				const vs = [];
-				for (const [key, val] of s) {
-					vs.push(ns + toStr(key, ns, os) + ': ' + toStr(val, ns, os) + ',\n');
-				}
-				return `{\n` + vs.join('') + `${sp}}`;
+
+			if (s instanceof DOMException) return `<span class="type-domexception">${s.toString()}</span>`;
+
+			const setLikes = { set: Set, weakset: WeakSet };
+			for (const [cls, proto] of Object.entries(setLikes)) {
+				if (!(s instanceof proto)) continue;
+				const vs = [...s].map(e => `\t${toStruct(e, os)},\n`);
+				return `<div class="type-${cls}">{\n${vs.join('')}}</div>`;
+			}
+			const mapLikes = { map: Map, weakmap: WeakMap };
+			for (const [cls, proto] of Object.entries(mapLikes)) {
+				if (!(s instanceof proto)) continue;
+				const vs = [...s].map(([key, val]) => `\t${toStruct(key, os)}: ${toStruct(val, os)},\n`);
+				return `<div class="type-${cls}">{\n${vs.join('')}}</div>`;
 			}
 			if (typeof s === 'object') {
-				const vs = [];
-				for (const [key, val] of Object.entries(s)) {
-					vs.push(ns + toStr(key, ns, os) + ': ' + toStr(val, ns, os) + ',\n');
-				}
-				if (vs.length) return `{\n` + vs.join('') + `${sp}}`;
+				const vs = Object.entries(s).map(([key, val]) => `\t${toStruct(key, os)}: ${toStruct(val, os)},\n`);
+				if (vs.length) return `<div class="type-object">{\n${vs.join('')}}</div>`;
+				return `<div class="type-object">{}</div>`;
 			}
-			return s.toString();
+			return `<span class="type">${s.toString()}</span>`;
 		};
 
 		return {

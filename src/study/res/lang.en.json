@@ -48,7 +48,7 @@
         "confirmNew": "The code is not saved.<br>Are you sure you want to create a new code?",
         "confirmExit": "The code is not saved.<br>Are you sure you want to quit?",
         "confirmOpen": "The code is not saved.<br>Are you sure you want to open?",
-        "confirmReadOnly": "The specified file cannot be over wrriten because it is read only.<br>Are you sure you want to specify another file name?",
+        "confirmReadOnly": "The specified file cannot be over written because it is read only.<br>Are you sure you want to specify another file name?",
         "alertNextTime": "Settings are applied when Croqujs is started at the next time.",
         "error": "An error occurred.",
         "exportedAsWebPage": "Exported as a web page.",
@@ -80,5 +80,28 @@
         {"name": "All Files", "extensions": ["*"]}
     ],
     "readOnly": "Read Only",
-    "editorPhrase": {}
+    "editorPhrase": {},
+	"typeLabels": [
+		{"type": "boolean", "label": "Boolean"},
+		{"type": "function", "label": "Function"},
+		{"type": "symbol", "label": "Symbol"},
+		{"type": "string", "label": "String"},
+		{"type": "number", "label": "Number"},
+		{"type": "array", "label": "Array"},
+		{"type": "array-int8", "label": "8-bit signed integer array"},
+		{"type": "array-uint8", "label": "8-bit unsigned integer array"},
+		{"type": "array-uint8clamped", "label": "Clamped 8-bit unsigned integer array"},
+		{"type": "array-int16", "label": "16-bit signed integer array"},
+		{"type": "array-uint16", "label": "16-bit unsigned integer array"},
+		{"type": "array-int32", "label": "32-bit signed integer array"},
+		{"type": "array-uint32", "label": "32-bit unsigned integer array"},
+		{"type": "array-float32", "label": "32-bit floating point number array"},
+		{"type": "array-float64", "label": "64-bit floating point number array"},
+		{"type": "array-domexception", "label": "DOM exception"},
+		{"type": "set", "label": "Set"},
+		{"type": "weakset", "label": "Weak set"},
+		{"type": "map", "label": "Map"},
+		{"type": "weakmap", "label": "Weak map"},
+		{"type": "object", "label": "Object"}
+	]
 }

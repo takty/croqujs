@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-02-24
+ * @version 2021-02-26
  *
  */
 
@@ -107,7 +107,7 @@ class Study {
 		this._toolbar    = new Toolbar(this, this._res);
 		this._sideMenu   = new SideMenu(this, this._res);
 		this._dialogBox  = new DialogBox(this, this._res);
-		this._outputPane = new OutputPane();
+		this._outputPane = new OutputPane(this._res);
 
 		this._filePath    = null;
 		this._name        = null;
