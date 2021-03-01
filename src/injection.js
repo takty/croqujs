@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida
- * @version 2021-02-27
+ * @version 2021-03-01
  *
  */
 
@@ -106,15 +106,10 @@
 
 			if (Array.isArray(s)) return `<span class="type-array">[${s.map(e => toStruct(e, os)).join(', ')}]</span>`;
 			const arrayLikes = {
-				int8        : Int8Array,
-				uint8       : Uint8Array,
-				uint8clamped: Uint8ClampedArray,
-				int16       : Int16Array,
-				uint16      : Uint16Array,
-				int32       : Int32Array,
-				uint32      : Uint32Array,
-				float32     : Float32Array,
-				float64     : Float64Array,
+				int8   : Int8Array,    uint8  : Uint8Array,   uint8clamped: Uint8ClampedArray,
+				int16  : Int16Array,   uint16 : Uint16Array,
+				int32  : Int32Array,   uint32 : Uint32Array,
+				float32: Float32Array, float64: Float64Array,
 			};
 			for (const [cls, proto] of Object.entries(arrayLikes)) {
 				if (!(s instanceof proto)) continue;
@@ -126,21 +121,25 @@
 			const setLikes = { set: Set, weakset: WeakSet };
 			for (const [cls, proto] of Object.entries(setLikes)) {
 				if (!(s instanceof proto)) continue;
-				const vs = [...s].map(e => `\t${toStruct(e, os)},\n`);
-				return `<div class="type-${cls}">{\n${vs.join('')}}</div>`;
+				const vs = [...s].map(e => `\t${toStruct(e, os)}`);
+				return makeStringRepresentation(vs, cls);
 			}
 			const mapLikes = { map: Map, weakmap: WeakMap };
 			for (const [cls, proto] of Object.entries(mapLikes)) {
 				if (!(s instanceof proto)) continue;
-				const vs = [...s].map(([key, val]) => `\t${toStruct(key, os)}: ${toStruct(val, os)},\n`);
-				return `<div class="type-${cls}">{\n${vs.join('')}}</div>`;
+				const vs = [...s].map(([key, val]) => `\t${toStruct(key, os)}: ${toStruct(val, os)}`);
+				return makeStringRepresentation(vs, cls);
 			}
 			if (typeof s === 'object') {
-				const vs = Object.entries(s).map(([key, val]) => `\t${toStruct(key, os)}: ${toStruct(val, os)},\n`);
-				if (vs.length) return `<div class="type-object">{\n${vs.join('')}}</div>`;
-				return `<div class="type-object">{}</div>`;
+				const vs = Object.entries(s).map(([key, val]) => `\t${toStruct(key, os)}: ${toStruct(val, os)}`);
+				return makeStringRepresentation(vs, 'object');
 			}
 			return `<span class="type">${s.toString()}</span>`;
+		};
+
+		const makeStringRepresentation = function (vs, cls) {
+			if (vs.length) return `<div class="type-${cls}">{\n${vs.join(',\n')}\n}</div>`;
+			return `<div class="type-${cls}">{}</div>`;
 		};
 
 		return {

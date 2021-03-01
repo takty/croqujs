@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida
- * @version 2021-02-27
+ * @version 2021-03-01
  *
  */
 
@@ -114,11 +114,13 @@ html, body {
 			background-color: rgba($color-text, 0.05);
 			&:hover { background-color: rgba($color-text, 0.1); }
 		}
+		.type-function,
 		.type-set,
 		.type-weakset,
 		.type-map,
 		.type-weakmap,
-		.type-object {
+		.type-object,
+		[class ^= 'type-array'] {
 			display: inline-block;
 			vertical-align: top;
 
