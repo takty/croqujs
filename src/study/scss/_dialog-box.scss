@@ -118,10 +118,7 @@
 
 .swal2-popup.prompt-with-option {
 	.swal2-html-container {
-		// text-align: center;
-
 		div:first-child {
-			// display: block !important;
 			text-align: left;
 		}
 	}
@@ -131,9 +128,5 @@
 	}
 	.swal2-checkbox-opt {
 		margin: 1rem auto 0;
-		// &:last-child { margin-bottom: 0; }
-		// display: flex;
-		// align-items: center;
-		// justify-content: center;
 	}
 }
