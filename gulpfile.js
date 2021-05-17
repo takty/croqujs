@@ -82,6 +82,7 @@ gulp.task('copy-src', (done) => {
 	fs.removeSync('./app/study/scss/');
 	fs.removeSync('./app/study/def/');
 	copySync('./res/icon/icon.*', './app/res/');
+	copySync('./res/icon/icon-mac.png', './app/res/');
 	done();
 });
 
@@ -153,7 +154,7 @@ const buildOpts = {
 				{ target: 'zip',  arch: ['x64', 'ia32'] },
 				{ target: 'nsis', arch: ['x64', 'ia32'] },
 			],
-			icon: 'app/res/icon-win.png',
+			icon: 'app/res/icon.ico',
 		},
 		artifactName: '${name}-${os}-${arch}.${ext}',
 		nsis: {
