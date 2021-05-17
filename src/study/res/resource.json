@@ -24,23 +24,28 @@
 		"unescape_strings": true,
 		"space_after_anon_function": true
 	},
-	"about": ["<h1>Croqujs %VERSION_MAJOR% <span>/krō-ˈkē/</span></h1>",
+	"about": [
+		"<h1>Croqujs %VERSION_MAJOR% <span>/krō-ˈkē/</span></h1>",
+		"<div>",
 		"by Takuto Yanagida @ <a href=\"https://www.stxst.com/\" target=\"_blank\">Space-Time Inc.</a><br>",
+		"<div>by Takuto Yanagida @ <a href=\"https://www.stxst.com/\" target=\"_blank\">Space-Time Inc.</a><br>",
 		"v%VERSION%<br>",
 		"<br>",
 		"Powered by:<br>",
 		"<ul>",
-		"<li><code>Acorn v8.0.5</code></li>",
-		"<li><code>CodeMirror v5.59.4</code></li>",
-		"<li><code>Electron v11.3.0</code></li>",
-		"<li><code>electron-log v4.3.2</code></li>",
-		"<li><code>electron-updater v4.3.5</code></li>",
-		"<li><code>js-beautify v1.13.5</code></li>",
+		"<li><code>Acorn v8.2.4</code></li>",
+		"<li><code>CodeMirror v5.61.0</code></li>",
+		"<li><code>Electron v12.0.7</code></li>",
+		"<li><code>electron-log v4.3.5</code></li>",
+		"<li><code>electron-updater v4.3.9</code></li>",
+		"<li><code>js-beautify v1.13.13</code></li>",
 		"<li><code>JSHint v2.12.0</code></li>",
-		"<li><code>SweetAlert2 v10.15.5</code></li>",
+		"<li><code>SweetAlert2 v11.0.5</code></li>",
 		"<li><code>Tern v0.24.3</code></li>",
 		"<li><code>Inconsolata-dz v001.010</code></li>",
 		"</ul>",
 		"* \"https://ip-api.com/\" is used internally to make<br>",
-		"<code>navigator.geolocation.getCurrentPosition</code> available."]
+		"<code>navigator.geolocation.getCurrentPosition</code> available.",
+		"</div>"
+	]
 }
