@@ -153,7 +153,7 @@ const buildOpts = {
 				{ target: 'zip',  arch: ['x64', 'ia32'] },
 				{ target: 'nsis', arch: ['x64', 'ia32'] },
 			],
-			icon: 'app/res/icon.ico',
+			icon: 'app/res/icon-win.png',
 		},
 		artifactName: '${name}-${os}-${arch}.${ext}',
 		nsis: {
@@ -167,7 +167,7 @@ const buildOpts = {
 				{ target: 'zip', arch: ['x64'] },
 				{ target: 'dmg', arch: ['x64'] },
 			],
-			icon: 'app/res/icon.icns',
+			icon: 'app/res/icon-mac.png',
 		},
 	}
 };
