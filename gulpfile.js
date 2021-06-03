@@ -3,7 +3,7 @@
  * Gulpfile
  *
  * @author Takuto Yanagida
- * @version 2020-08-18
+ * @version 2021-06-03
  *
  */
 
@@ -26,7 +26,7 @@ const config = require('./src/package.json');
 const moment = require('moment');
 
 const VERSION_MAJOR = config['version'].split('.')[0];
-const VERSION_MINOR = moment().format((BRANCH_NAME === 'master') ? 'YY.M-D' : 'YY.M-[dev]D');
+const VERSION_MINOR = moment().format((BRANCH_NAME === 'develop') ? 'YY.M-[dev]D' : 'YY.M-D');
 const VERSION       = VERSION_MAJOR + '.' + VERSION_MINOR;
 
 const PATH_STUDY_LIB = './app/study/lib/';
