@@ -22,13 +22,13 @@
 		"electron-updater": "^4.3.9"
 	},
 	"devDependencies": {
-		"acorn": "8.3.0",
+		"acorn": "8.4.0",
 		"acorn-loose": "8.1.0",
 		"acorn-walk": "8.1.0",
 		"codemirror": "5.61.1",
 		"current-git-branch": "^1.1.0",
-		"electron": "^13.1.0",
-		"electron-builder": "^22.10.5",
+		"electron": "^13.1.2",
+		"electron-builder": "^22.11.7",
 		"fs-extra": "^10.0.0",
 		"glob": "^7.1.7",
 		"gulp": "^4.0.2",
@@ -43,7 +43,7 @@
 		"jshint": "2.13.0",
 		"jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
 		"moment": "^2.29.1",
-		"sweetalert2": "11.0.16",
+		"sweetalert2": "11.0.17",
 		"tern": "0.24.3"
 	}
 }
