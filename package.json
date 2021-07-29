@@ -19,8 +19,7 @@
 	"homepage": "https://github.com/takty/croqujs#readme",
 	"dependencies": {
 		"electron-log": "^4.4.0",
-		"electron-updater": "^4.3.9",
-		"sass": "^1.36.0"
+		"electron-updater": "^4.3.9"
 	},
 	"devDependencies": {
 		"acorn": "8.4.1",
@@ -32,6 +31,7 @@
 		"electron-builder": "^22.11.7",
 		"fs-extra": "^10.0.0",
 		"glob": "^7.1.7",
+		"glob-parent": ">=5.1.2",
 		"gulp": "^4.0.2",
 		"gulp-autoprefixer": "^8.0.0",
 		"gulp-json-editor": "^2.5.6",
@@ -44,6 +44,7 @@
 		"jshint": "2.13.0",
 		"jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
 		"moment": "^2.29.1",
+		"sass": "^1.36.0",
 		"sweetalert2": "11.0.20",
 		"tern": "0.24.3"
 	}
