@@ -3,7 +3,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida
- * @version 2021-03-01
+ * @version 2021-07-30
  *
  */
 
@@ -40,6 +40,8 @@ $font-ui     : "Lucida Grande", "Hiragino Sans", "Yu Gothic UI", "Meiryo UI", sa
 $font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
 $font-size   : 14px;
 
+
+@use 'sass:math';
 
 @import 'editor';
 @import 'dialog-box';
@@ -140,7 +142,7 @@ html, body {
 			display: inline-block;
 
 			margin-right: 0.5rem;
-			padding: (1rem - 0.85rem) / 2 0.25rem;
+			padding: math.div(1rem - 0.85rem, 2) 0.25rem;
 
 			border-radius: 0.25rem;
 			background-color: $L-Red;
