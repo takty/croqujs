@@ -3,7 +3,7 @@
  * Gulpfile
  *
  * @author Takuto Yanagida
- * @version 2021-06-03
+ * @version 2021-07-30
  *
  */
 
@@ -19,7 +19,8 @@ const REP_VERSION       = '%VERSION%';
 const fs       = require('fs-extra');
 const path     = require('path');
 const gulp     = require('gulp');
-const $        = require('gulp-load-plugins')({ pattern: ['gulp-*'] });
+const $        = require('gulp-load-plugins')({ pattern: ['gulp-*', !'gulp-sass'] });
+const sass     = require('gulp-sass')(require('sass'));
 const copySync = require('./copy-sync');
 
 const config = require('./src/package.json');
@@ -115,7 +116,7 @@ gulp.task('sass', () => {
 				this.emit('end');
 			}
 		}))
-		.pipe($.sass({ outputStyle: 'compressed' }))
+		.pipe(sass({ outputStyle: 'compressed' }))
 		.pipe($.autoprefixer({ remove: false }))
 		.pipe($.rename({ extname: '.min.css' }))
 		.pipe($.rename((p) => {
