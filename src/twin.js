@@ -78,15 +78,11 @@ class Twin {
 
 	_createFieldWindow() {
 		this._fieldWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true } });
-		this._fieldWin.loadURL(`file://${__dirname}/field/field.html#${this._id}`);
-		this._fieldWin.setMenu(null);
-		this._fieldWin.on('closed', () => { this._fieldWin = null; });
 		return new Promise(resolve => {
-			const st = setTimeout(() => { resolve(); }, 2000);
-			this._fieldWin.once('ready-to-show', () => {
-				clearTimeout(st);
-				resolve();
-			});
+			this._fieldWin.once('ready-to-show', resolve);
+			this._fieldWin.on('closed', () => { this._fieldWin = null; });
+			this._fieldWin.setMenu(null);
+			this._fieldWin.loadURL(`file://${__dirname}/field/field.html#${this._id}`);
 		});
 	}
 
@@ -357,6 +353,9 @@ class Twin {
 			await this._createFieldWindow();
 		}
 		this._fieldWin.show();
+		while (!this._fieldWin.isVisible()) {
+			await new Promise(resolve => setTimeout(resolve, 200));
+		}
 		return this._execute(text);
 	}
 
