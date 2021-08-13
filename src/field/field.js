@@ -3,7 +3,7 @@
  * Field (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-02-24
+ * @version 2021-08-13
  *
  */
 
@@ -101,12 +101,12 @@ class Field {
 	setFullscreenEnabled(enabled) {
 		const f = this._isFullscreenEnabled;
 		if (enabled && !f) {
-			for (let f of ['requestFullscreen', 'webkitRequestFullscreen', 'mozRequestFullScreen']) {
+			for (let f of ['requestFullscreen', 'webkitRequestFullscreen']) {
 				if (document.body[f] !== undefined) document.body[f]();
 			}
 			this.onFullscreenEntered();
 		} else if (!enabled && f) {
-			for (let f of ['exitFullscreen', 'webkitExitFullscreen', 'mozCancelFullScreen']) {
+			for (let f of ['exitFullscreen', 'webkitExitFullscreen']) {
 				if (document[f] !== undefined) document[f]();
 			}
 			this.onFullscreenLeft();
@@ -114,7 +114,7 @@ class Field {
 	}
 
 	isFullscreenEnabled() {
-		for (let p of ['fullscreenElement', 'webkitCurrentFullScreenElement', 'mozFullScreenElement']) {
+		for (let p of ['fullscreenElement', 'webkitCurrentFullScreenElement']) {
 			if (document[p] !== undefined && document[p] !== null) return true;
 		}
 		return false;
