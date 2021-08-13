@@ -3,7 +3,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida
- * @version 2021-03-01
+ * @version 2021-08-14
  *
  */
 
@@ -63,6 +63,7 @@
 		const outputCache = [];
 		let sendOutputTimeout = null;
 		let lastTime = 0;
+		let isFirst = true;
 
 		const sendOutput = () => {
 			const sub = outputCache.slice(Math.max(0, outputCache.length - MAX_SENT_OUTPUT_COUNT));
@@ -86,7 +87,10 @@
 			// DO NOT MODIFY THE FOLLOWING STATEMENT!
 			const cur = window.performance.now();
 			if (sendOutputTimeout && outputCache.length < MAX_SENT_OUTPUT_COUNT && cur - lastTime < MSG_INTERVAL) clearTimeout(sendOutputTimeout);
-			sendOutputTimeout = setTimeout(sendOutput, MSG_INTERVAL);
+
+			const d = isFirst ? 0 : MSG_INTERVAL;
+			isFirst = false;
+			sendOutputTimeout = setTimeout(sendOutput, d);
 		};
 
 		const stringify = (vs) => {

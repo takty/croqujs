@@ -3,7 +3,7 @@
  * Console Message Collector (JS)
  *
  * @author Takuto Yanagida
- * @version 2018-11-21
+ * @version 2021-08-14
  *
  */
 
@@ -17,7 +17,7 @@ const MSG_INTERVAL = 200;
 let _outputCache = [];
 let _isIgnored = false;
 
-const send = createDelayFunction(() => sendCache(MAX_SIZE), 200);
+const send = createDelayFunction(() => sendCache(MAX_SIZE));
 
 
 self.addEventListener('message', (e) => {
@@ -74,15 +74,20 @@ function sendCache(count) {
 	self.postMessage(sub);
 }
 
-function createDelayFunction(fn, delay) {
+function createDelayFunction(fn) {
 	let st = null;
 	let last = 0;
+	let isFirst = true;
+
 	return () => {
 		const cur = self.performance.now();
 		if (st && cur - last < MSG_INTERVAL) clearTimeout(st);
+
+		const d = isFirst ? 0 : MSG_INTERVAL;
+		isFirst = false;
 		st = setTimeout(() => {
 			fn();
 			last = self.performance.now();
-		}, delay);
+		}, d);
 	};
 }
