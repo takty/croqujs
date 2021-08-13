@@ -3,7 +3,7 @@
  * Gulpfile
  *
  * @author Takuto Yanagida
- * @version 2021-07-30
+ * @version 2021-08-13
  *
  */
 
@@ -156,6 +156,7 @@ const buildOpts = {
 				{ target: 'nsis', arch: ['x64', 'ia32'] },
 			],
 			icon: 'app/res/icon.ico',
+			publisherName: 'Takuto Yanagida',
 		},
 		artifactName: '${name}-${os}-${arch}.${ext}',
 		nsis: {
