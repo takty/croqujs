@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-02-24
+ * @version 2021-08-13
  *
  */
 
@@ -185,6 +185,10 @@ class Twin {
 		const ni = nativeImage.createFromDataURL(dataUrl);
 		clipboard.writeImage(ni);
 		return ['success'];
+	}
+
+	doUnmaximize() {
+		this._studyWin.unmaximize();
 	}
 
 

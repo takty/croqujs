@@ -3,7 +3,7 @@
  * Study (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-02-26
+ * @version 2021-08-13
  *
  */
 
@@ -448,6 +448,7 @@ class Study {
 
 
 	_cmdTileWindow() {
+		this._callServer('doUnmaximize');
 		const x = window.screen.availLeft, y = window.screen.availTop;
 		const w = window.screen.availWidth / 2, h = window.screen.availHeight;
 		window.moveTo(x, y);
