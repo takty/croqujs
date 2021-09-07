@@ -15,25 +15,25 @@ $size-toolbar-button: 40px;
 	display: flex;
 
 	position: relative;
-	width: 100%;
-	height: $size-toolbar-button;
-	z-index: 999;
+	width   : 100%;
+	height  : $size-toolbar-button;
+	z-index : 999;
 
-	transition: 0.25s;
+	transition      : 0.25s;
 	background-color: $color-window;
 
 	.btn {
-		box-sizing: border-box;
-		cursor: default;
+		box-sizing : border-box;
+		cursor     : default;
 		user-select: none;
 
-		margin: 0 0 2px 0;
+		margin : 0 0 2px 0;
 		padding: 0 12px;
-		width: calc(#{$size-toolbar-button} + 12px * 2);
-		height: $size-toolbar-button;
+		width  : calc(#{$size-toolbar-button} + 12px * 2);
+		height : $size-toolbar-button;
 
 		img {
-			opacity: 0.65;
+			opacity   : 0.65;
 			transition: 0.25s;
 		}
 	}
@@ -56,10 +56,10 @@ $size-toolbar-button: 40px;
 }
 
 .toolbar .btn img {  // Icon wrapper
-	margin: 0;
+	margin : 0;
 	padding: 0;
-	width: $size-toolbar-button;
-	height: $size-toolbar-button;
+	width  : $size-toolbar-button;
+	height : $size-toolbar-button;
 }
 
 .toolbar-shadow {
@@ -68,18 +68,20 @@ $size-toolbar-button: 40px;
 }
 
 .toolbar .overlap {
-	display: none;
+	display        : none;
 	justify-content: center;
-	align-items: center;
+	align-items    : center;
 
 	position: absolute;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	margin: 0;
-	z-index: 9999;
+	left    : 0;
+	width   : 100%;
+	height  : 100%;
+	margin  : 0;
+	z-index : 9999;
+
+	font-family: $font-ui;
+	font-size  : $font-size;
 
 	background-color: $color-window;
-	color: $L-DarkGray;
-	font-family: $font-ui;
+	color           : $L-DarkGray;
 }
