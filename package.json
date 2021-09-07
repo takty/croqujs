@@ -4,30 +4,30 @@
 	"description": "The Playground for JavaScript",
 	"productName": "Croqujs",
 	"main": "app/main.js",
+	"author": "Takuto Yanagida",
+	"license": "MIT",
+	"homepage": "https://github.com/takty/croqujs#readme",
 	"scripts": {
 		"start": "gulp",
 		"build": "gulp && gulp build",
 		"dev": "gulp && npm run exec",
-		"exec": "./node_modules/.bin/electron ."
+		"exec": "electron ."
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/takty/croqujs.git"
 	},
-	"author": "Takuto Yanagida",
-	"license": "MIT",
-	"homepage": "https://github.com/takty/croqujs#readme",
 	"dependencies": {
 		"electron-log": "^4.4.1",
 		"electron-updater": "^4.3.9"
 	},
 	"devDependencies": {
-		"acorn": "8.4.1",
-		"acorn-loose": "8.1.0",
-		"acorn-walk": "8.1.1",
-		"codemirror": "5.62.2",
+		"acorn": "8.5.0",
+		"acorn-loose": "8.2.1",
+		"acorn-walk": "8.2.0",
+		"codemirror": "5.62.3",
 		"current-git-branch": "^1.1.0",
-		"electron": "^13.1.9",
+		"electron": "^14.0.0",
 		"electron-builder": "^22.11.7",
 		"fs-extra": "^10.0.0",
 		"glob": "^7.1.7",
@@ -44,8 +44,8 @@
 		"jshint": "2.13.1",
 		"jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
 		"moment": "^2.29.1",
-		"sass": "^1.37.5",
-		"sweetalert2": "11.1.2",
+		"sass": "^1.39.0",
+		"sweetalert2": "11.1.5",
 		"tern": "0.24.3"
 	}
 }

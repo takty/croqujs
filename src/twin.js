@@ -3,7 +3,7 @@
  * Twin (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-08-13
+ * @version 2021-09-08
  *
  */
 
@@ -61,7 +61,7 @@ class Twin {
 	}
 
 	_createStudyWindow() {
-		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, preload: `${__dirname}/study/preload.js` } });
+		this._studyWin = new BrowserWindow({ show: false, webPreferences: { nativeWindowOpen: true, contextIsolation: true, nodeIntegration: false, preload: `${__dirname}/study/preload.js` } });
 		this._studyWin.loadURL(`file://${__dirname}/study/study.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
@@ -77,7 +77,7 @@ class Twin {
 	}
 
 	_createFieldWindow() {
-		this._fieldWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true } });
+		this._fieldWin = new BrowserWindow({ show: false, webPreferences: { nativeWindowOpen: true, contextIsolation: true } });
 		return new Promise(resolve => {
 			this._fieldWin.once('ready-to-show', resolve);
 			this._fieldWin.on('closed', () => { this._fieldWin = null; });
