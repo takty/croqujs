@@ -27,7 +27,7 @@
 	"about": [
 		"<h1>Croqujs %VERSION_MAJOR% <span>/krō-ˈkē/</span></h1>",
 		"<div>",
-		"by Takuto Yanagida @ <a href=\"https://www.stxst.com/\" target=\"_blank\">Space-Time Inc.</a><br>",
+		"by Takuto Yanagida @ <a href=\"https://www.stxst.com/\" target=\"_blank\">Space-Time Inc.</a> / <a href=\"https://laccolla.com/\" target=\"_blank\">Laccolla</a><br>",
 		"v%VERSION%<br>",
 		"<br>",
 		"Powered by:<br>",
