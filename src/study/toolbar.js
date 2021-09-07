@@ -3,7 +3,7 @@
  * Toolbar
  *
  * @author Takuto Yanagida
- * @version 2019-08-18
+ * @version 2021-09-07
  *
  */
 
@@ -63,11 +63,11 @@ class Toolbar {
 
 	showMessage(text, hideShadow = false) {
 		if (hideShadow) this._elm.classList.remove('toolbar-shadow');
-		const overwrap = this._elm.querySelector('.overwrap');
-		const overwrapMsg = document.createTextNode(text);
-		overwrap.style.display = 'flex';
-		if (overwrap.firstChild) overwrap.removeChild(overwrap.firstChild);
-		overwrap.appendChild(overwrapMsg);
+		const overlap = this._elm.querySelector('.overlap');
+		const overlapMsg = document.createTextNode(text);
+		overlap.style.display = 'flex';
+		if (overlap.firstChild) overlap.removeChild(overlap.firstChild);
+		overlap.appendChild(overlapMsg);
 	}
 
 	hideMessage(delay = 0) {
@@ -75,9 +75,9 @@ class Toolbar {
 			if (!this._elm.classList.contains('toolbar-shadow')) {
 				this._elm.classList.add('toolbar-shadow');
 			}
-			const overwrap = this._elm.querySelector('.overwrap');
-			overwrap.style.display = 'none';
-			if (overwrap.firstChild) overwrap.removeChild(overwrap.firstChild);
+			const overlap = this._elm.querySelector('.overlap');
+			overlap.style.display = 'none';
+			if (overlap.firstChild) overlap.removeChild(overlap.firstChild);
 		}, delay);
 	}
 
