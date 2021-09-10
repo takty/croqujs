@@ -3,7 +3,7 @@
  * Gulpfile
  *
  * @author Takuto Yanagida
- * @version 2021-08-13
+ * @version 2021-09-10
  *
  */
 
@@ -188,15 +188,6 @@ function buildElectron(opts = {}, done) {
 	});
 };
 
-gulp.task('build-electron', gulp.series((done) => {
+gulp.task('build', gulp.series((done) => {
 	return buildElectron({}, done);
 }));
-
-gulp.task('fix-latest-version', () => {
-	const v = VERSION.replace(/-\d/, '');
-	return gulp.src('./dist/latest.yml')
-		.pipe($.replace(VERSION, v))
-		.pipe(gulp.dest('dist'));
-});
-
-gulp.task('build', gulp.series('build-electron', 'fix-latest-version'));
