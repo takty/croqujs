@@ -1,6 +1,6 @@
 {
 	"name": "croqujs",
-	"version": "5.0.0",
+	"version": "5.9.1",
 	"description": "The Playground for JavaScript",
 	"productName": "Croqujs",
 	"main": "app/main.js",
