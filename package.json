@@ -44,7 +44,7 @@
 		"jshint": "2.13.1",
 		"jshint-ja-edu": "git+https://github.com/takty/jshint-ja-edu.git",
 		"moment": "^2.29.1",
-		"sass": "^1.39.0",
+		"sass": "^1.39.2",
 		"sweetalert2": "11.1.5",
 		"tern": "0.24.3"
 	}
