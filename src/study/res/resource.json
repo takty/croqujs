@@ -34,7 +34,7 @@
 		"<ul>",
 		"<li><code>Acorn v8.5.0</code></li>",
 		"<li><code>CodeMirror v5.63.0</code></li>",
-		"<li><code>Electron v14.0.1</code></li>",
+		"<li><code>Electron v15.0.0</code></li>",
 		"<li><code>electron-log v4.4.1</code></li>",
 		"<li><code>electron-updater v4.3.9</code></li>",
 		"<li><code>js-beautify v1.14.0</code></li>",
