@@ -90,7 +90,7 @@ class Study {
 
 	_loadPlugin(lang) {
 		const se = document.createElement('script');
-		se.src = 'lib/jshint/' + (lang === 'en' ? 'jshint.js' : 'jshint-ja-edu.js');
+		se.src = 'lib/jshint/' + (lang === 'en' ? 'jshint.js' : 'ja-edu/jshint.js');
 		document.getElementsByTagName('head')[0].appendChild(se);
 		setTimeout(() => {
 			const se2 = document.createElement('script');
