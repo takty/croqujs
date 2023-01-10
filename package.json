@@ -43,7 +43,7 @@
 		"js-beautify": "1.14.3",
 		"jshint": "2.13.4",
 		"jshint-ja-edu": "github:takty/jshint-ja-edu",
-		"moment": "^2.29.2",
+		"moment": "^2.29.4",
 		"sass": "^1.50.0",
 		"sweetalert2": "11.4.8",
 		"tern": "0.24.3"
