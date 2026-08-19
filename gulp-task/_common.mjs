@@ -7,6 +7,7 @@
 
 import { createRequire } from 'module';
 import path from 'path';
+import branchName from "current-git-branch";
 
 export function pkgDir(name) {
 	const require = createRequire(import.meta.url);
@@ -25,16 +26,16 @@ export function getPkgJson() {
 }
 
 export function getBranchName() {
-	const req = createRequire(import.meta.url);
-	const cgb = req('current-git-branch');
-	return cgb();
+	// const req = createRequire(import.meta.url);
+	// const cgb = req('current-git-branch');
+	return branchName();
 }
 
-export async function verStr(devPostfix = ' [dev]') {
+export async function verStr(devSuffix = ' [dev]') {
 	const isDev = getBranchName() === 'develop';
 	const pkg   = getPkgJson();
 
-	return 'v' + pkg['version'] + (isDev ? devPostfix : '');
+	return 'v' + pkg['version'] + (isDev ? devSuffix : '');
 }
 
 export async function fullVerStr() {

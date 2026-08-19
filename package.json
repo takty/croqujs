@@ -32,18 +32,18 @@
 		"tern": "0.24.3"
 	},
 	"devDependencies": {
-		"current-git-branch": "^1.1.0",
+		"current-git-branch": "^2.0.2",
 		"electron-builder": "^23.6.0",
-		"gulp": "^4.0.2",
-		"gulp-autoprefixer": "^8.0.0",
-		"gulp-changed": "^4.0.3",
+		"gulp": "^5.0.1",
+		"gulp-autoprefixer": "^10.0.0",
+		"gulp-changed": "^5.0.4",
 		"gulp-ignore": "^3.0.0",
 		"gulp-json-editor": "^2.5.6",
 		"gulp-load-plugins": "^2.0.8",
 		"gulp-plumber": "^1.2.1",
 		"gulp-rename": "^2.0.0",
 		"gulp-replace": "^1.1.4",
-		"gulp-sass": "^5.1.0",
+		"gulp-sass": "^6.0.1",
 		"luxon": "^3.3.0",
 		"sass": "^1.58.3"
 	}
