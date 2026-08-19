@@ -17,6 +17,11 @@
 		"type": "git",
 		"url": "git+https://github.com/takty/croqujs.git"
 	},
+	"dependenciesMeta": {
+		"electron": {
+			"built": true
+		}
+	},
 	"dependencies": {
 		"acorn": "8.8.2",
 		"acorn-loose": "8.3.0",

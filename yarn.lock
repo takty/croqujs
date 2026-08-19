@@ -1528,6 +1528,9 @@ __metadata:
     sass: "npm:^1.58.3"
     sweetalert2: "npm:11.7.3"
     tern: "npm:0.24.3"
+  dependenciesMeta:
+    electron:
+      built: true
   languageName: unknown
   linkType: soft
 
