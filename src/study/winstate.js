@@ -1,12 +1,9 @@
 /**
- *
  * WinState (JS)
  *
  * @author Takuto Yanagida
  * @version 2020-09-28
- *
  */
-
 
 'use strict';
 

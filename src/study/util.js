@@ -1,12 +1,9 @@
 /**
- *
  * Utilities (JS)
  *
  * @author Takuto Yanagida
  * @version 2020-11-03
- *
  */
-
 
 'use strict';
 

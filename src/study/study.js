@@ -1,15 +1,11 @@
 /**
- *
  * Study (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-08-13
- *
+ * @version 2026-08-22
  */
 
-
 'use strict';
-
 
 class Study {
 
@@ -275,9 +271,7 @@ class Study {
 		window.localStorage.setItem('#injection_' + this._id, JSON.stringify({ message: 'permission', params: { type: type, result: this._permissions[type] } }));
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_notifyServer(msg, ...args) {
 		window.ipc.send('notifyServer_' + this._id, msg, ...args);
@@ -291,9 +285,7 @@ class Study {
 		window.localStorage.setItem('#field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_configUpdated(cfg) {
 		this._lang = cfg.language;
@@ -326,9 +318,7 @@ class Study {
 		this._sideMenu.reflectState(state);
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_initDocument(filePath, name, baseName, dirName, readOnly, defJsons, text) {
 		this._setDocumentFile(filePath, name, baseName, dirName, readOnly, defJsons);
@@ -443,9 +433,7 @@ class Study {
 		return false;
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_cmdTileWindow() {
 		this._callServer('doUnmaximize');
@@ -527,9 +515,7 @@ class Study {
 		}
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
@@ -604,9 +590,7 @@ class Study {
 		}
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_executeCommandFile(cmd) {
 		switch (cmd) {
@@ -668,9 +652,7 @@ class Study {
 		this._handleServerResponse(msg, arg);
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_executeCommandCode(cmd) {
 		switch (cmd) {

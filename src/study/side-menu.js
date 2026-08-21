@@ -1,15 +1,11 @@
 /**
- *
  * Side Menu
  *
  * @author Takuto Yanagida
  * @version 2021-02-24
- *
  */
 
-
 'use strict';
-
 
 class SideMenu {
 
@@ -155,9 +151,7 @@ class SideMenu {
 		return mi;
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	open() {
 		this._elm.style.display = 'block';
@@ -169,9 +163,7 @@ class SideMenu {
 		this._study._editor._comp.focus();
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	reflectClipboard(text) {
 		this._setEnabled('paste', text.length > 0);

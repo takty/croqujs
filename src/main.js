@@ -1,12 +1,9 @@
 /**
- *
  * Main (JS)
  *
  * @author Takuto Yanagida
  * @version 2021-02-24
- *
  */
-
 
 'use strict';
 
@@ -18,7 +15,6 @@ const PROC = require_('process');
 const Twin = require('./twin.js');
 
 require('./auto-updater');
-
 
 class Main {
 

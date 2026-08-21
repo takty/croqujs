@@ -1,12 +1,9 @@
 /**
- *
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida
  * @version 2021-08-14
- *
  */
-
 
 (function () {
 	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
@@ -52,9 +49,7 @@
 		window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'error', params: info }));
 	});
 
-
 	// -------------------------------------------------------------------------
-
 
 	function createPseudoConsole(orig) {
 		const MAX_SENT_OUTPUT_COUNT = 100;
@@ -172,9 +167,7 @@
 
 	window.console = createPseudoConsole(window.console);
 
-
 	// -------------------------------------------------------------------------
-
 
 	function createPseudoGetCurrentPosition() {
 		return function (success, error) {
@@ -214,9 +207,7 @@
 		navigator.geolocation.getCurrentPosition = createPseudoGetCurrentPosition();
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	function createGetUserMediaWrapper(origFn) {
 		return function (constraints) {

@@ -1,15 +1,11 @@
 /**
- *
  * Console Message Collector (JS)
  *
  * @author Takuto Yanagida
  * @version 2021-08-14
- *
  */
 
-
 'use strict';
-
 
 const MAX_SIZE     = 100;
 const MSG_INTERVAL = 200;
@@ -18,7 +14,6 @@ let _outputCache = [];
 let _isIgnored = false;
 
 const send = createDelayFunction(() => sendCache(MAX_SIZE));
-
 
 self.addEventListener('message', (e) => {
 	const m = JSON.parse(e.data);

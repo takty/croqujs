@@ -1,12 +1,9 @@
 /**
- *
  * Exporter
  *
  * @author Takuto Yanagida
  * @version 2020-11-02
- *
  */
-
 
 'use strict';
 
@@ -28,7 +25,6 @@ const HTML_FOOT  = (IS_MODULE ? ENTRY_CODE : '') + '</script></body>';
 const DEF_DIR    = 'def';
 const INJECTION  = 'injection.js';
 const EXP_EOL    = '\r\n';
-
 
 class Exporter {
 
@@ -153,9 +149,7 @@ class Exporter {
 		return [true, expPath];
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	copyLibraryOfTemplate(codeText, tempFilePath, dirPath) {
 		const decs = this._extractUseDeclarations(codeText.split('\n'));
@@ -181,9 +175,7 @@ class Exporter {
 		return [true];
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_extractUseDeclarations(lines) {
 		const USE = '@use', NEED = '@need', IMPORT = '@import', AS = 'as', EXT = '.js';
@@ -292,9 +284,7 @@ class Exporter {
 		return val.replace(/[ -+\\.]/, '_');
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_writeLibraryImmediately(origPath, nameSpace, destPath) {
 		const libCode = this._readAsLibraryCode(origPath, nameSpace);
@@ -323,9 +313,7 @@ class Exporter {
 		return [head, src, ret, foot].join(EXP_EOL);
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_copyFile(from, to) {
 		let cont;

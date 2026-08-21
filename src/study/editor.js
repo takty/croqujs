@@ -1,15 +1,11 @@
 /**
- *
  * Editor: Editor Component Wrapper for CodeMirror
  *
  * @author Takuto Yanagida
  * @version 2021-02-24
- *
  */
 
-
 'use strict';
-
 
 class Editor {
 
@@ -144,9 +140,7 @@ class Editor {
 		}, { passive: true });
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	initCodeStructureView() {
 		this._canvas = document.createElement('canvas');
@@ -303,9 +297,7 @@ class Editor {
 		ctx.fill();
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	initGutterSelection() {
 		const doc = this._comp.getDoc();
@@ -410,9 +402,7 @@ class Editor {
 		}
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	initAutoComplete() {
 		this._isDotTyped = false;
@@ -492,9 +482,7 @@ class Editor {
 		return 'CodeMirror-Tern-' + 'completion ' + 'CodeMirror-Tern-' + 'completion-' + suffix;
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	autoIndentEnabled(flag) {
 		this._isAutoIndentEnabled = flag;
@@ -611,9 +599,7 @@ class Editor {
 		return text;
 	}
 
-
 	// =========================================================================
-
 
 	getComponent() {
 		return this._comp;
@@ -701,9 +687,7 @@ class Editor {
 		this._elem.classList.remove('simple');
 	}
 
-
 	// EDIT COMMAND ============================================================
-
 
 	undo() {
 		if (this._isEnabled) this._comp.execCommand('undo');
@@ -777,9 +761,7 @@ class Editor {
 		this._comp.execCommand('replace');
 	}
 
-
 	// VIEW COMMAND ============================================================
-
 
 	lineWrapping(flag) {
 		if (flag === undefined) return this._comp.getOption('lineWrapping');

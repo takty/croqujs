@@ -1,15 +1,11 @@
 /**
- *
  * Code Analyzer (JS)
  *
  * @author Takuto Yanagida
  * @version 2021-02-08
- *
  */
 
-
 'use strict';
-
 
 function analyze(code) {
 	function walk(node, visitors, base, state, override) {
@@ -42,9 +38,7 @@ if (typeof module === 'object') {
 	module.exports = analyze;
 }
 
-
 // -----------------------------------------------------------------------------
-
 
 function createVisitor() {
 	const FE      = 'FunctionExpression';

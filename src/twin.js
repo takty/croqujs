@@ -1,15 +1,11 @@
 /**
- *
  * Twin (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-09-08
- *
+ * @version 2026-08-22
  */
 
-
 'use strict';
-
 
 const electron = require('electron');
 const { ipcMain, BrowserWindow, dialog, clipboard, nativeImage } = electron;
@@ -26,7 +22,6 @@ const FILE_FILTERS = [
 	{ name: 'JavaScript', extensions: ['js'] },
 	{ name: 'All Files', extensions: ['*'] }
 ];
-
 
 class Twin {
 
@@ -116,9 +111,7 @@ class Twin {
 		return ret;
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	onStudyModified() {
 		this._isModified = true;
@@ -158,9 +151,7 @@ class Twin {
 		return ['error', info];
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	doReady() {
 		if (this._initPath) {
@@ -188,9 +179,7 @@ class Twin {
 		this._studyWin.unmaximize();
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	doNew() {
 		return ['init', this._initializeDocument()];
@@ -337,9 +326,7 @@ class Twin {
 		}
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	stop() {
 		if (!this._fieldWin) return;
@@ -392,9 +379,7 @@ class Twin {
 		}
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_makeExportPath(fp) {
 		const name = PATH().basename(fp, PATH().extname(fp));

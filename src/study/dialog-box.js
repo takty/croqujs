@@ -1,15 +1,11 @@
 /**
- *
- * Side Menu
+ * Dialog Box
  *
  * @author Takuto Yanagida
  * @version 2020-05-23
- *
  */
 
-
 'use strict';
-
 
 class DialogBox {
 
@@ -94,9 +90,7 @@ class DialogBox {
 		});
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	_makeOption(text, type, opt = {}) {
 		return Object.assign(opt, {

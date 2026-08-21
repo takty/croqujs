@@ -1,15 +1,11 @@
 /**
- *
  * Function Extractor (JS)
  *
  * @author Takuto Yanagida
  * @version 2020-09-28
- *
  */
 
-
 'use strict';
-
 
 function analyze(code) {
 	function walk(node, visitors, base, state, override) {

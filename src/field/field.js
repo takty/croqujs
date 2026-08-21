@@ -1,18 +1,13 @@
 /**
- *
  * Field (JS)
  *
  * @author Takuto Yanagida
  * @version 2021-08-13
- *
  */
-
 
 'use strict';
 
-
 window.addEventListener('DOMContentLoaded', () => { new Field(); });
-
 
 class Field {
 
@@ -76,9 +71,7 @@ class Field {
 		}
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	initializeFullscreenPoller() {
 		this._isFullscreenEnabled = false;

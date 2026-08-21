@@ -1,12 +1,9 @@
 /**
- *
  * Error Translator
  *
  * @author Takuto Yanagida
  * @version 2021-02-25
- *
  */
-
 
 class ErrorTranslator {
 

@@ -1,15 +1,11 @@
 /**
- *
  * Config
  *
  * @author Takuto Yanagida
  * @version 2020-04-30
- *
  */
 
-
 'use strict';
-
 
 class Config {
 

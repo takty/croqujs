@@ -1,12 +1,9 @@
 /**
- *
  * Preload
  *
  * @author Takuto Yanagida
- * @version 2020-11-21
- *
+ * @version 2026-08-22
  */
-
 
 const { contextBridge, ipcRenderer, webUtils } = require('electron');
 

@@ -1,19 +1,14 @@
 /**
- *
  * Output Pane
  *
  * @author Takuto Yanagida
  * @version 2021-02-26
- *
  */
-
 
 'use strict';
 
-
 const MAX_SIZE = 100;
 const DELAY    = 100;
-
 
 class OutputPane {
 

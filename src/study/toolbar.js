@@ -1,15 +1,11 @@
 /**
- *
  * Toolbar
  *
  * @author Takuto Yanagida
  * @version 2021-09-07
- *
  */
 
-
 'use strict';
-
 
 class Toolbar {
 
@@ -57,9 +53,7 @@ class Toolbar {
 		return btn;
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	showMessage(text, hideShadow = false) {
 		if (hideShadow) this._elm.classList.remove('toolbar-shadow');
@@ -81,9 +75,7 @@ class Toolbar {
 		}, delay);
 	}
 
-
 	// -------------------------------------------------------------------------
-
 
 	reflectClipboard(text) {
 		const btn = this._setEnabled('paste', text.length > 0);

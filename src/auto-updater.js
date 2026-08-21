@@ -1,12 +1,9 @@
 /**
- *
  * Auto Updater
  *
  * @author Takuto Yanagida
  * @version 2020-05-06
- *
  */
-
 
 'use strict';
 
@@ -44,9 +41,7 @@ autoUpdater.on('update-downloaded', (e) => {
 	logInfo('Update downloaded');
 });
 
-
 // -----------------------------------------------------------------------------
-
 
 app.on('ready', async () => {
 	autoUpdater.checkForUpdatesAndNotify();

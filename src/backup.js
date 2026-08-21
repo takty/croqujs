@@ -1,12 +1,9 @@
 /**
- *
  * Backup (JS)
  *
  * @author Takuto Yanagida
  * @version 2020-04-30
- *
  */
-
 
 'use strict';
 
@@ -16,7 +13,6 @@ const FS      = require_('fs');
 const PATH    = require_('path');
 const CRYPTO  = require_('crypto');
 const PROCESS = require_('process');
-
 
 class Backup {
 

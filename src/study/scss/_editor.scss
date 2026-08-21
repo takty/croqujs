@@ -1,12 +1,9 @@
 /**
- *
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida
  * @version 2020-11-02
- *
  */
-
 
 .CodeMirror {
 	background-color: $color-editor;
@@ -100,9 +97,7 @@
 
 .CodeMirror.wordwrap pre > * { text-indent: 0; }
 
-
 // Gutter ----------------------------------------------------------------------
-
 
 .CodeMirror-gutter-background {
 	z-index: 0;
@@ -201,9 +196,7 @@
 	}
 }
 
-
 // Function Number Gutter ------------------------------------------------------
-
 
 .CodeMirror-function-linenumber,
 .CodeMirror-function-number {
@@ -287,9 +280,7 @@
 	}
 }
 
-
 // Cursor ----------------------------------------------------------------------
-
 
 .CodeMirror-cursor {
 	border-left:   2px solid rgba($L-Brown, 0.60);
@@ -304,9 +295,7 @@
 	background-color: rgba($L-Brown, 0.05);
 }
 
-
 // Laccolla Theme --------------------------------------------------------------
-
 
 .cm-s-laccolla {
 	.cm-comment {
@@ -353,9 +342,7 @@
 	}
 }
 
-
 // Laccolla Styles for Used Addons ---------------------------------------------
-
 
 div.CodeMirror span.CodeMirror-matchingbracket:not(.cm-comment) {
 	color: inherit;
@@ -428,9 +415,7 @@ div.CodeMirror span.CodeMirror-matchingbracket.cm-comment {
 	}
 }
 
-
 // Others ----------------------------------------------------------------------
-
 
 .cm-space {
 	visibility: hidden;

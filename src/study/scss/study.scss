@@ -1,12 +1,9 @@
-/*
- *
+/**
  * Study Window Style
  *
  * @author Takuto Yanagida
  * @version 2021-07-30
- *
  */
-
 
 $L-Red         : #e61e58;
 $L-Red-35      : #f6b0c5;
@@ -40,7 +37,6 @@ $font-ui     : "Lucida Grande", "Hiragino Sans", "Yu Gothic UI", "Meiryo UI", sa
 $font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
 $font-size   : 14px;
 
-
 @use 'sass:math';
 
 @import 'editor';
@@ -73,9 +69,7 @@ html, body {
 	overflow: hidden;
 }
 
-
 // Main Splitter ---------------------------------------------------------------
-
 
 #handle {
 	cursor: row-resize;
@@ -91,9 +85,7 @@ html, body {
 	height: 100%;
 }
 
-
 // Output Pane -----------------------------------------------------------------
-
 
 .sub {
 	overflow-y: scroll;
