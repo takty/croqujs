@@ -2,10 +2,10 @@
  * Toolbar Style
  *
  * @author Takuto Yanagida
- * @version 2021-09-07
+ * @version 2026-08-22
  */
 
-$size-toolbar-button: 40px;
+@use 'variables' as *;
 
 .toolbar {
 	display: flex;

@@ -2,8 +2,10 @@
  * CodeMirror Style (CSS)
  *
  * @author Takuto Yanagida
- * @version 2020-11-02
+ * @version 2026-08-22
  */
+
+@use 'variables' as *;
 
 .CodeMirror {
 	background-color: $color-editor;
