@@ -960,10 +960,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"codemirror@npm:5.65.12":
-  version: 5.65.12
-  resolution: "codemirror@npm:5.65.12"
-  checksum: 10c0/6f0b8738db551adf5bdebeee02dbf25b2df4e585b07e232cf1b7d00b0413ad7e08d275c4e21fdb323d319574195169c1b2348219ce1736daf379875d8c448d7d
+"codemirror@npm:5.65.21":
+  version: 5.65.21
+  resolution: "codemirror@npm:5.65.21"
+  checksum: 10c0/0884fc54ad32cbfa7605b23c8e9c0085d71856178f88448e6912335dddce321edab1326202b3778647658e7debdff07329f30e30b32f8fb4ba501582f798495a
   languageName: node
   linkType: hard
 
@@ -1054,7 +1054,7 @@ __metadata:
     acorn-loose: "npm:8.5.2"
     acorn-walk: "npm:8.3.5"
     autoprefixer: "npm:^10.5.4"
-    codemirror: "npm:5.65.12"
+    codemirror: "npm:5.65.21"
     electron: "npm:^43.4.1"
     electron-builder: "npm:^26.15.7"
     js-beautify: "npm:1.14.7"

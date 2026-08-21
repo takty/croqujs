@@ -21,7 +21,7 @@
 		"acorn": "8.18.0",
 		"acorn-loose": "8.5.2",
 		"acorn-walk": "8.3.5",
-		"codemirror": "5.65.12",
+		"codemirror": "5.65.21",
 		"js-beautify": "1.14.7",
 		"jshint": "2.13.6",
 		"jshint-ja-edu": "github:takty/jshint-ja-edu",
