@@ -61,23 +61,24 @@ class Twin {
 	}
 
 	_createStudyWindow() {
-		this._studyWin = new BrowserWindow({ show: false, webPreferences: { nativeWindowOpen: true, contextIsolation: true, nodeIntegration: false, preload: `${__dirname}/study/preload.js` } });
+		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, preload: `${__dirname}/study/preload.js` } });
 		this._studyWin.loadURL(`file://${__dirname}/study/study.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();
 			this._studyWin.webContents.send('windowClose');
 		});
-		this._studyWin.webContents.on('new-window', (e, url) => {
+		this._studyWin.webContents.setWindowOpenHandler(({ url }) => {
 			if (!url.startsWith(`file://${__dirname}/`)) {
-				e.preventDefault();
 				electron.shell.openExternal(url);
+				return { action: 'deny' };
 			}
+			return { action: 'allow' };
 		});
 	}
 
 	_createFieldWindow() {
-		this._fieldWin = new BrowserWindow({ show: false, webPreferences: { nativeWindowOpen: true, contextIsolation: true } });
+		this._fieldWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true } });
 		return new Promise(resolve => {
 			this._fieldWin.once('ready-to-show', resolve);
 			this._fieldWin.on('closed', () => { this._fieldWin = null; });

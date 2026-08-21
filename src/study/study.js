@@ -641,7 +641,7 @@ class Study {
 	async _onFileDropped(e) {
 		e.preventDefault();
 		if (e.dataTransfer.files.length > 0) {
-			const filePath = e.dataTransfer.files[0].path;
+			const filePath = window.ipc.getPathForFile(e.dataTransfer.files[0]);
 			this._handleOpening(this._res.msg.confirmOpen, 'doFileDropped', filePath);
 		}
 	}

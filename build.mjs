@@ -150,8 +150,10 @@ async function packageApp() {
 					{ target: 'zip',  arch: ['x64', 'ia32'] },
 					{ target: 'nsis', arch: ['x64', 'ia32'] },
 				],
-				icon         : path.join(APP_RES_DIR, 'icon.ico'),
-				publisherName: 'Takuto Yanagida',
+				icon           : path.join(APP_RES_DIR, 'icon.ico'),
+				signtoolOptions: {
+					publisherName: 'Takuto Yanagida',
+				}
 			},
 			nsis: {
 				oneClick                : false,

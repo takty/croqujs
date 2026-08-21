@@ -8,7 +8,7 @@
  */
 
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld(
 	'ipc', {
@@ -19,7 +19,10 @@ contextBridge.exposeInMainWorld(
 			return ipcRenderer.invoke(ch, ...args);
 		},
 		on: (ch, func) => {
-			ipcRenderer.on(ch, (event, ...args) => func(event, ...args));
+			ipcRenderer.on(ch, (_event, ...args) => func(...args));
+		},
+		getPathForFile: (file) => {
+			return webUtils.getPathForFile(file);
 		}
 	}
 );
