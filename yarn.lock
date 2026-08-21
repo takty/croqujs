@@ -488,12 +488,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-loose@npm:8.3.0":
-  version: 8.3.0
-  resolution: "acorn-loose@npm:8.3.0"
+"acorn-loose@npm:8.5.2":
+  version: 8.5.2
+  resolution: "acorn-loose@npm:8.5.2"
   dependencies:
-    acorn: "npm:^8.5.0"
-  checksum: 10c0/970f790a584a2f1703a04711cdc588f424fd7bc2fb37ad8e0b9d6ceaf9c8c6a77f9ce102ce5250259fc96aedbdf346546ed1b496299bc13ed4d1b6fdb2d92f61
+    acorn: "npm:^8.15.0"
+  checksum: 10c0/169a85ad2df888586fe6eda2af9ff8fbcca7174ce83d00632cea5fffa73476218012af91be0cd6b68e4df6183baffa463506fd2ab54800903378140e679302fd
   languageName: node
   linkType: hard
 
@@ -506,10 +506,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-walk@npm:8.2.0":
-  version: 8.2.0
-  resolution: "acorn-walk@npm:8.2.0"
-  checksum: 10c0/dbe92f5b2452c93e960c5594e666dd1fae141b965ff2cb4a1e1d0381e3e4db4274c5ce4ffa3d681a86ca2a8d4e29d5efc0670a08e23fd2800051ea387df56ca2
+"acorn-walk@npm:8.3.5":
+  version: 8.3.5
+  resolution: "acorn-walk@npm:8.3.5"
+  dependencies:
+    acorn: "npm:^8.11.0"
+  checksum: 10c0/e31bf5b5423ed1349437029d66d708b9fbd1b77a644b031501e2c753b028d13b56348210ed901d5b1d0d86eb3381c0a0fc0d0998511a9d546d1194936266a332
   languageName: node
   linkType: hard
 
@@ -520,12 +522,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:8.8.2":
-  version: 8.8.2
-  resolution: "acorn@npm:8.8.2"
+"acorn@npm:8.18.0, acorn@npm:^8.11.0, acorn@npm:^8.15.0":
+  version: 8.18.0
+  resolution: "acorn@npm:8.18.0"
   bin:
     acorn: bin/acorn
-  checksum: 10c0/b5c54e736af5ed753911c6752fafd02d0a74cf4d55be606bd81fe71faba4f986dc090952329931ac2aba165803fd0005c59eeef08f9c6c689e8dc420031f3df0
+  checksum: 10c0/be771be2135cc07910cf76f444ad514d7dcfd6d4a8026e597e93155275abc8ef61eee12211d52146e9d962874269b634f397464942087be013c89d0c54c5f8e5
   languageName: node
   linkType: hard
 
@@ -535,15 +537,6 @@ __metadata:
   bin:
     acorn: bin/acorn
   checksum: 10c0/52a72d5d785fa64a95880f2951021a38954f8f69a4944dfeab6fb1449b0f02293eae109a56d55b58ff31a90a00d16a804658a12db8ef834c20b3d1201fe5ba5b
-  languageName: node
-  linkType: hard
-
-"acorn@npm:^8.5.0":
-  version: 8.18.0
-  resolution: "acorn@npm:8.18.0"
-  bin:
-    acorn: bin/acorn
-  checksum: 10c0/be771be2135cc07910cf76f444ad514d7dcfd6d4a8026e597e93155275abc8ef61eee12211d52146e9d962874269b634f397464942087be013c89d0c54c5f8e5
   languageName: node
   linkType: hard
 
@@ -1057,12 +1050,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "croqujs@workspace:."
   dependencies:
-    acorn: "npm:8.8.2"
-    acorn-loose: "npm:8.3.0"
-    acorn-walk: "npm:8.2.0"
+    acorn: "npm:8.18.0"
+    acorn-loose: "npm:8.5.2"
+    acorn-walk: "npm:8.3.5"
     autoprefixer: "npm:^10.5.4"
     codemirror: "npm:5.65.12"
-    electron: "npm:^43.4.0"
+    electron: "npm:^43.4.1"
     electron-builder: "npm:^26.15.7"
     electron-log: "npm:^5.4.4"
     electron-updater: "npm:^6.8.9"
@@ -1070,12 +1063,9 @@ __metadata:
     jshint: "npm:2.13.6"
     jshint-ja-edu: "github:takty/jshint-ja-edu"
     postcss: "npm:^8.5.26"
-    sass: "npm:^1.58.3"
-    sweetalert2: "npm:11.7.3"
+    sass: "npm:^1.103.1"
+    sweetalert2: "npm:11.26.25"
     tern: "npm:0.24.3"
-  dependenciesMeta:
-    electron:
-      built: true
   languageName: unknown
   linkType: soft
 
@@ -1362,7 +1352,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^43.4.0":
+"electron@npm:^43.4.1":
   version: 43.4.1
   resolution: "electron@npm:43.4.1"
   dependencies:
@@ -2823,9 +2813,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.58.3":
-  version: 1.102.0
-  resolution: "sass@npm:1.102.0"
+"sass@npm:^1.103.1":
+  version: 1.103.1
+  resolution: "sass@npm:1.103.1"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^5.0.0"
@@ -2836,7 +2826,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/77c05a0d14dc05653e98978c4f1cc6754254fcbf6cba71f111bc49c0c69477f3f9e180f99c65641d19a23b964d6039ef116191700144ebefc1709a5b6d5899b1
+  checksum: 10c0/8c786a201d9484e9968784d672372fabb342f3b4d1c4629ffdcfba92e4f2c00e659f4e32244c870850f7c2d254ce773da3fc1ec40b4282ccd113c0c086fa36bd
   languageName: node
   linkType: hard
 
@@ -3039,10 +3029,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sweetalert2@npm:11.7.3":
-  version: 11.7.3
-  resolution: "sweetalert2@npm:11.7.3"
-  checksum: 10c0/8ed49943853e9129dab5614374012afcffc22b0654c318f3b0a566ee61cfe151781f1e0e9418020e881dc64d550fcf81d7ccd0bc874146cc5aadb0620dd50c65
+"sweetalert2@npm:11.26.25":
+  version: 11.26.25
+  resolution: "sweetalert2@npm:11.26.25"
+  checksum: 10c0/3ee9d9184bf3467f13132e084cf5544b3d1e9eaa800978754ccb0687362f3e6e3f195ce031dc2de381589edb29c0086fcaec438ac43fdb57210b2a08c0cdc417
   languageName: node
   linkType: hard
 

@@ -18,23 +18,23 @@
 		"url": "git+https://github.com/takty/croqujs.git"
 	},
 	"dependencies": {
-		"acorn": "8.8.2",
-		"acorn-loose": "8.3.0",
-		"acorn-walk": "8.2.0",
+		"acorn": "8.18.0",
+		"acorn-loose": "8.5.2",
+		"acorn-walk": "8.3.5",
 		"codemirror": "5.65.12",
 		"electron-log": "^5.4.4",
 		"electron-updater": "^6.8.9",
 		"js-beautify": "1.14.7",
 		"jshint": "2.13.6",
 		"jshint-ja-edu": "github:takty/jshint-ja-edu",
-		"sweetalert2": "11.7.3",
+		"sweetalert2": "11.26.25",
 		"tern": "0.24.3"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.5.4",
-		"electron": "^43.4.0",
+		"electron": "^43.4.1",
 		"electron-builder": "^26.15.7",
 		"postcss": "^8.5.26",
-		"sass": "^1.58.3"
+		"sass": "^1.103.1"
 	}
 }
