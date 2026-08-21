@@ -22,8 +22,6 @@
 		"acorn-loose": "8.5.2",
 		"acorn-walk": "8.3.5",
 		"codemirror": "5.65.12",
-		"electron-log": "^5.4.4",
-		"electron-updater": "^6.8.9",
 		"js-beautify": "1.14.7",
 		"jshint": "2.13.6",
 		"jshint-ja-edu": "github:takty/jshint-ja-edu",

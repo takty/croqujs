@@ -9,9 +9,5 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/takty/croqujs.git"
-	},
-	"dependencies": {
-		"electron-log": "^5.4.4",
-		"electron-updater": "^6.8.9"
 	}
 }

@@ -2,7 +2,7 @@
  * Main (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-02-24
+ * @version 2026-08-22
  */
 
 'use strict';
@@ -13,8 +13,6 @@ const require_ = (path) => { let r; return () => { return r || (r = require(path
 const FS   = require_('fs');
 const PROC = require_('process');
 const Twin = require('./twin.js');
-
-require('./auto-updater');
 
 class Main {
 

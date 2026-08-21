@@ -27,7 +27,6 @@ const VERSION_PATHS = [
 	'package.json',
 	path.join('study', 'study.html'),
 	path.join('study', 'res/resource.json'),
-	'auto-updater.js',
 ];
 
 const packageJson = JSON.parse(await readFile('./package.json', 'utf8'));
