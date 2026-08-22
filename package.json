@@ -34,5 +34,6 @@
 		"electron-builder": "^26.15.7",
 		"postcss": "^8.5.26",
 		"sass": "^1.103.1"
-	}
+	},
+	"packageManager": "yarn@4.18.0"
 }
