@@ -147,7 +147,7 @@ async function packageApp() {
 			win: {
 				target: [
 					{ target: 'zip',  arch: ['x64', 'ia32'] },
-					{ target: 'nsis', arch: ['x64', 'ia32'] },
+					{ target: 'nsis', arch: ['x64'] },
 				],
 				icon           : path.join(APP_RES_DIR, 'icon.ico'),
 				signtoolOptions: {
