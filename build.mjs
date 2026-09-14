@@ -146,7 +146,7 @@ async function packageApp() {
 
 			win: {
 				target: [
-					{ target: 'zip',  arch: ['x64', 'ia32'] },
+					{ target: 'zip',  arch: ['x64'] },
 					{ target: 'nsis', arch: ['x64'] },
 				],
 				icon           : path.join(APP_RES_DIR, 'icon.ico'),
@@ -162,7 +162,7 @@ async function packageApp() {
 			},
 			mac: {
 				target: [
-					{ target: 'zip', arch: ['arm64', 'x64'] },
+					{ target: 'zip', arch: ['arm64'] },
 					{ target: 'dmg', arch: ['arm64'] },
 				],
 				icon: path.join(APP_RES_DIR, 'icon-mac.png'),
