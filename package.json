@@ -29,11 +29,11 @@
 		"tern": "0.24.3"
 	},
 	"devDependencies": {
-		"autoprefixer": "^10.6.0",
-		"electron": "^44.3.0",
+		"autoprefixer": "^10.6.1",
+		"electron": "^44.5.1",
 		"electron-builder": "^26.15.7",
 		"postcss": "^8.5.28",
-		"sass": "^1.104.1"
+		"sass": "^1.105.1"
 	},
 	"packageManager": "yarn@4.18.0"
 }
