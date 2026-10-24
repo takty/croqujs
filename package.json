@@ -18,17 +18,17 @@
 		"url": "git+https://github.com/takty/croqujs.git"
 	},
 	"dependencies": {
-		"acorn": "8.18.0",
+		"acorn": "8.19.0",
 		"acorn-walk": "8.3.5",
 		"croq-mirror": "github:takty/croq-mirror#main",
 		"sweetalert2": "11.26.25"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.6.1",
-		"electron": "^44.5.1",
-		"electron-builder": "^26.15.7",
-		"postcss": "^8.5.28",
-		"sass": "^1.105.1"
+		"electron": "^45.0.0",
+		"electron-builder": "^26.18.0",
+		"postcss": "^8.5.31",
+		"sass": "^1.106.1"
 	},
 	"packageManager": "yarn@4.18.0"
 }

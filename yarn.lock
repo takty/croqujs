@@ -524,21 +524,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"acorn@npm:8.19.0, acorn@npm:^8.11.0, acorn@npm:^8.15.0":
+  version: 8.19.0
+  resolution: "acorn@npm:8.19.0"
+  bin:
+    acorn: bin/acorn
+  checksum: 10c0/21007e0ca638dd13d44a0ad26856b7a885cc6c4319cd2bc71694bc8ec3f0606c23ecd12b157e167f909d9d2b2d68d5b50fe3f54211b1aab7c3451a7c801fe62e
+  languageName: node
+  linkType: hard
+
 "acorn@npm:^6.0.0, acorn@npm:^6.2.0":
   version: 6.4.2
   resolution: "acorn@npm:6.4.2"
   bin:
     acorn: bin/acorn
   checksum: 10c0/52a72d5d785fa64a95880f2951021a38954f8f69a4944dfeab6fb1449b0f02293eae109a56d55b58ff31a90a00d16a804658a12db8ef834c20b3d1201fe5ba5b
-  languageName: node
-  linkType: hard
-
-"acorn@npm:^8.11.0, acorn@npm:^8.15.0":
-  version: 8.19.0
-  resolution: "acorn@npm:8.19.0"
-  bin:
-    acorn: bin/acorn
-  checksum: 10c0/21007e0ca638dd13d44a0ad26856b7a885cc6c4319cd2bc71694bc8ec3f0606c23ecd12b157e167f909d9d2b2d68d5b50fe3f54211b1aab7c3451a7c801fe62e
   languageName: node
   linkType: hard
 
@@ -1068,14 +1068,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "croqujs@workspace:."
   dependencies:
-    acorn: "npm:8.18.0"
+    acorn: "npm:8.19.0"
     acorn-walk: "npm:8.3.5"
     autoprefixer: "npm:^10.6.1"
     croq-mirror: "github:takty/croq-mirror#main"
-    electron: "npm:^44.5.1"
-    electron-builder: "npm:^26.15.7"
-    postcss: "npm:^8.5.28"
-    sass: "npm:^1.105.1"
+    electron: "npm:^45.0.0"
+    electron-builder: "npm:^26.18.0"
+    postcss: "npm:^8.5.31"
+    sass: "npm:^1.106.1"
     sweetalert2: "npm:11.26.25"
   languageName: unknown
   linkType: soft
@@ -1295,7 +1295,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-builder@npm:^26.15.7":
+"electron-builder@npm:^26.18.0":
   version: 26.18.0
   resolution: "electron-builder@npm:26.18.0"
   dependencies:
@@ -1340,9 +1340,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron@npm:^44.5.1":
-  version: 44.9.3
-  resolution: "electron@npm:44.9.3"
+"electron@npm:^45.0.0":
+  version: 45.0.0
+  resolution: "electron@npm:45.0.0"
   dependencies:
     "@electron-internal/extract-zip": "npm:^1.0.1"
     "@electron/get": "npm:^5.0.0"
@@ -1350,7 +1350,7 @@ __metadata:
   bin:
     electron: cli.js
     install-electron: install.js
-  checksum: 10c0/c3559aaa78f768dbf28b821b600e39e5753f4b316d3eeee30b2f1d72357c7d2a574fcd888353006a9f83968ac4fe2006071696078b23cbfcf1e23dabbc1f25fe
+  checksum: 10c0/53dc878a72815e89aadccb125d137d1e2dbeabbe9b8c0f2c1a49c114e85c4635aa32c83af6074f11e6ccbe433069c6c57299a5b473a63322e7957da1348c7d8d
   languageName: node
   linkType: hard
 
@@ -2547,7 +2547,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.5.28":
+"postcss@npm:^8.5.31":
   version: 8.5.31
   resolution: "postcss@npm:8.5.31"
   dependencies:
@@ -2782,7 +2782,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.105.1":
+"sass@npm:^1.106.1":
   version: 1.106.1
   resolution: "sass@npm:1.106.1"
   dependencies:
