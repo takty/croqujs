@@ -29,32 +29,15 @@ class Study {
 		}
 
 		window.addEventListener('keydown', (e) => {
-			if (!this._editor._comp.hasFocus() && e.ctrlKey && e.key === 'a') e.preventDefault();
+			if (this._editor && !this._editor.getCodeMirror().hasFocus() && e.ctrlKey && e.key === 'a') e.preventDefault();
 			if ((e.ctrlKey || e.metaKey) && e.key === 'F12') this._notifyServer('onStudyToggleDevTools');
 		});
 
-		this._initImeStateIndication();
-		this._loadPlugin(this._lang);
 		this._initFileDrop();
-		this._initialize();
+		this.ready = this._initialize();
+		window.addEventListener('unload', () => { this._editor?.destroy(); }, { once: true });
 	}
 
-	_initImeStateIndication() {
-		let isImeOn = false;
-		let st = null;
-		const turnOffImeCursor = () => {
-			if (isImeOn) this._editor._elem.classList.remove('ime');
-			isImeOn = false;
-		}
-		window.addEventListener('compositionstart', (e) => {
-			if (!isImeOn) this._editor._elem.classList.add('ime');
-			isImeOn = true;
-		});
-		window.addEventListener('compositionend', (e) => {
-			clearTimeout(st);
-			st = setTimeout(turnOffImeCursor, 1000);
-		});
-	}
 
 	_cleanLocalStorage() {
 		const keys = [];
@@ -84,21 +67,11 @@ class Study {
 		}, true);
 	}
 
-	_loadPlugin(lang) {
-		const se = document.createElement('script');
-		se.src = 'lib/jshint/' + (lang === 'en' ? 'jshint.js' : 'ja-edu/jshint.js');
-		document.getElementsByTagName('head')[0].appendChild(se);
-		setTimeout(() => {
-			const se2 = document.createElement('script');
-			se2.src = 'lib/codemirror/addon/lint/javascript-lint.js';
-			document.getElementsByTagName('head')[0].appendChild(se2);
-		}, 100);
-	}
 
 	async _initialize() {
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json']);
 		this._res = Object.assign(rets[0], rets[1]);
-		this._initEditor();
+		await this._initEditor();
 
 		this._toolbar    = new Toolbar(this, this._res);
 		this._sideMenu   = new SideMenu(this, this._res);
@@ -111,7 +84,6 @@ class Study {
 		this._dirName     = null;
 		this._isReadOnly  = false;
 		this._isModified  = false;
-		this._historySize = { undo: 0, redo: 0 };
 		this._errorMarker = null;
 
 		this._initWindowResizing(this._editor);
@@ -131,32 +103,31 @@ class Study {
 		window.focus();
 	}
 
-	_initEditor() {
-		this._editor = new Editor(this, document.querySelector('#editor'));
-		this._editor.fontFamily(this._res.fontSet);
-		this._editor.rulerEnabled(true);
-		const ec = this._editor.getComponent();
-
-		const w = new Worker('worker-analyzer.js');
-		w.addEventListener('message', (e) => {
-			this._codeStructure = e.data;
-			this._editor.setCodeStructureData(this._codeStructure);
-		}, false);
-		const analyze = createDelayFunction(() => { w.postMessage(ec.getValue()); }, 600);
-
-		ec.on('change', () => {
-			this._clearErrorMarker();
-			if (this._editor.enabled()) {
-				this._isModified  = true;
-				this._historySize = this._editor._comp.getDoc().historySize();
-				this._notifyServer('onStudyModified');
-				this._reflectState();
-			}
-			analyze();
+	async _initEditor() {
+		const { createEditor } = await import('../croq-mirror/dist/croq-mirror.min.js');
+		this._editor = await createEditor(document.querySelector('#editor'), {
+			language  : this._lang,
+			fontFamily: this._res.fontSet,
 		});
-		ec.on('focus', () => { this._sideMenu.close(); });
-		ec.on('copy', (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
-		ec.on('cut',  (cm, e) => { this._reflectClipboardState(cm.getDoc().getSelection()); });
+		this._editor.on('change', (event) => {
+			this._clearErrorMarker();
+			if (event.origin !== 'edit') return;
+			this._isModified = true;
+			this._notifyServer('onStudyModified');
+		});
+		this._editor.on('state', () => {
+			if (this._toolbar) this._reflectState();
+		});
+		this._editor.on('focus', () => { this._sideMenu?.close(); });
+		this._editor.on('settings', (settings) => {
+			if (settings.fontSize !== this._config.getItem('fontSize')) {
+				this._config.setItem('fontSize', settings.fontSize);
+			}
+		});
+		this._editor.on('error', (error) => { console.error(error.message); });
+		const cm = this._editor.getCodeMirror();
+		cm.on('copy', () => { this._reflectClipboardState(this._editor.getSelection()); });
+		cm.on('cut',  () => { this._reflectClipboardState(this._editor.getSelection()); });
 	}
 
 	_initWindowResizing(ed) {
@@ -290,11 +261,13 @@ class Study {
 	_configUpdated(cfg) {
 		this._lang = cfg.language;
 
-		this._editor.lineWrapping(cfg.softWrap);
-		this._editor.lineHeight(parseInt(cfg.lineHeight, 10) + '%');
-		this._editor.fontSize(parseInt(cfg.fontSize, 10));
-		this._editor.functionLineNumberEnabled(cfg.functionLineNumber);
-		this._editor.autoIndentEnabled(cfg.autoIndent);
+		this._editor.setSettings({
+			lineWrapping       : cfg.softWrap,
+			lineHeight         : parseInt(cfg.lineHeight, 10),
+			fontSize           : parseInt(cfg.fontSize, 10),
+			functionLineNumbers: cfg.functionLineNumber,
+			autoIndent         : cfg.autoIndent,
+		});
 
 		const pane = document.querySelector('.sub');
 		pane.style.fontSize = parseInt(cfg.fontSize, 10) + 'px';
@@ -311,8 +284,8 @@ class Study {
 	_reflectState() {
 		const state = {
 			isFileOpened: this._filePath !== null,
-			canUndo     : this._historySize.undo > 0,
-			canRedo     : this._historySize.redo > 0,
+			canUndo     : this._editor.getState().canUndo,
+			canRedo     : this._editor.getState().canRedo,
 		}
 		this._toolbar.reflectState(state);
 		this._sideMenu.reflectState(state);
@@ -323,9 +296,8 @@ class Study {
 	_initDocument(filePath, name, baseName, dirName, readOnly, defJsons, text) {
 		this._setDocumentFile(filePath, name, baseName, dirName, readOnly, defJsons);
 
-		this._editor.enabled(false);
-		this._editor.value(text);
-		this._editor.enabled(true);
+		this._editor.loadDocument(text);
+		this._editor.getCodeMirror().focus();
 
 		this._clearErrorMarker();
 		this._outputPane.initialize();
@@ -341,7 +313,9 @@ class Study {
 					console.error(d);
 				}
 			}
-			this._editor.updateAutoComplete(defs);
+			this._editor.setDefinitions(defs);
+		} else {
+			this._editor.setDefinitions([]);
 		}
 		this._filePath    = filePath;
 		this._name        = name;
@@ -349,10 +323,9 @@ class Study {
 		this._dirName     = dirName;
 		this._isReadOnly  = readOnly;
 		this._isModified  = false;
-		this._historySize = { undo: 0, redo: 0 };
 		this._reflectState();
 
-		this._editor.readOnly(readOnly);
+		this._editor.setSettings({ readOnly });
 		this._updateWindowTitle();
 	}
 
@@ -388,8 +361,9 @@ class Study {
 						msg = `%lineno% [${info.col}] (${info.fileName}) - ${transMsg}`;
 					}
 				}
-				if (info.isUserCode && this._editor.isFunctionLineNumberEnabled()) {
-					const lnf = this._editor.getFunctionLineNumber(info.line - 1);
+				if (info.isUserCode && this._editor.getSettings().functionLineNumbers) {
+					const line = Math.max(0, Math.min(info.line - 1, this._editor.getCodeMirror().lastLine()));
+					const lnf = this._editor.getFunctionLineNumber(line);
 					msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
 				} else {
 					msg = msg.replace('%lineno%', info.line);
@@ -397,13 +371,11 @@ class Study {
 			}
 		}
 		if (info.isUserCode) {
-			const doc = this._editor.getComponent().getDoc();
-			const jump = () => {
-				doc.setCursor(info.line - 1, info.col - 1, { scroll: true });
-				this._editor.getComponent().focus();
-			};
+			const line = Math.max(0, Math.min(info.line - 1, this._editor.getCodeMirror().lastLine()));
+			const jump = () => { this._editor.moveTo({ line, ch: Math.max(0, info.col - 1) }); };
 			this._outputPane.addError(msg, 'err', jump);
-			this._errorMarker = doc.addLineClass(info.line - 1, 'wrap', 'error-line');
+			this._clearErrorMarker();
+			this._errorMarker = this._editor.highlightLine(line);
 			if (this._outputPane.getErrorCount() === 1) jump();
 		} else {
 			this._outputPane.addError(msg, 'err');
@@ -412,7 +384,7 @@ class Study {
 
 	_clearErrorMarker() {
 		if (!this._errorMarker) return;
-		this._editor.getComponent().getDoc().removeLineClass(this._errorMarker, 'wrap', 'error-line');
+		this._editor.clearHighlight(this._errorMarker);
 		this._errorMarker = null;
 	}
 
@@ -447,72 +419,82 @@ class Study {
 		window.localStorage.setItem('$winstate_field', JSON.stringify(state));
 	}
 
-	_cmdCopyAsImage() {
-		const orig = this._editor.setSimpleView();
+	_executeClipboardCommand(command) {
+		const { disabled, readOnly } = this._editor.getState();
+		if (disabled || (readOnly && command !== 'copy')) return;
+		this._editor.getCodeMirror().focus();
+		document.execCommand(command);
+	}
+
+	_setSimpleEditorView() {
+		const cm = this._editor.getCodeMirror();
+		const options = {
+			scrollbarStyle : 'null',
+			readOnly       : 'nocursor',
+			styleActiveLine: false,
+			cursorBlinkRate: -1,
+			cursorHeight   : 0,
+			lineWrapping   : false,
+		};
+		const original = {};
+		for (const [key, value] of Object.entries(options)) {
+			original[key] = cm.getOption(key);
+			cm.setOption(key, value);
+		}
+		cm.getWrapperElement().classList.add('simple');
+		return original;
+	}
+
+	_restoreEditorView(original) {
+		const cm = this._editor.getCodeMirror();
+		for (const [key, value] of Object.entries(original)) cm.setOption(key, value);
+		cm.getWrapperElement().classList.remove('simple');
+	}
+
+	async _cmdCopyAsImage() {
+		const disabled = this._editor.getState().disabled;
+		const orig = this._setSimpleEditorView();
+		this._editor.setSettings({ disabled: true });
+		this._setSimpleEditorView();
 		this._toolbar.showMessage(this._res.msg.copyingAsImage, true);
 
-		const comp     = this._editor._comp;
-		const count    = comp.getDoc().lineCount();
-		const lh       = comp.defaultTextHeight();
-		const height   = lh * count + lh * 0.25;
-		const topDelta = lh * 10;
-
-		const bcr = this._editor._elem.getBoundingClientRect();
-		const r = {x: bcr.left | 0, y: bcr.top | 0, width: bcr.width | 0, height: bcr.height | 0};
-
-		comp.scrollTo(0, 0);
-		comp.refresh();
-		this._editor.enabled(false);  // After showing modal, it becomes true.
-
-		let c = null;
-		let top = 0;
-
-		const capture = () => {
-			this._callServer('doCapturePage', r).then(([url, scaleFactor]) => {
-				if (c === null) c = this._createTempCanvas(r.width, height, scaleFactor);
-				top += topDelta;
-				const finished = (top > height);
-				setTimeout(() => {
-					this._addImageToCanvas(c, comp.getScrollInfo().top * scaleFactor, url, finished);
-					this._goNextStep(top, finished, orig, capture);
-				}, 0);
-			});
-		};
-		setTimeout(capture, 400);
-	}
-
-	_createTempCanvas(width, height, scaleFactor) {
-		const c = document.createElement('canvas');
-		c.width  = width * scaleFactor;
-		c.height = height * scaleFactor;
-		return c;
-	}
-
-	_addImageToCanvas(c, y, dataUrl, finished) {
-		const img = new Image();
-		img.onload = async () => {
-			const ctx = c.getContext('2d');
-			ctx.drawImage(img, 0, y);
-			if (finished) {
-				const [res] = await this._callServer('doCopyImageToClipboard', c.toDataURL('image/png'));
-				if (res === 'success') this._dialogBox.showAlert(this._res.msg['copiedAsImage'], 'success');
+		let failure = null;
+		try {
+			const comp   = this._editor.getCodeMirror();
+			const lh     = comp.defaultTextHeight();
+			const height = lh * comp.lineCount() + lh * 0.25;
+			const bounds = comp.getWrapperElement().getBoundingClientRect();
+			const rect   = { x: bounds.left | 0, y: bounds.top | 0, width: bounds.width | 0, height: bounds.height | 0 };
+			const pause  = () => new Promise(resolve => setTimeout(resolve, 200));
+			let canvas = null;
+			for (let top = 0; top <= height; top += lh * 10) {
+				comp.scrollTo(0, top);
+				comp.refresh();
+				await pause();
+				const [url, scaleFactor] = await this._callServer('doCapturePage', rect);
+				if (!canvas) {
+					canvas = document.createElement('canvas');
+					canvas.width  = rect.width * scaleFactor;
+					canvas.height = height * scaleFactor;
+				}
+				const image = new Image();
+				image.src = url;
+				await image.decode();
+				canvas.getContext('2d').drawImage(image, 0, comp.getScrollInfo().top * scaleFactor);
 			}
-		};
-		img.src = dataUrl;
-	}
-
-	_goNextStep(nextTop, finished, orig, capture) {
-		if (finished) {
+			const [result] = await this._callServer('doCopyImageToClipboard', canvas.toDataURL('image/png'));
+			if (result !== 'success') throw new Error(String(result));
+		} catch (error) {
+			failure = error;
+		} finally {
+			this._editor.setSettings({ disabled });
+			this._restoreEditorView(orig);
+			this._editor.getCodeMirror().scrollTo(0, 0);
+			this._editor.refresh();
 			this._toolbar.hideMessage(200);
-			setTimeout(() => {
-				this._editor.restoreOriginalView(orig);
-				this._editor._comp.scrollTo(0, 0);
-			}, 200);
-		} else {
-			this._editor._comp.scrollTo(0, nextTop);
-			this._editor._comp.refresh();
-			setTimeout(capture, 200);
 		}
+		if (failure) await this._dialogBox.showAlert(this._res.msg.error + failure.message, 'error');
+		else await this._dialogBox.showAlert(this._res.msg.copiedAsImage, 'success');
 	}
 
 	// -------------------------------------------------------------------------
@@ -529,17 +511,17 @@ class Study {
 			if (this._executeCommandFile(cmd)) return;
 			if (this._executeCommandCode(cmd)) return;
 
-			if      (cmd === 'undo')          this._editor.undo();
-			else if (cmd === 'redo')          this._editor.redo();
-			else if (cmd === 'cut')           this._editor.cut();
-			else if (cmd === 'copy')          this._editor.copy();
-			else if (cmd === 'paste')         this._editor.paste();
-			else if (cmd === 'selectAll')     this._editor.selectAll();
-			else if (cmd === 'toggleComment') this._editor.toggleComment();
-			else if (cmd === 'format')        this._editor.format();
-			else if (cmd === 'find')          this._editor.find();
-			else if (cmd === 'findNext')      this._editor.findNext();
-			else if (cmd === 'replace')       this._editor.replace();
+			if      (cmd === 'undo')          this._editor.execute('undo');
+			else if (cmd === 'redo')          this._editor.execute('redo');
+			else if (cmd === 'cut')           this._executeClipboardCommand('cut');
+			else if (cmd === 'copy')          this._executeClipboardCommand('copy');
+			else if (cmd === 'paste')         this._executeClipboardCommand('paste');
+			else if (cmd === 'selectAll')     this._editor.execute('selectAll');
+			else if (cmd === 'toggleComment') this._editor.execute('toggleComment');
+			else if (cmd === 'format')        this._editor.execute('format');
+			else if (cmd === 'find')          this._editor.execute('find');
+			else if (cmd === 'findNext')      this._editor.execute('findNext');
+			else if (cmd === 'replace')       this._editor.execute('replace');
 
 			else if (cmd === 'copyAsImage')   this._cmdCopyAsImage();
 			else if (cmd === 'tileWin')       this._cmdTileWindow();
@@ -566,9 +548,9 @@ class Study {
 
 			// Experimental
 			if (cmd === 'toggleLamono') {
-				const ff = this._editor.fontFamily();
-				if (ff.indexOf('LaMono') === -1) this._editor.fontFamily('LaMono, ' + this._res.fontSet);
-				else this._editor.fontFamily(this._res.fontSet);
+				const ff = this._editor.getSettings().fontFamily;
+				if (ff.indexOf('LaMono') === -1) this._editor.setSettings({ fontFamily: 'LaMono, ' + this._res.fontSet });
+				else this._editor.setSettings({ fontFamily: this._res.fontSet });
 				setTimeout(() => { this._editor.refresh(true); }, 0);
 			}
 		}, 0);
@@ -601,7 +583,7 @@ class Study {
 				this._handleOpening(this._res.msg.confirmOpen, 'doOpen');
 				return true;
 			case 'close':
-				this._handleOpening(this._res.msg.confirmExit, 'doClose', this._editor.value());
+				this._handleOpening(this._res.msg.confirmExit, 'doClose', this._editor.getValue());
 				return true;
 			case 'save':
 				this._handleSaving('doSave', this._res.dialogTitle.saveAs);
@@ -633,7 +615,13 @@ class Study {
 	async _onExportAsLibrary() {
 		const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption(this._res.msg.enterLibName, '', this._res.msg.libName, this._name, this._res.msg.includeUsedLibs);
 		if (libName) {
-			this._handleSaving('doExportAsLibrary', libName, flag, JSON.stringify(this._codeStructure));
+			try {
+				const snapshot = await this._editor.analyzeNow();
+				const [msg, arg] = await this._callServer('doExportAsLibrary', snapshot.text, libName, flag, JSON.stringify(snapshot));
+				this._handleServerResponse(msg, arg);
+			} catch (error) {
+				await this._dialogBox.showAlert(this._res.msg.error + error.message, 'error');
+			}
 		}
 		return true;
 	}
@@ -648,7 +636,7 @@ class Study {
 	}
 
 	async _handleSaving(method, ...opts) {
-		const [msg, arg] = await this._callServer(method, this._editor.value(), ...opts);
+		const [msg, arg] = await this._callServer(method, this._editor.getValue(), ...opts);
 		this._handleServerResponse(msg, arg);
 	}
 
@@ -672,7 +660,7 @@ class Study {
 
 	async _handleExecution(method) {
 		await this._resetOutputPane();
-		const [msg, arg] = await this._callServer(method, this._editor.value());
+		const [msg, arg] = await this._callServer(method, this._editor.getValue());
 		this._handleServerResponse(msg, arg);
 	}
 

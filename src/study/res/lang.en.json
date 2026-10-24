@@ -80,7 +80,6 @@
         {"name": "All Files", "extensions": ["*"]}
     ],
     "readOnly": "Read Only",
-    "editorPhrase": {},
 	"typeLabels": [
 		{"type": "boolean", "label": "Boolean"},
 		{"type": "function", "label": "Function"},

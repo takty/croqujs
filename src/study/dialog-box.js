@@ -36,22 +36,6 @@ class DialogBox {
 		});
 	}
 
-	showPrompt(text, type, placeholder, value) {
-		window.focus();
-		this._disableBackground();
-		return Swal.fire(this._makeOption(text, type, {
-			input: 'text',
-			confirmButtonText: 'OK',
-			showCancelButton: true,
-			cancelButtonText: this._textCancel,
-			inputPlaceholder: placeholder,
-			inputValue: value,
-		})).then((res) => {
-			this._enableBackground();
-			return res;
-		});
-	}
-
 	showPromptWithOption(text, type, placeholder, value, optText) {
 		window.focus();
 		this._disableBackground();
@@ -113,11 +97,12 @@ class DialogBox {
 
 	_disableBackground() {
 		this._study._sideMenu.close();
-		this._study._editor.enabled(false);
+		this._study._editor.setSettings({ disabled: true });
 	}
 
 	_enableBackground() {
-		this._study._editor.enabled(true);
+		this._study._editor.setSettings({ disabled: false });
+		this._study._editor.getCodeMirror().focus();
 	}
 
 }

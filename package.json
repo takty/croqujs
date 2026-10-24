@@ -19,14 +19,9 @@
 	},
 	"dependencies": {
 		"acorn": "8.18.0",
-		"acorn-loose": "8.5.2",
 		"acorn-walk": "8.3.5",
-		"codemirror": "5.65.21",
-		"js-beautify": "2.0.3",
-		"jshint": "2.13.6",
-		"jshint-ja-edu": "github:takty/jshint-ja-edu",
-		"sweetalert2": "11.26.25",
-		"tern": "0.24.3"
+		"croq-mirror": "github:takty/croq-mirror#main",
+		"sweetalert2": "11.26.25"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.6.1",

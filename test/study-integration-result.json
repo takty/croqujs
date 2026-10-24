@@ -1,0 +1,24 @@
+{
+	"passed": true,
+	"electron": "44.5.1",
+	"checks": [
+		"Croqujs mounts croq-mirror",
+		"No legacy editor library globals",
+		"Initial document is not marked modified",
+		"Editing marks document modified and enables undo",
+		"Host undo command reaches component",
+		"Persistent config updates component",
+		"Editor zoom updates persistent config",
+		"Wheel zoom preserves two-pixel steps and persists settings",
+		"Dialog disables editor",
+		"Dialog restores read-only state",
+		"Document replacement resets modified state and history",
+		"Runtime error highlights editor line",
+		"Runtime error highlight clears",
+		"Clipboard commands stay in host",
+		"Image capture restores editor state",
+		"Export uses the matching current source and analysis",
+		"Save and run receive the component document",
+		"Image capture reaches host without writing the OS clipboard in tests"
+	]
+}

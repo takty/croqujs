@@ -1,7 +1,8 @@
 import { execFile } from 'node:child_process';
-import { open, readFile } from 'node:fs/promises';
+import { access, copyFile, open, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 
 import builder from 'electron-builder';
 
@@ -58,7 +59,9 @@ async function getVersionInfo() {
 
 async function copyMain() {
 	await Promise.all([
-		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => !relPath.startsWith(`${path.join('study', 'scss')}${path.sep}`) && !VERSION_PATHS.includes(relPath)),
+		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => {
+			return !relPath.startsWith(`${path.join('study', 'scss')}${path.sep}`) && !VERSION_PATHS.includes(relPath);
+		}),
 		copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
 			const name = path.basename(relPath);
 			return path.dirname(relPath) === '.' && (name.startsWith('icon.') || name === 'icon-mac.png');
@@ -73,19 +76,27 @@ async function copyPackageFiles(name, srcDir, dstDir, filter = () => true) {
 
 async function copyLibraries() {
 	await Promise.all([
-		copyPackageFiles('acorn', 'dist', 'acorn'),
-		copyPackageFiles('acorn-loose', 'dist', 'acorn'),
-		copyPackageFiles('acorn-walk', 'dist', 'acorn'),
-		copyPackageFiles('codemirror', 'lib', 'codemirror/lib'),
-		copyPackageFiles('codemirror', 'addon', 'codemirror/addon'),
-		copyPackageFiles('codemirror', 'mode/javascript', 'codemirror/mode/javascript'),
-		copyPackageFiles('js-beautify', 'js/lib', 'js-beautify', (_srcPath, relPath) => relPath === 'beautify.js'),
-		copyPackageFiles('jshint', 'dist', 'jshint', (_srcPath, relPath) => relPath === 'jshint.js'),
-		copyPackageFiles('jshint-ja-edu', 'dist', 'jshint/ja-edu', (_srcPath, relPath) => relPath === 'jshint.js'),
+		copyPackageFiles('acorn', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'acorn.js'),
+		copyPackageFiles('acorn-walk', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'walk.js'),
 		copyPackageFiles('sweetalert2', 'dist', 'sweetalert2', (_srcPath, relPath) => path.dirname(relPath) === '.' && path.basename(relPath).startsWith('sweetalert2.min.')),
-		copyPackageFiles('tern', 'lib', 'tern'),
-		copyPackageFiles('tern', 'defs', 'tern'),
 	]);
+}
+
+async function copyCroqMirror() {
+	// The Git dependency commits built distribution files under docs, not dist.
+	// Resolve the declared entry URL without loading the browser-only module.
+	const packageDir = fileURLToPath(new URL('../', import.meta.resolve('croq-mirror')));
+	const sourceDir  = path.join(packageDir, 'docs');
+	const targetDir  = path.resolve(APP_DIR, 'croq-mirror');
+	const files      = ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css'];
+	for (const file of files) await access(path.join(sourceDir, file));
+	await rm(targetDir, { recursive: true, force: true });
+	await copyFilesFiltered(sourceDir, path.join(targetDir, 'dist'), (_srcPath, relPath) => {
+		if (files.includes(relPath) || files.some(file => relPath === `${file}.map`)) return true;
+		if (relPath.startsWith(`licenses${path.sep}`)) return true;
+		return relPath.startsWith(`assets${path.sep}`) && ['.woff', '.woff2', '.ttf', '.svg'].includes(path.extname(relPath));
+	});
+	await copyFile(path.join(packageDir, 'LICENSE'), path.join(targetDir, 'LICENSE'));
 }
 
 async function updateVersion() {
@@ -125,10 +136,27 @@ async function buildStyle() {
 }
 
 async function build() {
+	await removeLegacyEditorFiles();
 	await copyMain();
 	await copyLibraries();
+	await copyCroqMirror();
 	await updateVersion();
 	await buildStyle();
+}
+
+async function removeLegacyEditorFiles() {
+	// Remove obsolete build output, including Acorn files replaced by copyLibraries.
+	const studyDir = path.resolve(APP_DIR, 'study');
+	const paths = [
+		'editor.js', 'analyzer.js', 'worker-analyzer.js',
+		'css/cursor-right.svg', 'css/cursor-line.svg',
+		'lib/acorn', 'lib/codemirror', 'lib/tern', 'lib/jshint', 'lib/js-beautify',
+	];
+	for (const relativePath of paths) {
+		const target = path.resolve(studyDir, relativePath);
+		if (!target.startsWith(studyDir + path.sep)) throw new Error('Invalid legacy output path');
+		await rm(target, { recursive: true, force: true });
+	}
 }
 
 async function packageApp() {

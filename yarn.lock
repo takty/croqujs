@@ -6,9 +6,9 @@ __metadata:
   cacheKey: 10c0
 
 "@electron-internal/extract-zip@npm:^1.0.1":
-  version: 1.0.5
-  resolution: "@electron-internal/extract-zip@npm:1.0.5"
-  checksum: 10c0/d3341937dcb37097fd4927b7e5dfb7cb6b1ba56a42b00d62a55a7a9bbd093545dd8c6711ab39b321b2696d968b2cc32c29ed9d60a1fa6aa1665588e03e60d4e1
+  version: 1.0.6
+  resolution: "@electron-internal/extract-zip@npm:1.0.6"
+  checksum: 10c0/96d8097dbc8caf171571985bfb666f66d42b60383c14731a236693d33f7176607b5132089857a1e3b85362b25e2cf4a884a946dda1ed707c903bd36ccc698469
   languageName: node
   linkType: hard
 
@@ -103,9 +103,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/rebuild@npm:^4.0.4":
-  version: 4.2.0
-  resolution: "@electron/rebuild@npm:4.2.0"
+"@electron/rebuild@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "@electron/rebuild@npm:4.2.1"
   dependencies:
     "@malept/cross-spawn-promise": "npm:^2.0.0"
     debug: "npm:^4.1.1"
@@ -118,7 +118,7 @@ __metadata:
       built: true
   bin:
     electron-rebuild: lib/cli.js
-  checksum: 10c0/6d5ed8a860b70d4760de299b4e07560cf95c81974788240aea28fdfe376ca4ec3f99bfa19d1a28cac40fa747142cc32368f1f28ad555670b59355e58d05724ae
+  checksum: 10c0/7e5a21d3325f3ca2f980eaaff9e0db89001fd9e6334c1a08e687f40a0224cf2c2c77736d96b7cc622d67633164956544e4840d9c05644d7254589bb7204ec08b
   languageName: node
   linkType: hard
 
@@ -316,13 +316,13 @@ __metadata:
   linkType: hard
 
 "@peculiar/asn1-schema@npm:^2.7.0":
-  version: 2.10.0
-  resolution: "@peculiar/asn1-schema@npm:2.10.0"
+  version: 2.11.0
+  resolution: "@peculiar/asn1-schema@npm:2.11.0"
   dependencies:
     "@peculiar/utils": "npm:^2.0.2"
     asn1js: "npm:^3.0.10"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/3cad8ff856b6d168dca76c6c15ff15b621b5c2b42a7bc0e0d3f4793382b1546cbf4660df485c7097f2ebde72fcef6e8cbdf01e5ee88bae9bbf13332977bcde7f
+  checksum: 10c0/4d1d158c37ebafaf2c04b069ef5f3e92f011ec928d24c63e3f33fc479737ab5ba8a44a32a11d57591e5f9be18f913947c51fc39691af5d34e639a0e842228d1c
   languageName: node
   linkType: hard
 
@@ -427,20 +427,20 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 26.6.4
-  resolution: "@types/node@npm:26.6.4"
+  version: 26.6.5
+  resolution: "@types/node@npm:26.6.5"
   dependencies:
     undici-types: "npm:~8.9.0"
-  checksum: 10c0/094e7362df9200ba4c2da09131ca3b5d1aa51535a268a24e4ee2546d9c5a323d1d30cbdaaaa3db7ef8b2387572d1f9edabb11538ab7a09d3bca33ae5cddc2b1b
+  checksum: 10c0/4f791f69466ace7842c09e7bef96cb1ddbb65cf3db916ef7e84f0e2b2a17220b6b816dc7539d01520cadfb17ed7169b8214910900493e0a83be8bc7d124ec20a
   languageName: node
   linkType: hard
 
 "@types/node@npm:^24.9.0":
-  version: 24.19.1
-  resolution: "@types/node@npm:24.19.1"
+  version: 24.19.2
+  resolution: "@types/node@npm:24.19.2"
   dependencies:
     undici-types: "npm:>=7.24.0 <7.24.7"
-  checksum: 10c0/789822cc68a0e0b632fd0a9fa53411e33541f03c18dc19942ed38161c369bf0b013917b4c6c760688bd2d09d940c827a601add118dfa04fe35a285535b2a8596
+  checksum: 10c0/b51a7f8854007ad579dffdd0633d8addbfeb2c97cceb380f2eba0ed163638ec52e17565385a6cc04d54ac4ff99c70c64aee68a4ca45b6128c035e828794e29c5
   languageName: node
   linkType: hard
 
@@ -515,7 +515,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:8.18.0, acorn@npm:^8.11.0, acorn@npm:^8.15.0":
+"acorn@npm:8.18.0":
   version: 8.18.0
   resolution: "acorn@npm:8.18.0"
   bin:
@@ -530,6 +530,15 @@ __metadata:
   bin:
     acorn: bin/acorn
   checksum: 10c0/52a72d5d785fa64a95880f2951021a38954f8f69a4944dfeab6fb1449b0f02293eae109a56d55b58ff31a90a00d16a804658a12db8ef834c20b3d1201fe5ba5b
+  languageName: node
+  linkType: hard
+
+"acorn@npm:^8.11.0, acorn@npm:^8.15.0":
+  version: 8.19.0
+  resolution: "acorn@npm:8.19.0"
+  bin:
+    acorn: bin/acorn
+  checksum: 10c0/21007e0ca638dd13d44a0ad26856b7a885cc6c4319cd2bc71694bc8ec3f0606c23ecd12b157e167f909d9d2b2d68d5b50fe3f54211b1aab7c3451a7c801fe62e
   languageName: node
   linkType: hard
 
@@ -568,16 +577,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-builder-lib@npm:26.17.0":
-  version: 26.17.0
-  resolution: "app-builder-lib@npm:26.17.0"
+"app-builder-lib@npm:26.18.0":
+  version: 26.18.0
+  resolution: "app-builder-lib@npm:26.18.0"
   dependencies:
     "@electron/asar": "npm:3.4.1"
     "@electron/fuses": "npm:^1.8.0"
     "@electron/get": "npm:^3.0.0"
     "@electron/notarize": "npm:2.5.0"
     "@electron/osx-sign": "npm:1.3.3"
-    "@electron/rebuild": "npm:^4.0.4"
+    "@electron/rebuild": "npm:^4.2.1"
     "@electron/universal": "npm:2.0.3"
     "@malept/flatpak-bundler": "npm:^0.4.0"
     "@noble/hashes": "npm:^1.8.0"
@@ -594,7 +603,7 @@ __metadata:
     dotenv: "npm:^16.4.5"
     dotenv-expand: "npm:^11.0.6"
     ejs: "npm:^3.1.8"
-    electron-publish: "npm:26.16.0"
+    electron-publish: "npm:26.18.0"
     fs-extra: "npm:^10.1.0"
     hosted-git-info: "npm:^4.1.0"
     isbinaryfile: "npm:^5.0.0"
@@ -614,9 +623,9 @@ __metadata:
     unzipper: "npm:^0.12.3"
     which: "npm:^5.0.0"
   peerDependencies:
-    dmg-builder: 26.17.0
-    electron-builder-squirrel-windows: 26.17.0
-  checksum: 10c0/94c927fd2df8830fd408ba7212ac15d586e12390ad9b7adea949570d7793df3aad24f65aa5c1e0f3b07b8cc49f118fa2fbe497935ea485830185ba2a515bf76d
+    dmg-builder: 26.18.0
+    electron-builder-squirrel-windows: 26.18.0
+  checksum: 10c0/cd5cf76b576f2e1d353271742182d3eca84ec92db9c4b77f2ebd385c358b4269dec3c657bb05e2fbe884d2ec11dc6d03f7c0017d73c167fe949c2d167205617d
   languageName: node
   linkType: hard
 
@@ -628,13 +637,13 @@ __metadata:
   linkType: hard
 
 "asn1js@npm:^3.0.10, asn1js@npm:^3.0.6":
-  version: 3.0.10
-  resolution: "asn1js@npm:3.0.10"
+  version: 3.1.0
+  resolution: "asn1js@npm:3.1.0"
   dependencies:
     pvtsutils: "npm:^1.3.6"
-    pvutils: "npm:^1.1.5"
+    pvutils: "npm:^1.2.0"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/04056106522e4d0db4eb992299bb76d73438bfd59ffd975ac9c1f15d14e7326161dad383c54a5ccfa203b73ae7b7bf4668f42c2fed01e1f4bf79a58de71e4dc6
+  checksum: 10c0/099916f13b6b696570b73dfd92902dac1d891af8bf8004af388d090d14933a07146bd986c7a0e9bfb3c903eaedaedab807b779048814f304945fc525562d9805
   languageName: node
   linkType: hard
 
@@ -725,12 +734,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"baseline-browser-mapping@npm:^2.11.26":
-  version: 2.11.27
-  resolution: "baseline-browser-mapping@npm:2.11.27"
+"baseline-browser-mapping@npm:^2.11.29":
+  version: 2.11.32
+  resolution: "baseline-browser-mapping@npm:2.11.32"
   bin:
     baseline-browser-mapping: dist/cli.cjs
-  checksum: 10c0/4a06cfab5ad4f57633c0092340af41388f3fc71e6a91a3309942a23c60b65e9ec6f243edbd2f484d3d0ee40f5f33d974c8a85c9c207e104ea17ba429cfb4d3df
+  checksum: 10c0/50aa1ebd997bf3fef7c3623c79c82f89217bf490debf291f9d7746366be50b5feb66e2404dabd8f374a2ada00f9b558f5961f1fee37691c858203bdefdb6c861
   languageName: node
   linkType: hard
 
@@ -777,17 +786,17 @@ __metadata:
   linkType: hard
 
 "browserslist@npm:^4.28.9":
-  version: 4.29.3
-  resolution: "browserslist@npm:4.29.3"
+  version: 4.29.4
+  resolution: "browserslist@npm:4.29.4"
   dependencies:
-    baseline-browser-mapping: "npm:^2.11.26"
-    caniuse-lite: "npm:^1.0.30001813"
-    electron-to-chromium: "npm:^1.5.439"
-    node-releases: "npm:^2.0.57"
-    update-browserslist-db: "npm:^1.3.3"
+    baseline-browser-mapping: "npm:^2.11.29"
+    caniuse-lite: "npm:^1.0.30001816"
+    electron-to-chromium: "npm:^1.5.459"
+    node-releases: "npm:^2.0.59"
+    update-browserslist-db: "npm:^1.3.4"
   bin:
     browserslist: cli.js
-  checksum: 10c0/6e1a1fcae77369260e936fe63e7994105f04c6b7aea4f2139fdf3ecccfcb1eb24d4522c2828c6ed48ef71206a33f4346e11cf714c5aac0f7496cead06bb66bac
+  checksum: 10c0/e706dfb56f89a78a3b5fef681d9793327779f5d30885606e49c4af788a7f60b92dd8c2ead153d780109e8fcc2529a784491854037b18c8b8700fb464b87f9f93
   languageName: node
   linkType: hard
 
@@ -869,10 +878,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.30001810, caniuse-lite@npm:^1.0.30001813":
-  version: 1.0.30001814
-  resolution: "caniuse-lite@npm:1.0.30001814"
-  checksum: 10c0/c1b93b8cd43528241e1a97d0a683ad0cbbf825a2d5a6a021ac1abaee966a861095d2bbffa9903638ee590534a243b024f18d7440e514d0f9c2bb90cfcf4651fb
+"caniuse-lite@npm:^1.0.30001810, caniuse-lite@npm:^1.0.30001816":
+  version: 1.0.30001819
+  resolution: "caniuse-lite@npm:1.0.30001819"
+  checksum: 10c0/6842319cdb9c8ac950ef0910fc3cc7dac3320b96b150de83ac65162c6b4906d2721ca830943a9e5a833c265b186aa0c417402ddd4157108bbf5474d6fabdc843
   languageName: node
   linkType: hard
 
@@ -1039,24 +1048,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"croq-mirror@github:takty/croq-mirror#main":
+  version: 0.1.0
+  resolution: "croq-mirror@https://github.com/takty/croq-mirror.git#commit=0dba6595818608e54d2d85df238566e938cf74f2"
+  dependencies:
+    acorn: "npm:8.18.0"
+    acorn-loose: "npm:8.5.2"
+    acorn-walk: "npm:8.3.5"
+    codemirror: "npm:5.65.21"
+    js-beautify: "npm:2.0.3"
+    jshint: "npm:2.13.6"
+    jshint-ja-edu: "github:takty/jshint-ja-edu"
+    tern: "npm:0.24.3"
+  checksum: 10c0/6f7b1e5b84ace21a88df6761995d45c06037753d609a794cb755637f5b6fc5cdef8b4195c52c7ef168d570c4b3269d2f4dc4a059495f81502dc48ad8cc5236bb
+  languageName: node
+  linkType: hard
+
 "croqujs@workspace:.":
   version: 0.0.0-use.local
   resolution: "croqujs@workspace:."
   dependencies:
     acorn: "npm:8.18.0"
-    acorn-loose: "npm:8.5.2"
     acorn-walk: "npm:8.3.5"
     autoprefixer: "npm:^10.6.1"
-    codemirror: "npm:5.65.21"
+    croq-mirror: "github:takty/croq-mirror#main"
     electron: "npm:^44.5.1"
     electron-builder: "npm:^26.15.7"
-    js-beautify: "npm:2.0.3"
-    jshint: "npm:2.13.6"
-    jshint-ja-edu: "github:takty/jshint-ja-edu"
     postcss: "npm:^8.5.28"
     sass: "npm:^1.105.1"
     sweetalert2: "npm:11.26.25"
-    tern: "npm:0.24.3"
   languageName: unknown
   linkType: soft
 
@@ -1159,15 +1179,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dmg-builder@npm:26.17.0":
-  version: 26.17.0
-  resolution: "dmg-builder@npm:26.17.0"
+"dmg-builder@npm:26.18.0":
+  version: 26.18.0
+  resolution: "dmg-builder@npm:26.18.0"
   dependencies:
-    app-builder-lib: "npm:26.17.0"
+    app-builder-lib: "npm:26.18.0"
     builder-util: "npm:26.16.0"
     fs-extra: "npm:^10.1.0"
     js-yaml: "npm:^4.1.0"
-  checksum: 10c0/23e202ef17b9a4cf8703f3db00a359b0028e08e1e7f3f15f33407712bb5504b902dda6141b9a20c2085b5e99a6dc088f89b4012189fe813a2eaebf363963daa8
+  checksum: 10c0/fbf0740369681c288aa44867cd9db45270bbc66aa705a6d2ee7d9884c77835fee952c8dacd48d9ee5c84b7153e572338e40350d85741291f2e75e73ca80ee7ef
   languageName: node
   linkType: hard
 
@@ -1276,15 +1296,15 @@ __metadata:
   linkType: hard
 
 "electron-builder@npm:^26.15.7":
-  version: 26.17.0
-  resolution: "electron-builder@npm:26.17.0"
+  version: 26.18.0
+  resolution: "electron-builder@npm:26.18.0"
   dependencies:
-    app-builder-lib: "npm:26.17.0"
+    app-builder-lib: "npm:26.18.0"
     builder-util: "npm:26.16.0"
     builder-util-runtime: "npm:9.7.0"
     chalk: "npm:^4.1.2"
     ci-info: "npm:^4.2.0"
-    dmg-builder: "npm:26.17.0"
+    dmg-builder: "npm:26.18.0"
     fs-extra: "npm:^10.1.0"
     lazy-val: "npm:^1.0.5"
     simple-update-notifier: "npm:2.0.0"
@@ -1292,13 +1312,13 @@ __metadata:
   bin:
     electron-builder: ./cli.js
     install-app-deps: ./install-app-deps.js
-  checksum: 10c0/5b45e9b8dc06a362c7b5b4106ca0513931206b402ef9147eedd594f5bd40cc92a4776f591eaded8fd63ebf2e276173147c6155e567b08509b3afb6313639b1b5
+  checksum: 10c0/445c7880931e903112fb50929f4d5be788802acac18aaf8d476143ae66a111f6b93dc53c67eb0c47c3c7f7f9c9ac33763ceecdee9012780b6a76c20d31d48cd1
   languageName: node
   linkType: hard
 
-"electron-publish@npm:26.16.0":
-  version: 26.16.0
-  resolution: "electron-publish@npm:26.16.0"
+"electron-publish@npm:26.18.0":
+  version: 26.18.0
+  resolution: "electron-publish@npm:26.18.0"
   dependencies:
     "@types/fs-extra": "npm:^9.0.11"
     aws4: "npm:^1.13.2"
@@ -1309,20 +1329,20 @@ __metadata:
     fs-extra: "npm:^10.1.0"
     lazy-val: "npm:^1.0.5"
     mime: "npm:^2.5.2"
-  checksum: 10c0/fd7f643b2a109257ed796012e363f65469cf8dee8305a1aa70058a323a1f39ba0e37f8f3f1092a5dc59001d10264f55a0d7e8ac211651a35d9d0c463fffc9257
+  checksum: 10c0/14e935e45c1d02280e2ac462b8042e070d8b6558b6488675254b134fe3cc03d5aa43d42253d75ec011ecdcbcb650b7b189ebee93d519109900b36c2f32da95fe
   languageName: node
   linkType: hard
 
-"electron-to-chromium@npm:^1.5.439":
-  version: 1.5.444
-  resolution: "electron-to-chromium@npm:1.5.444"
-  checksum: 10c0/ad8e61961707a2e95515c121e1f5059c8864c79f7d5612f64eb4065a468c93a83228afa41a1a8877ed762d323908c6189847468dcec9ee1b5276b123d8c08c23
+"electron-to-chromium@npm:^1.5.459":
+  version: 1.5.464
+  resolution: "electron-to-chromium@npm:1.5.464"
+  checksum: 10c0/65e6244c3b109942497ec6f7e8294258e74a7b410c804339fec39ecb2921926423e08f8f3a2a7979008c1a196a4c57145c1e76abe40ba374f60028fab23baa10
   languageName: node
   linkType: hard
 
 "electron@npm:^44.5.1":
-  version: 44.5.1
-  resolution: "electron@npm:44.5.1"
+  version: 44.9.3
+  resolution: "electron@npm:44.9.3"
   dependencies:
     "@electron-internal/extract-zip": "npm:^1.0.1"
     "@electron/get": "npm:^5.0.0"
@@ -1330,7 +1350,7 @@ __metadata:
   bin:
     electron: cli.js
     install-electron: install.js
-  checksum: 10c0/37fa3bbb95698dc8066c192146d34f1623e21e60cd47420f495868039a3506684d285da208808e297a38805ee58a876d7967500de6955156a977a7edd7fcd271
+  checksum: 10c0/c3559aaa78f768dbf28b821b600e39e5753f4b316d3eeee30b2f1d72357c7d2a574fcd888353006a9f83968ac4fe2006071696078b23cbfcf1e23dabbc1f25fe
   languageName: node
   linkType: hard
 
@@ -1486,9 +1506,9 @@ __metadata:
   linkType: hard
 
 "fast-uri@npm:^3.0.1":
-  version: 3.1.8
-  resolution: "fast-uri@npm:3.1.8"
-  checksum: 10c0/c9c47860a7f9110176d94bb30a02942182f0bfc8d6780e9702f320336dc2dadb83b1d9879cceaf8d4b439642d1ec6d78c317cb808ab155455551bd5d9d7c22d8
+  version: 3.1.9
+  resolution: "fast-uri@npm:3.1.9"
+  checksum: 10c0/052757540d8c0bbc16bb124a45b8f5cb5d0932f9b89f019221ee41cdb3cafc1db44b2e809d6b888b87922af3e5560a863124454e9d9193e1fc955887357b5add
   languageName: node
   linkType: hard
 
@@ -2281,21 +2301,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.18":
-  version: 3.3.19
-  resolution: "nanoid@npm:3.3.19"
+"nanoid@npm:^3.3.20":
+  version: 3.3.20
+  resolution: "nanoid@npm:3.3.20"
   bin:
     nanoid: bin/nanoid.cjs
-  checksum: 10c0/ce7afa6258bfaa00bdc8de291cfe9913280eaa403b7d9cff3db4e4200c1913e7163577df74897958da144db473a96c67f74f57db0f542fbfe409df677bae3255
+  checksum: 10c0/856e8bf3bddb959d65997bd94908be030dbc5e6ed88fb3af2a638e51d1938f4d4f454c7c7231aba340775224f88b8cfd3ce1693c70471bfd05f5b6a2227c0c1e
   languageName: node
   linkType: hard
 
 "node-abi@npm:^4.2.0":
-  version: 4.35.0
-  resolution: "node-abi@npm:4.35.0"
+  version: 4.40.0
+  resolution: "node-abi@npm:4.40.0"
   dependencies:
     semver: "npm:^7.6.3"
-  checksum: 10c0/5b83a74866888bbced1d2286551168ce006e3e1fc1ac41dc79cab213a39669bba3d67f500a1a964aab3f4b4692b8a7eda69e0a67256b307fca6c8d8f5fd1f9be
+  checksum: 10c0/755f0d32475dcea0e41a9a45c70707735fe85ff9d08a17f9fcfac9a23377380b50d7e76f2362f77d4ee3d3b6cc7a8b216aca759a0f0dce0f80874b0d13b95db1
   languageName: node
   linkType: hard
 
@@ -2364,10 +2384,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-releases@npm:^2.0.57":
-  version: 2.0.57
-  resolution: "node-releases@npm:2.0.57"
-  checksum: 10c0/fe5b68fba1fef524243b54828a118f13a4a40db08bb42c0b92680c3ca5c246f4ae6f139515071d46b9a3a9195945f5ac78064f5b7674c4dcc3dd6bfe933ff9e8
+"node-releases@npm:^2.0.59":
+  version: 2.0.60
+  resolution: "node-releases@npm:2.0.60"
+  checksum: 10c0/f0c7b37cf83405291c0de87e15b5cef4af167248f8cc91b7c1c2281338c0e7e9aebfb77e0153ba335bb4c6ec5b1563431cfba93e8c83292760856012d93cb93e
   languageName: node
   linkType: hard
 
@@ -2485,8 +2505,8 @@ __metadata:
   linkType: hard
 
 "pkijs@npm:^3.4.0":
-  version: 3.4.1
-  resolution: "pkijs@npm:3.4.1"
+  version: 3.4.3
+  resolution: "pkijs@npm:3.4.3"
   dependencies:
     "@noble/hashes": "npm:1.8.0"
     asn1js: "npm:^3.0.6"
@@ -2494,7 +2514,7 @@ __metadata:
     pvtsutils: "npm:^1.3.6"
     pvutils: "npm:^1.1.3"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/9ddcbb05846bf99ee9fd9717a7e5104ba4107eb5706c93a3195f0d2d2edf142db86146f5b0dc2c2caaa969096e4a24758ded5a301f2c7de12dfc1ed4c90f76db
+  checksum: 10c0/918c84e6b2cd3e963a8d98aaa688b155973b10ca686995b55e829810004a0c31a158dd41074f57568b2a5e86f61e5f35cab19d86a2ff9aa9b83ed21d36803fbf
   languageName: node
   linkType: hard
 
@@ -2528,13 +2548,13 @@ __metadata:
   linkType: hard
 
 "postcss@npm:^8.5.28":
-  version: 8.5.28
-  resolution: "postcss@npm:8.5.28"
+  version: 8.5.31
+  resolution: "postcss@npm:8.5.31"
   dependencies:
-    nanoid: "npm:^3.3.18"
+    nanoid: "npm:^3.3.20"
     picocolors: "npm:^1.1.1"
-    source-map-js: "npm:^1.2.1"
-  checksum: 10c0/9fe44215a6628d89c8a75184b92f5b2f77e16f9e5b13b39b9009bb7e8e6eccddf82c8854bae922db1f17ace6ef3445073fe38abff513caeb03e5285b1b55620a
+    source-map-js: "npm:^1.2.2"
+  checksum: 10c0/52f94c6655f86f568a803ce9c8eb3c749e109cc711d26644c4cde953b30c1b947a2f25af3b9453de68584ac655572f46ed8e830b8ab2f21dd226b3f640992e00
   languageName: node
   linkType: hard
 
@@ -2620,7 +2640,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pvutils@npm:^1.1.3, pvutils@npm:^1.1.5":
+"pvutils@npm:^1.1.3, pvutils@npm:^1.2.0":
   version: 1.2.0
   resolution: "pvutils@npm:1.2.0"
   checksum: 10c0/1206766f0b9947fd44a629e2ed7945fb5d1d8ee0f31f032ec58d60cec2165b0b3afb11bf3727215348bf19132ca34986302680b5930d45b0a0d23745fd54224b
@@ -2763,8 +2783,8 @@ __metadata:
   linkType: hard
 
 "sass@npm:^1.105.1":
-  version: 1.105.1
-  resolution: "sass@npm:1.105.1"
+  version: 1.106.1
+  resolution: "sass@npm:1.106.1"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^5.0.0"
@@ -2775,7 +2795,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/07246d9a9cc3c7974d28e03b394791c65d6a8f701d4ed2f130f5cb72ff3ef5626e5e66afb067348b2ae87011c52e18cd29f294025a6430851ee8617ef8c94f38
+  checksum: 10c0/4f1043e2d5b3b7e9cf563050040ed3d91ef1bf8eb9dd180ecfd7ec403bfbd52ac2f557d7e7b398573021f9240a134a080d11af21b802724c05cad386b768df4c
   languageName: node
   linkType: hard
 
@@ -2870,7 +2890,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.2.1":
+"source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.2.2":
   version: 1.2.2
   resolution: "source-map-js@npm:1.2.2"
   checksum: 10c0/d5d6dec62266834f83dd4f8a2606a196fb1a006ca5d53b0ef80ee513b7eba2f4e2ae241f4bc129ae7e9b80dea24f6e3d92b446b7e6e96be7653cab8888168a94
@@ -3098,23 +3118,23 @@ __metadata:
   linkType: hard
 
 "undici@npm:^6.25.0":
-  version: 6.29.0
-  resolution: "undici@npm:6.29.0"
-  checksum: 10c0/3fb2117985be977ba8b6bd6a242fec915e1b1d0f9681f5adb3f508fb1717352452d65bcfd3bed09e7c776cfda403a4e8edb24a318492f8b2d793439af2b8699b
+  version: 6.29.1
+  resolution: "undici@npm:6.29.1"
+  checksum: 10c0/2d6970289fcbaca69a484e968fbb5e6fdadf7d9bff30bb5476f71b619d143ec76df1c75a309ac3cb3b3d78238793c613dcaad47dc9d92b63f9e8e73b86ffec23
   languageName: node
   linkType: hard
 
 "undici@npm:^7.24.4":
-  version: 7.30.0
-  resolution: "undici@npm:7.30.0"
-  checksum: 10c0/011a321a9198532b0f0504740faa43b9ab8fcc0e4f60104e5c9cb808a61faeb03e4be4aec4f0c65f47913d7c7d9d91591793a6cb9ab843f98ca2c3d711c4a34c
+  version: 7.30.1
+  resolution: "undici@npm:7.30.1"
+  checksum: 10c0/c838089b010e8e28a9a5358d4bf4621e0c8d7bb70058b23e819667349c4c0b6791a7c8bc9bbe94ff0923db132faae0d9d9592b9743eda4f2b49466fa57482213
   languageName: node
   linkType: hard
 
 "undici@npm:^8.4.1":
-  version: 8.11.2
-  resolution: "undici@npm:8.11.2"
-  checksum: 10c0/106f6991178fb7562fd90cdec7993c5f807a9428682306091f0c4b27fc474ec291f868e29972c6252988bf061ad193df943b3b99e775be157a28d92bbb95699d
+  version: 8.12.3
+  resolution: "undici@npm:8.12.3"
+  checksum: 10c0/714919e62b4160eea195fb35c7f5c4907235741e47bfde8a014ac58f6d24df13434e23400d7f48e2c455fd2b259d27f07fce514f04a5b4e99936ba62cbc4bb71
   languageName: node
   linkType: hard
 
@@ -3145,9 +3165,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"update-browserslist-db@npm:^1.3.3":
-  version: 1.3.3
-  resolution: "update-browserslist-db@npm:1.3.3"
+"update-browserslist-db@npm:^1.3.4":
+  version: 1.3.4
+  resolution: "update-browserslist-db@npm:1.3.4"
   dependencies:
     escalade: "npm:^3.2.0"
     picocolors: "npm:^1.1.1"
@@ -3155,7 +3175,7 @@ __metadata:
     browserslist: ">= 4.21.0"
   bin:
     update-browserslist-db: cli.js
-  checksum: 10c0/07bab166c18f47ba51f3b755e42f109ef5069d0d7c7224887decbd523d5ccd404f63661ebd5a740099972ed47f41f0e28c04df8be31d76716a346f948ce2aa61
+  checksum: 10c0/5c0769472715b57371208c3146cc07a4f0917c1d18cc34f60325bc4234f4a28f332e50b99f675999ff311315231ff19beb22a815dfe04ccc1e798e1d389514d7
   languageName: node
   linkType: hard
 

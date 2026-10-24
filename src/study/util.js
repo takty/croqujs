@@ -7,14 +7,6 @@
 
 'use strict';
 
-function createDelayFunction(fn, delay) {
-	let st = null;
-	return () => {
-		if (st) clearTimeout(st);
-		st = setTimeout(fn, delay);
-	};
-}
-
 async function loadJSON(fileNames) {
 	const fs = fileNames.map((url) => {
 		return fetch(url);
