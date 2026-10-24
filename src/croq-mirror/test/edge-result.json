@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "results": [
+    "no library globals",
+    "independent analysis",
+    "host CSS unaffected",
+    "simultaneous localized diagnostics",
+    "settings isolated",
+    "load resets history and reports origin",
+    "API edit is undoable",
+    "undo restores source",
+    "redo restores edit",
+    "analysis snapshot keeps matching source",
+    "stale analysis not published",
+    "analysis result detached from internal state",
+    "analysis disabled restores ordinary line numbers",
+    "explicit analysis works without enabling automatic display",
+    "disabled restores read-only",
+    "read-only blocks editing commands",
+    "Tern completion uses additional definitions",
+    "completion popup belongs to its editor",
+    "external line highlighting",
+    "highlight clears",
+    "position navigation",
+    "manual format works while automatic format disabled",
+    "formatting feature switch",
+    "automatic formatting on leaving edited line",
+    "container resize",
+    "destroy is idempotent and empties container",
+    "recreate without affecting sibling",
+    "initialization failure cleans up container"
+  ],
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Edg/156.0.4314.42",
+    "revision": "@57559ad176e613cfedd7dff5fe6856590a39eb3b",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0",
+    "jsVersion": "15.6.12.6"
+  }
+}

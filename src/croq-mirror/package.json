@@ -1,0 +1,10 @@
+{
+  "name": "croq-mirror",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
+  "scripts": { "build": "node build.mjs", "test": "node --test test/*.test.mjs", "serve": "node serve.mjs" },
+  "dependencies": { "codemirror": "5.65.21", "acorn": "8.18.0", "acorn-loose": "8.5.2", "acorn-walk": "8.3.5", "tern": "0.24.3", "jshint": "2.13.6", "jshint-ja-edu": "github:takty/jshint-ja-edu", "js-beautify": "2.0.3" },
+  "devDependencies": { "sass": "^1.105.1", "postcss": "^8.5.28" }
+}
