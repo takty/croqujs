@@ -420,25 +420,6 @@ class Study {
 		window.localStorage.setItem('$winstate_field', JSON.stringify(state));
 	}
 
-	async _cmdCopyAsImage() {
-		this._toolbar.showMessage(this._res.msg.copyingAsImage, true);
-		let failure = null;
-		try {
-			const dataUrl = await this._editor.captureImage(async rect => {
-				const [url, scaleFactor] = await this._callServer('doCapturePage', rect);
-				return { url, scaleFactor };
-			});
-			const [result] = await this._callServer('doCopyImageToClipboard', dataUrl);
-			if (result !== 'success') throw new Error(String(result));
-		} catch (error) {
-			failure = error;
-		} finally {
-			this._toolbar.hideMessage(200);
-		}
-		if (failure) await this._dialogBox.showAlert(this._res.msg.error + failure.message, 'error');
-		else await this._dialogBox.showAlert(this._res.msg.copiedAsImage, 'success');
-	}
-
 	// -------------------------------------------------------------------------
 
 	executeCommand(cmd, close = true) {
@@ -465,7 +446,6 @@ class Study {
 			else if (cmd === 'findNext')      this._editor.execute('findNext');
 			else if (cmd === 'replace')       this._editor.execute('replace');
 
-			else if (cmd === 'copyAsImage')   this._cmdCopyAsImage();
 			else if (cmd === 'tileWin')       this._cmdTileWindow();
 			else if (cmd === 'showAbout')     this._dialogBox.showAlert(this._res.about.join('\n'), 'info');
 

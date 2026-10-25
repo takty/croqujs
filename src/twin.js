@@ -8,7 +8,7 @@
 'use strict';
 
 const electron = require('electron');
-const { ipcMain, BrowserWindow, dialog, clipboard, nativeImage } = electron;
+const { ipcMain, BrowserWindow, dialog } = electron;
 const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
 
 const OS       = require_('os');
@@ -159,20 +159,6 @@ class Twin {
 		} else {
 			return this.doNew();
 		}
-	}
-
-	async doCapturePage(bcr) {
-		if (this._studyWin === null) return;  // When window is closed while capturing
-		const scaleFactor = electron.screen.getPrimaryDisplay().scaleFactor;
-		const ni = await this._studyWin.capturePage(bcr);
-		const url = ni.toDataURL();
-		return [url, scaleFactor];
-	}
-
-	doCopyImageToClipboard(dataUrl) {
-		const ni = nativeImage.createFromDataURL(dataUrl);
-		clipboard.writeImage(ni);
-		return ['success'];
 	}
 
 	doUnmaximize() {

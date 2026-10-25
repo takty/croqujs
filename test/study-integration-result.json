@@ -29,10 +29,7 @@
 		"Out-of-range error line is clamped through public API",
 		"Public clipboard events update host state before cutting",
 		"Host clipboard commands reach component",
-		"Image capture restores editor state",
 		"Export uses the matching current source and analysis",
-		"Save and run receive the component document",
-		"Image capture reaches host without writing the OS clipboard in tests",
-		"Component requests multiple Electron captures for a long document"
+		"Save and run receive the component document"
 	]
 }

@@ -21,7 +21,6 @@
             "selectAll": "Select All",
             "toggleComment": "Toggle Comments",
             "format": "Format",
-            "copyAsImage": "Copy As Image",
             "toggleAutoIndent": "Auto-Indent",
         "code": "Code",
             "run": "Run",
@@ -54,8 +53,6 @@
         "includeUsedLibs": "Include '@use'd libraries",
         "libName": "A library name...",
         "cannotReadLibrary": "<span>CroqujsError</span>The file '%s' cannot be read.",
-        "copyingAsImage": "Copying as an image now...",
-        "copiedAsImage": "Copied as an image.",
         "openFile": "Open a file.",
         "permission": {
             "geolocation": "Allow Croqujs to access your location?",

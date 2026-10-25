@@ -24,8 +24,6 @@ app.whenReady().then(async () => {
 		ipcMain.handle('callServer_integration', async (_event, method, ...args) => {
 			calls.push({ method, args });
 			if (method === 'doReady') return ['init', [null, 'sample', null, null, false, [], 'function initial() { return 1; }']];
-			if (method === 'doCapturePage') return [(await window.capturePage(args[0])).toDataURL(), 1];
-			if (method === 'doCopyImageToClipboard') return ['success'];
 			return ['test-complete'];
 		});
 		window = new BrowserWindow({
@@ -129,10 +127,6 @@ app.whenReady().then(async () => {
 				document.execCommand = originalExec;
 			}
 			check(commands.join(',') === 'cut,copy,paste', 'Host clipboard commands reach component');
-			e.replaceDocument(Array.from({ length: 45 }, (_, i) => '// capture line ' + i).join('\\n'));
-			s._dialogBox.showAlert = async (_message, type) => { if (type === 'error') throw new Error(_message); };
-			await s._cmdCopyAsImage();
-			check(!e.getState().disabled && !document.querySelector('#editor .simple'), 'Image capture restores editor state');
 			e.destroy();
 			return checks;
 		})()`);
@@ -145,10 +139,6 @@ app.whenReady().then(async () => {
 			if (!call || call.args[0] !== exported.args[0]) throw new Error(method + ' did not receive the current document');
 		}
 		checks.push('Save and run receive the component document');
-		if (!calls.some(call => call.method === 'doCopyImageToClipboard' && call.args[0].startsWith('data:image/png'))) throw new Error('Image capture did not reach host');
-		checks.push('Image capture reaches host without writing the OS clipboard in tests');
-		if (calls.filter(call => call.method === 'doCapturePage').length < 2) throw new Error('Long document did not request multiple captures');
-		checks.push('Component requests multiple Electron captures for a long document');
 		const result = { passed: true, electron: process.versions.electron, checks };
 		await writeFile(path.join(__dirname, 'study-integration-result.json'), JSON.stringify(result, null, '\t') + '\n');
 		console.log(JSON.stringify(result, null, '\t'));
