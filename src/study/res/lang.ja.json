@@ -3,14 +3,12 @@
         "file": "ファイル",
             "new": "新規",
             "open": "開く...",
-            "close": "閉じる",
             "save": "保存",
             "saveAs": "別名で保存...",
             "saveCopy": "複製を保存...",
             "export": "エクスポート",
                 "exportAsWebPage": "ウェブページとしてエクスポート",
                 "exportAsLibrary": "ライブラリとしてエクスポート",
-            "exit": "終了",
         "edit": "編集",
             "undo": "元に戻す",
             "redo": "やり直す",
@@ -48,7 +46,6 @@
         "confirmNew": "プログラムが保存されていません。<br>本当に新規作成しますか？",
         "confirmExit": "プログラムが保存されていません。<br>本当に終了しますか？",
         "confirmOpen": "プログラムが保存されていません。<br>本当に開きますか？",
-        "confirmReadOnly": "読み込み専用ファイルなので，上書き保存できません。<br>別のファイル名を指定しますか？",
         "alertNextTime": "次回起動時に反映されます。",
         "error": "エラーが発生しました。",
         "exportedAsWebPage": "ウェブページとしてエクスポートされました。",
@@ -75,10 +72,6 @@
         "saveCopy": "複製を保存"
     },
     "untitled": "名称未設定",
-    "fileFilters": [
-        {"name": "JavaScript", "extensions": ["js"]},
-        {"name": "すべてのファイル", "extensions": ["*"]}
-    ],
     "readOnly": "読み込み専用",
 	"typeLabels": [
 		{"type": "boolean", "label": "真偽値"},

@@ -28,7 +28,6 @@
 	}
 	&.swal2-error {
 		border-color: rgba($L-Red, 0.2);
-		.line { background-color: $L-Red; }
 	}
 	&.swal2-warning {
 		border-color: rgba($L-Orange, 0.2);
@@ -37,8 +36,6 @@
 	}
 	&.swal2-success {
 		border-color: $L-YellowGreen;
-		.placeholder { border-color: rgba($L-YellowGreen, 0.2); }
-		.line { background-color: $L-YellowGreen; }
 	}
 }
 
@@ -108,11 +105,6 @@
 			outline: none;
 		}
 	}
-}
-
-@keyframes pulse-warning {
-	0%   { border-color: $L-Orange; }
-	100% { border-color: rgba($L-Orange, 0.2); }
 }
 
 .swal2-popup.prompt-with-option {

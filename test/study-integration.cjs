@@ -48,6 +48,17 @@ app.whenReady().then(async () => {
 			await window.study.ready;
 			const s = window.study;
 			const e = s._editor;
+			const rendererErrors = [];
+			const onError = event => rendererErrors.push(event.message);
+			window.addEventListener('error', onError);
+			s._sideMenu.open();
+			document.querySelector('[data-cmd="showAbout"]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+			await new Promise(resolve => setTimeout(resolve, 100));
+			window.removeEventListener('error', onError);
+			check(!!document.querySelector('.swal2-popup h1')?.textContent.includes('Croqujs'), 'About dialog opens from menu: ' + rendererErrors.join('; '));
+			Swal.clickConfirm();
+			await new Promise(resolve => setTimeout(resolve, 100));
+			check(!e.getState().disabled, 'Closing About dialog restores editor');
 			e.blur();
 			check(!e.hasFocus(), 'Public API releases editor focus');
 			e.focus();

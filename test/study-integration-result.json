@@ -2,6 +2,8 @@
 	"passed": true,
 	"electron": "45.0.0",
 	"checks": [
+		"About dialog opens from menu: ",
+		"Closing About dialog restores editor",
 		"Public API releases editor focus",
 		"Public API restores editor focus",
 		"Croqujs mounts croq-mirror",

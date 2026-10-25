@@ -1,6 +1,5 @@
 {
 	"fontSet": "Inconsolata, \"Hiragino Sans\", \"BIZ UDGothic\", \"Yu Gothic Medium\", Meiryo, monospace",
-	"defaultExt": ".js",
 	"about": [
 		"<h1>Croqujs %VERSION_MAJOR% <span>/krō-ˈkē/</span></h1>",
 		"<div>",

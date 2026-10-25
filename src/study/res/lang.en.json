@@ -3,14 +3,12 @@
         "file": "File",
             "new": "New",
             "open": "Open...",
-            "close": "Close",
             "save": "Save",
             "saveAs": "Save As...",
             "saveCopy": "Save a Copy...",
             "export": "Export",
                 "exportAsWebPage": "Export As Web Page",
                 "exportAsLibrary": "Export As Library",
-            "exit": "Exit",
         "edit": "Edit",
             "undo": "Undo",
             "redo": "Redo",
@@ -48,7 +46,6 @@
         "confirmNew": "The code is not saved.<br>Are you sure you want to create a new code?",
         "confirmExit": "The code is not saved.<br>Are you sure you want to quit?",
         "confirmOpen": "The code is not saved.<br>Are you sure you want to open?",
-        "confirmReadOnly": "The specified file cannot be over written because it is read only.<br>Are you sure you want to specify another file name?",
         "alertNextTime": "Settings are applied when Croqujs is started at the next time.",
         "error": "An error occurred.",
         "exportedAsWebPage": "Exported as a web page.",
@@ -75,10 +72,6 @@
         "saveCopy": "Save a Copy"
     },
     "untitled": "Untitled",
-    "fileFilters": [
-        {"name": "JavaScript", "extensions": ["js"]},
-        {"name": "All Files", "extensions": ["*"]}
-    ],
     "readOnly": "Read Only",
 	"typeLabels": [
 		{"type": "boolean", "label": "Boolean"},

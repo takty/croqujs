@@ -493,7 +493,7 @@ class Study {
 				const ff = this._editor.getSettings().fontFamily;
 				if (ff.indexOf('LaMono') === -1) this._editor.setSettings({ fontFamily: 'LaMono, ' + this._res.fontSet });
 				else this._editor.setSettings({ fontFamily: this._res.fontSet });
-				setTimeout(() => { this._editor.refresh(true); }, 0);
+				setTimeout(() => { this._editor.refresh(); }, 0);
 			}
 		}, 0);
 	}
