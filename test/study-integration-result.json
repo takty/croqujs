@@ -1,8 +1,16 @@
 {
 	"passed": true,
-	"electron": "44.5.1",
+	"electron": "45.0.0",
 	"checks": [
+		"Public API releases editor focus",
+		"Public API restores editor focus",
 		"Croqujs mounts croq-mirror",
+		"Host font loads: 16px Inconsolata",
+		"Host font loads: 400 16px LaMono",
+		"Host font loads: 700 16px LaMono",
+		"Host selects Inconsolata",
+		"Host switches to LaMono",
+		"Host restores Inconsolata",
 		"No legacy editor library globals",
 		"Initial document is not marked modified",
 		"Editing marks document modified and enables undo",
@@ -12,13 +20,17 @@
 		"Wheel zoom preserves two-pixel steps and persists settings",
 		"Dialog disables editor",
 		"Dialog restores read-only state",
+		"Dialog restores focus through public API",
 		"Document replacement resets modified state and history",
 		"Runtime error highlights editor line",
 		"Runtime error highlight clears",
-		"Clipboard commands stay in host",
+		"Out-of-range error line is clamped through public API",
+		"Public clipboard events update host state before cutting",
+		"Host clipboard commands reach component",
 		"Image capture restores editor state",
 		"Export uses the matching current source and analysis",
 		"Save and run receive the component document",
-		"Image capture reaches host without writing the OS clipboard in tests"
+		"Image capture reaches host without writing the OS clipboard in tests",
+		"Component requests multiple Electron captures for a long document"
 	]
 }

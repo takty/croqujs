@@ -67,7 +67,7 @@ class SideMenu {
 		const icon = mi.dataset.icon;
 		if (icon) {
 			const img = document.createElement('img');
-			img.src = 'css/icon-' + icon + '.svg';
+			img.src = 'res/icon-' + icon + '.svg';
 			mi.appendChild(img);
 		}
 	}
@@ -121,7 +121,7 @@ class SideMenu {
 			if (e.shiftKey) pks.push('shift');
 			pks.push(this._convertKey(e.key));
 			const ac = pks.sort().join('+');
-			if (this.IS_MAC && ac === 'c+cc' && !this._study._editor.getCodeMirror().hasFocus()) {
+			if (this.IS_MAC && ac === 'c+cc' && !this._study._editor.hasFocus()) {
 				return;  // for copying text in output pane on Mac
 			}
 			if (this._map[ac]) {
@@ -160,7 +160,7 @@ class SideMenu {
 
 	close() {
 		this._elm.style.display = 'none';
-		this._study._editor.getCodeMirror().focus();
+		this._study._editor.focus();
 	}
 
 	// -------------------------------------------------------------------------

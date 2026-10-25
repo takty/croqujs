@@ -41,7 +41,7 @@ class Toolbar {
 		const icon = btn.dataset.icon;
 		if (icon) {
 			const img = document.createElement('img');
-			img.src = 'css/icon-' + icon + '.svg';
+			img.src = 'res/icon-' + icon + '.svg';
 			btn.appendChild(img);
 		}
 	}

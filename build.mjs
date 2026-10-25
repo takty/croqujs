@@ -94,7 +94,7 @@ async function copyCroqMirror() {
 	await copyFilesFiltered(sourceDir, path.join(targetDir, 'dist'), (_srcPath, relPath) => {
 		if (files.includes(relPath) || files.some(file => relPath === `${file}.map`)) return true;
 		if (relPath.startsWith(`licenses${path.sep}`)) return true;
-		return relPath.startsWith(`assets${path.sep}`) && ['.woff', '.woff2', '.ttf', '.svg'].includes(path.extname(relPath));
+		return relPath.startsWith(`assets${path.sep}`) && path.extname(relPath) === '.svg';
 	});
 	await copyFile(path.join(packageDir, 'LICENSE'), path.join(targetDir, 'LICENSE'));
 }
@@ -128,20 +128,13 @@ async function buildSass() {
 	}
 }
 
-async function buildStyle() {
-	await Promise.all([
-		buildSass(),
-		copyFilesFiltered(SCSS_SRC_DIR, CSS_DIST_DIR, (_srcPath, relPath) => path.extname(relPath) !== '.scss'),
-	]);
-}
-
 async function build() {
 	await removeLegacyEditorFiles();
 	await copyMain();
 	await copyLibraries();
 	await copyCroqMirror();
 	await updateVersion();
-	await buildStyle();
+	await buildSass();
 }
 
 async function removeLegacyEditorFiles() {
@@ -152,6 +145,12 @@ async function removeLegacyEditorFiles() {
 		'css/cursor-right.svg', 'css/cursor-line.svg',
 		'lib/acorn', 'lib/codemirror', 'lib/tern', 'lib/jshint', 'lib/js-beautify',
 	];
+	// Assets now live in study/res rather than alongside generated CSS.
+	for await (const srcPath of walk(path.join(SRC_DIR, 'study/res'))) {
+		if (['.svg', '.woff', '.woff2', '.ttf', '.otf'].includes(path.extname(srcPath))) {
+			paths.push(path.join('css', path.basename(srcPath)));
+		}
+	}
 	for (const relativePath of paths) {
 		const target = path.resolve(studyDir, relativePath);
 		if (!target.startsWith(studyDir + path.sep)) throw new Error('Invalid legacy output path');

@@ -13,19 +13,23 @@
 
 @font-face {
 	font-family: 'Inconsolata';
-	src: url('Inconsolata-dz.woff') format('woff');
+	src: url('../res/Inconsolata-dz.woff') format('woff');
 }
 
 @font-face {
 	font-family: 'LaMono';
 	font-weight: 400;
-	src: url('LaMono-Regular.ttf') format('truetype');
+	src: url('../res/LaMono-Regular.ttf') format('truetype');
 }
 
 @font-face {
 	font-family: 'LaMono';
 	font-weight: 700;
-	src: url('LaMono-Bold.ttf') format('truetype');
+	src: url('../res/LaMono-Bold.ttf') format('truetype');
+}
+
+#editor .croq-mirror {
+	--croq-mirror-font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
 }
 
 html, body {

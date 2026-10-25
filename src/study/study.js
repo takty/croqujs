@@ -29,7 +29,7 @@ class Study {
 		}
 
 		window.addEventListener('keydown', (e) => {
-			if (this._editor && !this._editor.getCodeMirror().hasFocus() && e.ctrlKey && e.key === 'a') e.preventDefault();
+			if (this._editor && !this._editor.hasFocus() && e.ctrlKey && e.key === 'a') e.preventDefault();
 			if ((e.ctrlKey || e.metaKey) && e.key === 'F12') this._notifyServer('onStudyToggleDevTools');
 		});
 
@@ -125,9 +125,8 @@ class Study {
 			}
 		});
 		this._editor.on('error', (error) => { console.error(error.message); });
-		const cm = this._editor.getCodeMirror();
-		cm.on('copy', () => { this._reflectClipboardState(this._editor.getSelection()); });
-		cm.on('cut',  () => { this._reflectClipboardState(this._editor.getSelection()); });
+		this._editor.on('copy', ({ text }) => { this._reflectClipboardState(text); });
+		this._editor.on('cut',  ({ text }) => { this._reflectClipboardState(text); });
 	}
 
 	_initWindowResizing(ed) {
@@ -297,7 +296,7 @@ class Study {
 		this._setDocumentFile(filePath, name, baseName, dirName, readOnly, defJsons);
 
 		this._editor.loadDocument(text);
-		this._editor.getCodeMirror().focus();
+		this._editor.focus();
 
 		this._clearErrorMarker();
 		this._outputPane.initialize();
@@ -362,7 +361,7 @@ class Study {
 					}
 				}
 				if (info.isUserCode && this._editor.getSettings().functionLineNumbers) {
-					const line = Math.max(0, Math.min(info.line - 1, this._editor.getCodeMirror().lastLine()));
+					const line = Math.max(0, Math.min(info.line - 1, this._editor.getLineCount() - 1));
 					const lnf = this._editor.getFunctionLineNumber(line);
 					msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
 				} else {
@@ -371,8 +370,10 @@ class Study {
 			}
 		}
 		if (info.isUserCode) {
-			const line = Math.max(0, Math.min(info.line - 1, this._editor.getCodeMirror().lastLine()));
-			const jump = () => { this._editor.moveTo({ line, ch: Math.max(0, info.col - 1) }); };
+			const line = Math.max(0, Math.min(info.line - 1, this._editor.getLineCount() - 1));
+			const jump = () => {
+				this._editor.moveTo({ line, ch: Math.max(0, info.col - 1) });
+			};
 			this._outputPane.addError(msg, 'err', jump);
 			this._clearErrorMarker();
 			this._errorMarker = this._editor.highlightLine(line);
@@ -419,78 +420,19 @@ class Study {
 		window.localStorage.setItem('$winstate_field', JSON.stringify(state));
 	}
 
-	_executeClipboardCommand(command) {
-		const { disabled, readOnly } = this._editor.getState();
-		if (disabled || (readOnly && command !== 'copy')) return;
-		this._editor.getCodeMirror().focus();
-		document.execCommand(command);
-	}
-
-	_setSimpleEditorView() {
-		const cm = this._editor.getCodeMirror();
-		const options = {
-			scrollbarStyle : 'null',
-			readOnly       : 'nocursor',
-			styleActiveLine: false,
-			cursorBlinkRate: -1,
-			cursorHeight   : 0,
-			lineWrapping   : false,
-		};
-		const original = {};
-		for (const [key, value] of Object.entries(options)) {
-			original[key] = cm.getOption(key);
-			cm.setOption(key, value);
-		}
-		cm.getWrapperElement().classList.add('simple');
-		return original;
-	}
-
-	_restoreEditorView(original) {
-		const cm = this._editor.getCodeMirror();
-		for (const [key, value] of Object.entries(original)) cm.setOption(key, value);
-		cm.getWrapperElement().classList.remove('simple');
-	}
-
 	async _cmdCopyAsImage() {
-		const disabled = this._editor.getState().disabled;
-		const orig = this._setSimpleEditorView();
-		this._editor.setSettings({ disabled: true });
-		this._setSimpleEditorView();
 		this._toolbar.showMessage(this._res.msg.copyingAsImage, true);
-
 		let failure = null;
 		try {
-			const comp   = this._editor.getCodeMirror();
-			const lh     = comp.defaultTextHeight();
-			const height = lh * comp.lineCount() + lh * 0.25;
-			const bounds = comp.getWrapperElement().getBoundingClientRect();
-			const rect   = { x: bounds.left | 0, y: bounds.top | 0, width: bounds.width | 0, height: bounds.height | 0 };
-			const pause  = () => new Promise(resolve => setTimeout(resolve, 200));
-			let canvas = null;
-			for (let top = 0; top <= height; top += lh * 10) {
-				comp.scrollTo(0, top);
-				comp.refresh();
-				await pause();
+			const dataUrl = await this._editor.captureImage(async rect => {
 				const [url, scaleFactor] = await this._callServer('doCapturePage', rect);
-				if (!canvas) {
-					canvas = document.createElement('canvas');
-					canvas.width  = rect.width * scaleFactor;
-					canvas.height = height * scaleFactor;
-				}
-				const image = new Image();
-				image.src = url;
-				await image.decode();
-				canvas.getContext('2d').drawImage(image, 0, comp.getScrollInfo().top * scaleFactor);
-			}
-			const [result] = await this._callServer('doCopyImageToClipboard', canvas.toDataURL('image/png'));
+				return { url, scaleFactor };
+			});
+			const [result] = await this._callServer('doCopyImageToClipboard', dataUrl);
 			if (result !== 'success') throw new Error(String(result));
 		} catch (error) {
 			failure = error;
 		} finally {
-			this._editor.setSettings({ disabled });
-			this._restoreEditorView(orig);
-			this._editor.getCodeMirror().scrollTo(0, 0);
-			this._editor.refresh();
 			this._toolbar.hideMessage(200);
 		}
 		if (failure) await this._dialogBox.showAlert(this._res.msg.error + failure.message, 'error');
@@ -513,9 +455,9 @@ class Study {
 
 			if      (cmd === 'undo')          this._editor.execute('undo');
 			else if (cmd === 'redo')          this._editor.execute('redo');
-			else if (cmd === 'cut')           this._executeClipboardCommand('cut');
-			else if (cmd === 'copy')          this._executeClipboardCommand('copy');
-			else if (cmd === 'paste')         this._executeClipboardCommand('paste');
+			else if (cmd === 'cut')           this._editor.execute('cut');
+			else if (cmd === 'copy')          this._editor.execute('copy');
+			else if (cmd === 'paste')         this._editor.execute('paste');
 			else if (cmd === 'selectAll')     this._editor.execute('selectAll');
 			else if (cmd === 'toggleComment') this._editor.execute('toggleComment');
 			else if (cmd === 'format')        this._editor.execute('format');

@@ -102,7 +102,7 @@ class DialogBox {
 
 	_enableBackground() {
 		this._study._editor.setSettings({ disabled: false });
-		this._study._editor.getCodeMirror().focus();
+		this._study._editor.focus();
 	}
 
 }
