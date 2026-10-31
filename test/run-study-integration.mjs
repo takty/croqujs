@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
-const child = spawn(require('electron'), [fileURLToPath(new URL('./study-integration.cjs', import.meta.url))], {
+const child = spawn(require('electron'), [fileURLToPath(new URL(process.argv[2] || './study-integration.cjs', import.meta.url))], {
 	windowsHide: true,
 	stdio: 'inherit',
 	env,

@@ -5,7 +5,7 @@
 const { app, BrowserWindow, ipcMain, clipboard } = require('electron');
 const { readFile, writeFile, unlink } = require('node:fs/promises');
 const path = require('node:path');
-const { allowStudyPaste } = require('../src/study-permissions.js');
+const { allowPaste } = require('../src/paste-permissions.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const HTML = path.join(ROOT, 'app/study/study.integration.html');
@@ -39,7 +39,7 @@ app.whenReady().then(async () => {
 				preload: path.join(ROOT, 'app/study/preload.js'),
 			},
 		});
-		allowStudyPaste(window.webContents, HTML);
+		allowPaste(window.webContents, HTML);
 		await window.loadFile(HTML, { hash: 'integration' });
 		const checks = await window.webContents.executeJavaScript(`(async () => {
 			const checks = [];

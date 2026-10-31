@@ -328,7 +328,7 @@ class Twin {
 		if (!this._fieldWin) {
 			await this._createFieldWindow();
 		}
-		this._fieldWin.show();
+		this._fieldWin.showInactive();
 		while (!this._fieldWin.isVisible()) {
 			await new Promise(resolve => setTimeout(resolve, 200));
 		}

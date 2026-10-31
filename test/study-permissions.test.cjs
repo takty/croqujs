@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { fileURLToPath } = require('node:url');
-const { allowStudyPaste } = require('../src/study-permissions.js');
+const { allowPaste } = require('../src/paste-permissions.js');
 
 test('legacy paste is limited to registered editor main frames, including multiple windows', () => {
 	let check, request;
@@ -12,8 +12,8 @@ test('legacy paste is limited to registered editor main frames, including multip
 	const page = process.platform === 'win32' ? 'file:///C:/app/study%20files/study%23test.html' : 'file:///app/study%20files/study%23test.html';
 	const make = url => ({ session, getURL: () => url, isDestroyed: () => false });
 	const first = make(page + '#1'), second = make(page + '#2'), field = make(page + '#3');
-	allowStudyPaste(first, fileURLToPath(page));
-	allowStudyPaste(second, fileURLToPath(page));
+	allowPaste(first, fileURLToPath(page));
+	allowPaste(second, fileURLToPath(page));
 	const details = { isMainFrame: true, requestingUrl: page + '#1' };
 	const permission = 'deprecated-sync-clipboard-read';
 	for (const editor of [first, second]) assert.equal(check(editor, permission, 'file://', details), true);
