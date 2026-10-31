@@ -69,12 +69,22 @@ class Study {
 
 
 	async _initialize() {
-		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json']);
+		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json']);
 		this._res = Object.assign(rets[0], rets[1]);
+		this._res.menu.version = this._res.version;
 		await this._initEditor();
 
 		this._toolbar    = new Toolbar(this, this._res);
-		this._sideMenu   = new SideMenu(this, this._res);
+		this._sideMenu   = new SideMenu(this._res, rets[2], {
+			onCommand: (cmd, close) => this.executeCommand(cmd, close),
+			onClose: () => this._editor.focus(),
+			shouldHandleShortcut: (e) => {
+				// Leave copying text in the output pane to the browser on Mac.
+				const isMac = navigator.platform.toLowerCase().indexOf('mac') !== -1;
+				const isCopy = e.metaKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'c';
+				return !(isMac && isCopy && !this._editor.hasFocus());
+			},
+		});
 		this._dialogBox  = new DialogBox(this, this._res);
 		this._outputPane = new OutputPane(this._res);
 

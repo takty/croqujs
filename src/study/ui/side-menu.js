@@ -9,15 +9,19 @@
 
 class SideMenu {
 
-	constructor(study, res) {
+	// shouldHandleShortcut returns false to leave the key event to the host.
+	constructor(res, menu, { onCommand = () => {}, onClose = () => {}, shouldHandleShortcut = () => true } = {}) {
 		this.IS_MAC = navigator.platform.toLowerCase().indexOf('mac') !== -1;
 
-		this._study = study;
+		this._onCommand = onCommand;
+		this._onClose = onClose;
+		this._shouldHandleShortcut = shouldHandleShortcut;
 		this._res   = res;
 		this._map   = {}
 
 		this._elm = document.querySelector('.side-menu');
 		this._elm.style.display = 'none';
+		this._createMenu(menu);
 
 		this._pseudoFocus = document.createElement('input');
 		this._pseudoFocus.style.position = 'absolute';
@@ -32,7 +36,7 @@ class SideMenu {
 			e.preventDefault();
 		});
 
-		const his = this._elm.querySelectorAll('*[data-res]');
+		const his = this._elm.querySelectorAll('[data-res]:not([data-cmd])');
 		for (let i = 0; i < his.length; i += 1) {
 			const str = this._res.menu[his[i].dataset.res];
 			if (str !== undefined) his[i].innerText = str;
@@ -48,9 +52,56 @@ class SideMenu {
 		for (let i = 0; i < ais.length; i += 1) this._setAltCommand(ais[i]);
 	}
 
+	_createMenu(menu) {
+		const container = document.createElement('div');
+		container.className = 'container';
+		for (const section of menu) {
+			const caption = document.createElement('div');
+			caption.className = 'caption';
+			caption.dataset.res = section.res;
+			const list = document.createElement('ul');
+			list.className = 'menu';
+			for (const item of section.items) list.appendChild(this._createItem(item));
+			container.append(caption, list);
+		}
+		this._elm.appendChild(container);
+	}
+
+	_createItem(item, grouped = false) {
+		const li = document.createElement('li');
+		if (item.type === 'separator') {
+			li.className = 'separator';
+			return li;
+		}
+		if (item.type === 'group') {
+			li.className = 'menu-sub';
+			const label = document.createElement('span');
+			this._setAttributes(label, item);
+			const list = document.createElement('ul');
+			for (const child of item.items) list.appendChild(this._createItem(child, true));
+			li.append(label, list);
+			return li;
+		}
+		if (item.type !== undefined && item.type !== 'icon') {
+			throw new Error('Unknown menu item type: ' + item.type);
+		}
+		if (!item.cmd) throw new Error('Menu item requires cmd');
+		li.className = item.type === 'icon' ? 'icon' : (grouped ? '' : 'mi');
+		this._setAttributes(li, item);
+		return li;
+	}
+
+	_setAttributes(elm, item) {
+		for (const key of ['cmd', 'res', 'acc', 'icon']) {
+			if (item[key] !== undefined) elm.dataset[key] = item[key];
+		}
+		if (item.alt !== undefined) elm.dataset.altCmd = item.alt;
+		if (item.stay) elm.classList.add('stay');
+	}
+
 	_setItem(mi) {
 		const cmd = mi.dataset.cmd;
-		const str = this._res.menu[cmd];
+		const str = this._res.menu[mi.dataset.res ?? cmd];
 		if (str !== undefined) {
 			if (mi.classList.contains('icon')) {
 				mi.title = str;
@@ -62,7 +113,7 @@ class SideMenu {
 		const doClose = !mi.classList.contains('stay');
 		mi.addEventListener('mouseup', (e) => {
 			e.preventDefault();
-			this._study.executeCommand(cmd, doClose);
+			this._onCommand(cmd, doClose);
 		});
 		const icon = mi.dataset.icon;
 		if (icon) {
@@ -86,7 +137,7 @@ class SideMenu {
 				ac = ac.substr(1);
 			}
 			const key = ac.split('+').sort().join('+');
-			this._map[key] = () => { this._study.executeCommand(cmd, doClose); }
+			this._map[key] = () => { this._onCommand(cmd, doClose); }
 		}
 		const modAcc = [];
 		for (let ac of acc.split(' ')) {
@@ -109,7 +160,7 @@ class SideMenu {
 		const doClose = !mi.classList.contains('stay');
 		mi.addEventListener('mouseup', (e) => {
 			e.preventDefault();
-			if (e.altKey) this._study.executeCommand(cmd, doClose);
+			if (e.altKey) this._onCommand(cmd, doClose);
 		});
 	}
 
@@ -121,10 +172,7 @@ class SideMenu {
 			if (e.shiftKey) pks.push('shift');
 			pks.push(this._convertKey(e.key));
 			const ac = pks.sort().join('+');
-			if (this.IS_MAC && ac === 'c+cc' && !this._study._editor.hasFocus()) {
-				return;  // for copying text in output pane on Mac
-			}
-			if (this._map[ac]) {
+			if (this._map[ac] && this._shouldHandleShortcut(e)) {
 				e.preventDefault();
 				this._map[ac]();
 			}
@@ -160,7 +208,7 @@ class SideMenu {
 
 	close() {
 		this._elm.style.display = 'none';
-		this._study._editor.focus();
+		this._onClose();
 	}
 
 	// -------------------------------------------------------------------------

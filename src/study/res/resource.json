@@ -1,4 +1,5 @@
 {
+	"version": "v%VERSION_FULL%",
 	"fontSet": "Inconsolata, \"Hiragino Sans\", \"BIZ UDGothic\", \"Yu Gothic Medium\", Meiryo, monospace",
 	"about": [
 		"<h1>Croqujs %VERSION_MAJOR% <span>/krō-ˈkē/</span></h1>",

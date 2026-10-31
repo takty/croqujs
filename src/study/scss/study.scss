@@ -9,7 +9,20 @@
 @use 'variables' as *;
 @use 'dialog-box';
 @use 'toolbar';
-@use 'side-menu';
+
+// Host settings for the standalone ui/side-menu.css.
+.side-menu {
+	--side-menu-top: #{$size-toolbar-button};
+	--side-menu-background: #{$color-window};
+	--side-menu-font-size: #{$font-size};
+	--side-menu-font-family: #{$font-ui};
+	--side-menu-padding: 10px;
+	--side-menu-highlight: #{$L-LightGray};
+	--side-menu-muted: #{$L-DarkGray};
+	--side-menu-disabled: #{$L-Gray};
+	// Relative URLs in custom properties resolve where they are used (ui/side-menu.css).
+	--side-menu-check: url('../res/icon-check.svg');
+}
 
 @font-face {
 	font-family: 'Inconsolata';

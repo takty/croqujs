@@ -5,9 +5,10 @@
 	<title>Croqujs</title>	<link rel="stylesheet" href="lib/sweetalert2/sweetalert2.min.css">
 
 	<link rel="stylesheet" href="css/study.min.css">
+	<link rel="stylesheet" href="ui/side-menu.css">
 	<link rel="stylesheet" href="../croq-mirror/dist/croq-mirror.min.css">
 	<script src="lib/sweetalert2/sweetalert2.min.js"></script>	<script src="error-translator.js"></script>
-	<script src="side-menu.js"></script>
+	<script src="ui/side-menu.js"></script>
 	<script src="dialog-box.js"></script>
 	<script src="toolbar.js"></script>
 	<script src="config.js"></script>
@@ -37,78 +38,7 @@
 		<div id="handle"></div>
 		<div class="sub" id="output-pane"><div></div></div>
 	</div>
-	<div class="side-menu">
-		<div class="container">
-			<div class="caption" data-res="file"></div>
-			<ul class="menu">
-				<li class="mi" data-cmd="new" data-acc="CC+N"></li>
-				<li class="mi" data-cmd="open" data-acc="CC+O"></li>
-				<li class="mi" data-cmd="save" data-acc="CC+S" data-icon="save"></li>
-				<li class="mi" data-cmd="saveAs" data-acc="CC+Shift+S"></li>
-				<li class="mi" data-cmd="saveCopy" data-acc="CC+Alt+S" data-icon="save-copy"></li>
-				<li class="separator"></li>
-				<li class="menu-sub"><span data-res="export"></span><ul>
-					<li class="icon" data-cmd="exportAsLibrary" data-icon="book"></li>
-					<li class="icon" data-cmd="exportAsWebPage" data-icon="webpage"></li>
-				</ul></li>
-			</ul>
-			<div class="caption" data-res="edit"></div>
-			<ul class="menu">
-				<li class="menu-sub"><span></span><ul>
-					<li class="icon" data-cmd="undo" data-acc="*CC+Z" data-icon="undo"></li>
-					<li class="icon" data-cmd="redo" data-acc="*CC+Shift+Z" data-icon="redo"></li>
-				</ul></li>
-				<li class="menu-sub"><span data-res="edit"></span><ul>
-					<li class="icon" data-cmd="cut" data-acc="*CC+X" data-icon="cut"></li>
-					<li class="icon" data-cmd="copy" data-acc="*CC+C" data-icon="copy"></li>
-					<li class="icon" data-cmd="paste" data-acc="*CC+V" data-icon="paste"></li>
-				</ul></li>
-				<li class="mi" data-cmd="selectAll" data-acc="*CC+A"></li>
-				<li class="separator"></li>
-				<li class="mi" data-cmd="toggleComment" data-acc="CC+/"></li>
-				<li class="mi" data-cmd="format" data-acc="CC+B"></li>
-				<li class="separator"></li>
-				<li class="mi" data-cmd="find" data-acc="CC+F"></li>
-				<li class="mi" data-cmd="findNext" data-acc="!CC+G !F3"></li>
-				<li class="mi" data-cmd="replace" data-acc="CC+H"></li>
-				<li class="separator"></li>
-				<li class="mi" data-cmd="toggleAutoIndent"></li>
-			</ul>
-			<div class="caption" data-res="code"></div>
-			<ul class="menu">
-				<li class="mi" data-cmd="run" data-acc="CC+R" data-icon="play"></li>
-				<li class="mi" data-cmd="stop" data-acc="CC+T"></li>
-				<li class="separator"></li>
-				<li class="mi" data-cmd="runWithoutWindow" data-acc="CC+Shift+R"></li>
-			</ul>
-			<div class="caption" data-res="view"></div>
-			<ul class="menu">
-				<li class="menu-sub"><span class="stay" data-res="font" data-alt-cmd="toggleLamono"></span><ul>
-					<li class="icon stay" data-cmd="fontSizeMinus" data-acc="CC+-" data-icon="minus"></li>
-					<li class="icon stay" data-cmd="fontSizeReset" data-acc="CC+0" data-icon="reset"></li>
-					<li class="icon stay" data-cmd="fontSizePlus" data-acc="CC+Plus CC+= CC+;" data-icon="plus"></li>
-				</ul></li>
-				<li class="menu-sub"><span data-res="lineHeight"></span><ul>
-					<li class="icon stay" data-cmd="lineHeightMinus" data-icon="minus"></li>
-					<li class="icon stay" data-cmd="lineHeightReset" data-icon="reset"></li>
-					<li class="icon stay" data-cmd="lineHeightPlus" data-icon="plus"></li>
-				</ul></li>
-				<li class="mi" data-cmd="toggleSoftWrap"></li>
-				<li class="separator"></li>
-				<li class="mi" data-cmd="toggleFnLineNum"></li>
-				<li class="mi" data-cmd="toggleOutputPane" data-acc="CC+L"></li>
-				<li class="separator"></li>
-				<li class="menu-sub"><span data-res="language"></span><ul>
-					<li class="" data-cmd="setLanguageJa"></li>
-					<li class="" data-cmd="setLanguageEn"></li>
-				</ul></li>
-			</ul>
-			<div class="caption" data-res="about"></div>
-			<ul class="menu">
-				<li class="mi" data-cmd="showAbout">v%VERSION_FULL%</li>
-			</ul>
-		</div>
-	</div>
+	<div class="side-menu"></div>
 	<script>
 		window.addEventListener('DOMContentLoaded', () => { new Study(); });
 	</script>

@@ -5,24 +5,20 @@
  * @version 2026-08-22
  */
 
-@use 'variables' as *;
-
-$menu-padding-v: 10px;
-
 .side-menu {
 	display : none;
 	position: absolute;
-	top     : $size-toolbar-button;
+	top     : var(--side-menu-top);
 	left    : 0;
 	bottom  : 0;
 	z-index : 9999;
 
-	background-color: $color-window;
-	box-shadow      : 0 2px 2px rgba(#000, 0.15), 2px 2px 2px rgba(#000, 0.25);
+	background-color: var(--side-menu-background);
+	box-shadow      : 0 2px 2px rgba(0, 0, 0, 0.15), 2px 2px 2px rgba(0, 0, 0, 0.25);
 
-	font-size  : $font-size;
+	font-size  : var(--side-menu-font-size);
 	line-height: 1;
-	font-family: $font-ui;
+	font-family: var(--side-menu-font-family);
 
 	ul {
 		margin    : 0;
@@ -45,29 +41,29 @@ $menu-padding-v: 10px;
 		}
 	}
 	.caption {
-		padding    : $menu-padding-v 16px;
+		padding    : var(--side-menu-padding) 16px;
 		font-weight: bold;
 	}
 	.menu + .caption { margin-top: 12px; }
 	.menu {
 		.mi {
-			padding  : $menu-padding-v 16px $menu-padding-v 48px;
+			padding  : var(--side-menu-padding) 16px var(--side-menu-padding) 48px;
 			min-width: 160px;
-			&:hover { background-color: $L-LightGray; }
+			&:hover { background-color: var(--side-menu-highlight); }
 
 			display    : flex;
 			align-items: center;
 
-			> span {  // Accelerator Keys
+			> span {  /* Accelerator Keys */
 				margin-left: 32px;
 				flex-grow  : 1;
 				text-align : right;
 				font-size  : 12px;
-				color      : $L-Gray;
+				color      : var(--side-menu-disabled);
 			}
 
 			position: relative;
-			> img {  // Icon
+			> img {  /* Icon */
 				position   : absolute;
 				display    : inline-block;
 				width      : 28px;
@@ -82,21 +78,21 @@ $menu-padding-v: 10px;
 			display: flex;
 
 			> span {
-				padding    : $menu-padding-v 16px $menu-padding-v 0;
+				padding    : var(--side-menu-padding) 16px var(--side-menu-padding) 0;
 				flex-grow  : 1;
 				white-space: nowrap;
-				color      : $L-DarkGray;
+				color      : var(--side-menu-muted);
 				font-weight: bold;
 			}
 			> ul {
 				margin-right: -10px;
 				display     : inline-flex;
-				color       : $L-DarkGray;
+				color       : var(--side-menu-muted);
 
 				> li {
-					padding  : $menu-padding-v 10px;
+					padding  : var(--side-menu-padding) 10px;
 					min-width: 18px;
-					&:hover { background-color: $L-LightGray; }
+					&:hover { background-color: var(--side-menu-highlight); }
 				}
 
 				> li.icon {
@@ -114,7 +110,7 @@ $menu-padding-v: 10px;
 				}
 
 				.checked {
-					background-color: $L-LightGray;
+					background-color: var(--side-menu-highlight);
 				}
 			}
 		}
@@ -136,14 +132,14 @@ $menu-padding-v: 10px;
 				width      : 28px;
 				height     : 28px;
 
-				background-image   : url('../res/icon-check.svg');
+				background-image   : var(--side-menu-check);
 				background-position: center center;
 				background-size    : contain;
 			}
 		}
 		[data-cmd].disabled {
 			pointer-events: none;
-			color         : $L-Gray;
+			color         : var(--side-menu-disabled);
 		}
 	}
 }

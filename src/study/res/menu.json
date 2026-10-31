@@ -1,0 +1,246 @@
+[
+	{
+		"res": "file",
+		"items": [
+			{
+				"cmd": "new",
+				"acc": "CC+N"
+			},
+			{
+				"cmd": "open",
+				"acc": "CC+O"
+			},
+			{
+				"cmd": "save",
+				"acc": "CC+S",
+				"icon": "save"
+			},
+			{
+				"cmd": "saveAs",
+				"acc": "CC+Shift+S"
+			},
+			{
+				"cmd": "saveCopy",
+				"acc": "CC+Alt+S",
+				"icon": "save-copy"
+			},
+			{
+				"type": "separator"
+			},
+			{
+				"type": "group",
+				"res": "export",
+				"items": [
+					{
+						"type": "icon",
+						"cmd": "exportAsLibrary",
+						"icon": "book"
+					},
+					{
+						"type": "icon",
+						"cmd": "exportAsWebPage",
+						"icon": "webpage"
+					}
+				]
+			}
+		]
+	},
+	{
+		"res": "edit",
+		"items": [
+			{
+				"type": "group",
+				"items": [
+					{
+						"type": "icon",
+						"cmd": "undo",
+						"acc": "*CC+Z",
+						"icon": "undo"
+					},
+					{
+						"type": "icon",
+						"cmd": "redo",
+						"acc": "*CC+Shift+Z",
+						"icon": "redo"
+					}
+				]
+			},
+			{
+				"type": "group",
+				"res": "edit",
+				"items": [
+					{
+						"type": "icon",
+						"cmd": "cut",
+						"acc": "*CC+X",
+						"icon": "cut"
+					},
+					{
+						"type": "icon",
+						"cmd": "copy",
+						"acc": "*CC+C",
+						"icon": "copy"
+					},
+					{
+						"type": "icon",
+						"cmd": "paste",
+						"acc": "*CC+V",
+						"icon": "paste"
+					}
+				]
+			},
+			{
+				"cmd": "selectAll",
+				"acc": "*CC+A"
+			},
+			{
+				"type": "separator"
+			},
+			{
+				"cmd": "toggleComment",
+				"acc": "CC+/"
+			},
+			{
+				"cmd": "format",
+				"acc": "CC+B"
+			},
+			{
+				"type": "separator"
+			},
+			{
+				"cmd": "find",
+				"acc": "CC+F"
+			},
+			{
+				"cmd": "findNext",
+				"acc": "!CC+G !F3"
+			},
+			{
+				"cmd": "replace",
+				"acc": "CC+H"
+			},
+			{
+				"type": "separator"
+			},
+			{
+				"cmd": "toggleAutoIndent"
+			}
+		]
+	},
+	{
+		"res": "code",
+		"items": [
+			{
+				"cmd": "run",
+				"acc": "CC+R",
+				"icon": "play"
+			},
+			{
+				"cmd": "stop",
+				"acc": "CC+T"
+			},
+			{
+				"type": "separator"
+			},
+			{
+				"cmd": "runWithoutWindow",
+				"acc": "CC+Shift+R"
+			}
+		]
+	},
+	{
+		"res": "view",
+		"items": [
+			{
+				"type": "group",
+				"res": "font",
+				"alt": "toggleLamono",
+				"stay": true,
+				"items": [
+					{
+						"type": "icon",
+						"cmd": "fontSizeMinus",
+						"acc": "CC+-",
+						"icon": "minus",
+						"stay": true
+					},
+					{
+						"type": "icon",
+						"cmd": "fontSizeReset",
+						"acc": "CC+0",
+						"icon": "reset",
+						"stay": true
+					},
+					{
+						"type": "icon",
+						"cmd": "fontSizePlus",
+						"acc": "CC+Plus CC+= CC+;",
+						"icon": "plus",
+						"stay": true
+					}
+				]
+			},
+			{
+				"type": "group",
+				"res": "lineHeight",
+				"items": [
+					{
+						"type": "icon",
+						"cmd": "lineHeightMinus",
+						"icon": "minus",
+						"stay": true
+					},
+					{
+						"type": "icon",
+						"cmd": "lineHeightReset",
+						"icon": "reset",
+						"stay": true
+					},
+					{
+						"type": "icon",
+						"cmd": "lineHeightPlus",
+						"icon": "plus",
+						"stay": true
+					}
+				]
+			},
+			{
+				"cmd": "toggleSoftWrap"
+			},
+			{
+				"type": "separator"
+			},
+			{
+				"cmd": "toggleFnLineNum"
+			},
+			{
+				"cmd": "toggleOutputPane",
+				"acc": "CC+L"
+			},
+			{
+				"type": "separator"
+			},
+			{
+				"type": "group",
+				"res": "language",
+				"items": [
+					{
+						"cmd": "setLanguageJa"
+					},
+					{
+						"cmd": "setLanguageEn"
+					}
+				]
+			}
+		]
+	},
+	{
+		"res": "about",
+		"items": [
+			{
+				"cmd": "showAbout",
+				"res": "version"
+			}
+		]
+	}
+]

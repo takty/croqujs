@@ -46,6 +46,36 @@ app.whenReady().then(async () => {
 			await window.study.ready;
 			const s = window.study;
 			const e = s._editor;
+			const menu = document.querySelector('.side-menu');
+			const menuStyle = getComputedStyle(menu);
+			check(menuStyle.position === 'absolute' && menuStyle.top === '40px' && menuStyle.backgroundColor === 'rgb(248, 248, 248)' && menuStyle.fontSize === '14px', 'Standalone menu CSS receives host settings');
+			menu.style.setProperty('--side-menu-top', '60px');
+			menu.style.setProperty('--side-menu-padding', '15px');
+			menu.style.setProperty('--side-menu-background', 'rgb(1, 2, 3)');
+			check(getComputedStyle(menu).top === '60px' && getComputedStyle(menu).backgroundColor === 'rgb(1, 2, 3)' && getComputedStyle(menu.querySelector('.caption')).paddingTop === '15px', 'Menu custom properties can be overridden externally');
+			for (const name of ['top', 'padding', 'background']) menu.style.removeProperty('--side-menu-' + name);
+			const checkedItem = menu.querySelector('[data-cmd="toggleSoftWrap"]');
+			const wasChecked = checkedItem.classList.contains('checked');
+			checkedItem.classList.add('checked');
+			check(getComputedStyle(checkedItem, '::before').backgroundImage.endsWith('/study/res/icon-check.svg")'), 'Host check icon resolves from the host stylesheet');
+			checkedItem.classList.toggle('checked', wasChecked);
+			check(menu.querySelectorAll('.caption').length === 5, 'JSON menu creates all sections');
+			check(menu.querySelector('[data-cmd="save"]').firstChild.textContent === s._res.menu.save, 'Menu label defaults to command key');
+			check(menu.querySelector('[data-cmd="showAbout"]').textContent === s._res.version && !s._res.version.includes('%VERSION'), 'Explicit resource key renders the built version exactly once');
+			check(!menu.querySelector('[data-cmd="setLanguageJa"]').matches('.mi, .icon'), 'Grouped text items retain compact styling');
+			check(menu.querySelector('[data-cmd="undo"]').title.startsWith(s._res.menu.undo), 'Icon items retain localized tooltips');
+			const menuCommands = [];
+			const onCommand = s._sideMenu._onCommand;
+			s._sideMenu._onCommand = (cmd, close) => menuCommands.push([cmd, close]);
+			try {
+				menu.querySelector('[data-cmd="save"]').dispatchEvent(new MouseEvent('mouseup'));
+				menu.querySelector('[data-cmd="fontSizeMinus"]').dispatchEvent(new MouseEvent('mouseup'));
+				menu.querySelector('[data-alt-cmd]').dispatchEvent(new MouseEvent('mouseup', { altKey: true }));
+				window.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true, metaKey: true }));
+				check(JSON.stringify(menuCommands) === JSON.stringify([['save', true], ['fontSizeMinus', false], ['toggleLamono', false], ['save', true]]), 'Generated menu preserves commands, stay, Alt action, and shortcuts');
+			} finally {
+				s._sideMenu._onCommand = onCommand;
+			}
 			const rendererErrors = [];
 			const onError = event => rendererErrors.push(event.message);
 			window.addEventListener('error', onError);
