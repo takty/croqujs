@@ -8,7 +8,15 @@
 @use 'sass:math';
 @use 'variables' as *;
 @use 'dialog-box';
-@use 'toolbar';
+
+// Host settings for the standalone ui/toolbar.css.
+.toolbar {
+	--toolbar-size: #{$size-toolbar-button};
+	--toolbar-background: #{$color-window};
+	--toolbar-font-family: #{$font-ui};
+	--toolbar-font-size: #{$font-size};
+	--toolbar-muted: #{$L-DarkGray};
+}
 
 // Host settings for the standalone ui/side-menu.css.
 .side-menu {

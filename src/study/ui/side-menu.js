@@ -28,14 +28,6 @@ class SideMenu {
 		this._pseudoFocus.style.top = '-100vh';
 		this._elm.appendChild(this._pseudoFocus);
 
-		const btn = document.querySelector('.toolbar .btn.menu');
-		btn.addEventListener('mousedown', (e) => { e.preventDefault(); });
-		btn.addEventListener('mouseup', (e) => {
-			if (this._elm.style.display === 'none') this.open();
-			else this.close();
-			e.preventDefault();
-		});
-
 		const his = this._elm.querySelectorAll('[data-res]:not([data-cmd])');
 		for (let i = 0; i < his.length; i += 1) {
 			const str = this._res.menu[his[i].dataset.res];
@@ -204,6 +196,11 @@ class SideMenu {
 	open() {
 		this._elm.style.display = 'block';
 		this._pseudoFocus.focus();
+	}
+
+	toggle() {
+		if (this._elm.style.display === 'none') this.open();
+		else this.close();
 	}
 
 	close() {

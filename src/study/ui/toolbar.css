@@ -5,18 +5,16 @@
  * @version 2026-08-22
  */
 
-@use 'variables' as *;
-
 .toolbar {
 	display: flex;
 
 	position: relative;
 	width   : 100%;
-	height  : $size-toolbar-button;
+	height  : var(--toolbar-size);
 	z-index : 999;
 
 	transition      : 0.25s;
-	background-color: $color-window;
+	background-color: var(--toolbar-background);
 
 	.btn {
 		box-sizing : border-box;
@@ -25,8 +23,8 @@
 
 		margin : 0 0 2px 0;
 		padding: 0 12px;
-		width  : calc(#{$size-toolbar-button} + 12px * 2);
-		height : $size-toolbar-button;
+		width  : calc(var(--toolbar-size) + 12px * 2);
+		height : var(--toolbar-size);
 
 		img {
 			opacity   : 0.65;
@@ -51,16 +49,16 @@
 	.filler { flex: 1 1 auto; }
 }
 
-.toolbar .btn img {  // Icon wrapper
+.toolbar .btn img {  /* Icon wrapper */
 	margin : 0;
 	padding: 0;
-	width  : $size-toolbar-button;
-	height : $size-toolbar-button;
+	width  : var(--toolbar-size);
+	height : var(--toolbar-size);
 }
 
 .toolbar-shadow {
-	box-shadow: 0   0 2px rgba(#000, 0.15),
-	            0 2px 2px rgba(#000, 0.25);
+	box-shadow: 0   0 2px rgba(0, 0, 0, 0.15),
+	            0 2px 2px rgba(0, 0, 0, 0.25);
 }
 
 .toolbar .overlap {
@@ -75,9 +73,9 @@
 	margin  : 0;
 	z-index : 9999;
 
-	font-family: $font-ui;
-	font-size  : $font-size;
+	font-family: var(--toolbar-font-family);
+	font-size  : var(--toolbar-font-size);
 
-	background-color: $color-window;
-	color           : $L-DarkGray;
+	background-color: var(--toolbar-background);
+	color           : var(--toolbar-muted);
 }

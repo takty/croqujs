@@ -9,11 +9,12 @@
 
 class Toolbar {
 
-	constructor(study, res) {
-		this._study = study;
+	constructor(res, toolbar, { onCommand = () => {} } = {}) {
+		this._onCommand = onCommand;
 		this._res   = res;
 
 		this._elm = document.querySelector('.toolbar');
+		this._createToolbar(toolbar);
 		this._elm.addEventListener('mousedown', (e) => { e.preventDefault(); });
 		this._elm.addEventListener('mouseup',   (e) => { e.preventDefault(); });
 
@@ -27,13 +28,34 @@ class Toolbar {
 		}
 	}
 
+	_createToolbar(toolbar) {
+		for (const item of toolbar) {
+			const elm = document.createElement('div');
+			if (item.type === 'filler') {
+				elm.className = 'filler';
+			} else {
+				if (item.type !== undefined) throw new Error('Unknown toolbar item type: ' + item.type);
+				if (!item.cmd) throw new Error('Toolbar item requires cmd');
+				elm.className = 'btn';
+				for (const key of ['cmd', 'res', 'icon']) {
+					if (item[key] !== undefined) elm.dataset[key] = item[key];
+				}
+			}
+			this._elm.appendChild(elm);
+		}
+		const overlap = document.createElement('div');
+		overlap.className = 'overlap';
+		this._elm.appendChild(overlap);
+	}
+
 	_setBtn(btn) {
 		const cmd = btn.dataset.cmd;
-		btn.title = this._res.menu[cmd];
+		const str = this._res.menu[btn.dataset.res ?? cmd];
+		if (str !== undefined) btn.title = str;
 		btn.addEventListener('mousedown', (e) => { e.preventDefault(); });
 		btn.addEventListener('mouseup', (e) => {
 			e.preventDefault();
-			this._study.executeCommand(cmd);
+			this._onCommand(cmd);
 		});
 	}
 
@@ -79,7 +101,7 @@ class Toolbar {
 
 	reflectClipboard(text) {
 		const btn = this._setEnabled('paste', text.length > 0);
-		btn.title = this._res.menu.paste + (text.length > 0 ? ('\n' + text) : '');
+		btn.title = (this._res.menu[btn.dataset.res ?? 'paste'] ?? '') + (text.length > 0 ? ('\n' + text) : '');
 	}
 
 	reflectState(state) {

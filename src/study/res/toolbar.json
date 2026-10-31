@@ -1,0 +1,40 @@
+[
+	{
+		"cmd": "menu",
+		"icon": "menu"
+	},
+	{
+		"cmd": "save",
+		"icon": "save"
+	},
+	{
+		"cmd": "saveCopy",
+		"icon": "save-copy"
+	},
+	{
+		"type": "filler"
+	},
+	{
+		"cmd": "undo",
+		"icon": "undo"
+	},
+	{
+		"cmd": "copy",
+		"icon": "copy"
+	},
+	{
+		"cmd": "paste",
+		"icon": "paste"
+	},
+	{
+		"type": "filler"
+	},
+	{
+		"cmd": "tileWin",
+		"icon": "columns"
+	},
+	{
+		"cmd": "run",
+		"icon": "play"
+	}
+]

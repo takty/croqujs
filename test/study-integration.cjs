@@ -47,6 +47,36 @@ app.whenReady().then(async () => {
 			const s = window.study;
 			const e = s._editor;
 			const menu = document.querySelector('.side-menu');
+			const toolbar = document.querySelector('.toolbar');
+			check([...toolbar.querySelectorAll('[data-cmd]')].map(btn => btn.dataset.cmd).join(',') === 'menu,save,saveCopy,undo,copy,paste,tileWin,run' && toolbar.querySelectorAll('.filler').length === 2, 'JSON toolbar preserves button order and spacing');
+			check(getComputedStyle(toolbar).height === '40px' && getComputedStyle(toolbar.querySelector('.btn')).width === '64px', 'Standalone toolbar CSS preserves dimensions');
+			const menuButton = toolbar.querySelector('[data-cmd="menu"]');
+			menuButton.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+			check(menu.style.display === 'block', 'Toolbar opens menu through host callback');
+			menuButton.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+			check(menu.style.display === 'none' && e.hasFocus(), 'Toolbar closes menu and restores editor focus');
+			const originalExecuteCommand = s.executeCommand;
+			const toolbarCommands = [];
+			s.executeCommand = cmd => toolbarCommands.push(cmd);
+			try {
+				const save = toolbar.querySelector('[data-cmd="save"]');
+				const down = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+				save.dispatchEvent(down);
+				save.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+				check(down.defaultPrevented && e.hasFocus() && toolbarCommands.join(',') === 'save', 'Toolbar forwards command once and prevents mouse focus change');
+			} finally {
+				s.executeCommand = originalExecuteCommand;
+			}
+			s._toolbar.reflectClipboard('clipboard preview');
+			const paste = toolbar.querySelector('[data-cmd="paste"]');
+			check(!paste.classList.contains('disabled') && paste.title === s._res.menu.paste + '\\nclipboard preview', 'Toolbar preserves clipboard tooltip');
+			s._toolbar.reflectClipboard('');
+			check(paste.classList.contains('disabled') && paste.title === s._res.menu.paste, 'Toolbar disables empty clipboard');
+			s._toolbar.showMessage('Drop a file', true);
+			check(toolbar.querySelector('.overlap').textContent === 'Drop a file' && getComputedStyle(toolbar.querySelector('.overlap')).display === 'flex' && !toolbar.classList.contains('toolbar-shadow'), 'Toolbar preserves message overlay and shadow control');
+			s._toolbar.hideMessage();
+			await new Promise(resolve => setTimeout(resolve, 20));
+			check(getComputedStyle(toolbar.querySelector('.overlap')).display === 'none' && toolbar.classList.contains('toolbar-shadow'), 'Toolbar hides message and restores shadow');
 			const menuStyle = getComputedStyle(menu);
 			check(menuStyle.position === 'absolute' && menuStyle.top === '40px' && menuStyle.backgroundColor === 'rgb(248, 248, 248)' && menuStyle.fontSize === '14px', 'Standalone menu CSS receives host settings');
 			menu.style.setProperty('--side-menu-top', '60px');

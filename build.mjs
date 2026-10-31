@@ -142,6 +142,7 @@ async function removeLegacyEditorFiles() {
 	const studyDir = path.resolve(APP_DIR, 'study');
 	const paths = [
 		'side-menu.js', 'side-menu.css',
+		'toolbar.js',
 		'editor.js', 'analyzer.js', 'worker-analyzer.js',
 		'css/cursor-right.svg', 'css/cursor-line.svg',
 		'lib/acorn', 'lib/codemirror', 'lib/tern', 'lib/jshint', 'lib/js-beautify',

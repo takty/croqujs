@@ -69,12 +69,17 @@ class Study {
 
 
 	async _initialize() {
-		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json']);
+		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
 		this._res.menu.version = this._res.version;
 		await this._initEditor();
 
-		this._toolbar    = new Toolbar(this, this._res);
+		this._toolbar    = new Toolbar(this._res, rets[3], {
+			onCommand: (cmd) => {
+				if (cmd === 'menu') this._sideMenu.toggle();
+				else this.executeCommand(cmd);
+			},
+		});
 		this._sideMenu   = new SideMenu(this._res, rets[2], {
 			onCommand: (cmd, close) => this.executeCommand(cmd, close),
 			onClose: () => this._editor.focus(),

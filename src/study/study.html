@@ -6,11 +6,12 @@
 
 	<link rel="stylesheet" href="css/study.min.css">
 	<link rel="stylesheet" href="ui/side-menu.css">
+	<link rel="stylesheet" href="ui/toolbar.css">
 	<link rel="stylesheet" href="../croq-mirror/dist/croq-mirror.min.css">
 	<script src="lib/sweetalert2/sweetalert2.min.js"></script>	<script src="error-translator.js"></script>
 	<script src="ui/side-menu.js"></script>
 	<script src="dialog-box.js"></script>
-	<script src="toolbar.js"></script>
+	<script src="ui/toolbar.js"></script>
 	<script src="config.js"></script>
 	<script src="output-pane.js"></script>
 	<script src="util.js"></script>
@@ -20,19 +21,7 @@
 <body>
 	<div id="splitter">
 		<div class="main">
-			<div class="toolbar toolbar-shadow">
-				<div class="btn menu" data-icon="menu"></div>
-				<div class="btn" data-cmd="save" data-icon="save"></div>
-				<div class="btn" data-cmd="saveCopy" data-icon="save-copy"></div>
-				<div class="filler"></div>
-				<div class="btn" data-cmd="undo" data-icon="undo"></div>
-				<div class="btn" data-cmd="copy" data-icon="copy"></div>
-				<div class="btn" data-cmd="paste" data-icon="paste"></div>
-				<div class="filler"></div>
-				<div class="btn" data-cmd="tileWin" data-icon="columns"></div>
-				<div class="btn" data-cmd="run" data-icon="play"></div>
-				<div class="overlap"></div>
-			</div>
+			<div class="toolbar toolbar-shadow"></div>
 			<div id="editor"></div>
 		</div>
 		<div id="handle"></div>
