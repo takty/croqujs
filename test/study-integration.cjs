@@ -2,9 +2,10 @@
  * Croqujs study-window integration checks using the real Electron renderer.
  */
 
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, clipboard } = require('electron');
 const { readFile, writeFile, unlink } = require('node:fs/promises');
 const path = require('node:path');
+const { allowStudyPaste } = require('../src/study-permissions.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const HTML = path.join(ROOT, 'app/study/study.integration.html');
@@ -23,6 +24,7 @@ app.whenReady().then(async () => {
 		ipcMain.on('notifyServer_integration', (_event, method) => { calls.push({ method }); });
 		ipcMain.handle('callServer_integration', async (_event, method, ...args) => {
 			calls.push({ method, args });
+			if (method === 'testReadClipboard') return clipboard.readText();
 			if (method === 'doReady') return ['init', [null, 'sample', null, null, false, [], 'function initial() { return 1; }']];
 			return ['test-complete'];
 		});
@@ -32,10 +34,12 @@ app.whenReady().then(async () => {
 			height: 750,
 			webPreferences: {
 				contextIsolation: true,
+				enableDeprecatedPaste: true,
 				nodeIntegration: false,
 				preload: path.join(ROOT, 'app/study/preload.js'),
 			},
 		});
+		allowStudyPaste(window.webContents, HTML);
 		await window.loadFile(HTML, { hash: 'integration' });
 		const checks = await window.webContents.executeJavaScript(`(async () => {
 			const checks = [];
@@ -187,6 +191,18 @@ app.whenReady().then(async () => {
 				document.execCommand = originalExec;
 			}
 			check(commands.join(',') === 'cut,copy,paste', 'Host clipboard commands reach component');
+			const clipboardText = await window.ipc.invoke('callServer_integration', 'testReadClipboard');
+			if (clipboardText) {
+				e.setSettings({ readOnly: false, disabled: false, autoFormat: false });
+				e.loadDocument('');
+				e.focus();
+				s._reflectClipboardState(clipboardText);
+				toolbar.querySelector('[data-cmd="paste"]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+				await new Promise(resolve => setTimeout(resolve, 100));
+				check(e.getValue().replaceAll('\\r\\n', '\\n') === clipboardText.replaceAll('\\r\\n', '\\n'), 'Toolbar inserts actual system clipboard text through the original editor command');
+			} else {
+				checks.push('SKIPPED: real paste check requires nonempty system clipboard text');
+			}
 			e.destroy();
 			return checks;
 		})()`);

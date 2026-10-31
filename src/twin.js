@@ -16,6 +16,7 @@ const FS       = require_('fs');
 const PATH     = require_('path');
 const Backup   = require('./backup.js');
 const Exporter = require('./exporter.js');
+const { allowPaste } = require('./paste-permissions.js');
 
 const DEFAULT_EXT = '.js';
 const FILE_FILTERS = [
@@ -56,7 +57,8 @@ class Twin {
 	}
 
 	_createStudyWindow() {
-		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, preload: `${__dirname}/study/preload.js` } });
+		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, enableDeprecatedPaste: true, preload: `${__dirname}/study/preload.js` } });
+		allowPaste(this._studyWin.webContents, `${__dirname}/study/study.html`);
 		this._studyWin.loadURL(`file://${__dirname}/study/study.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
