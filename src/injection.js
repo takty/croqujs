@@ -177,7 +177,7 @@
 	}
 
 	function actualGetCurrentPosition(success, error) {
-		fetch('https://laccolla.com/api/geolocation/v1/', {
+		fetch('https://takty.net/api/geolocation/v1/', {
 			mode       : 'cors',
 			cache      : 'no-cache',
 			credentials: 'same-origin',

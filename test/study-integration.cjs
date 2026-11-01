@@ -5,7 +5,6 @@
 const { app, BrowserWindow, ipcMain, clipboard } = require('electron');
 const { readFile, writeFile, unlink } = require('node:fs/promises');
 const path = require('node:path');
-const { allowPaste } = require('../src/paste-permissions.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const HTML = path.join(ROOT, 'app/study/study.integration.html');
@@ -18,6 +17,7 @@ let created = false;
 
 app.whenReady().then(async () => {
 	try {
+		const { allowPaste } = await import('../app/twin.js');
 		const html = await readFile(path.join(ROOT, 'app/study/study.html'), 'utf8');
 		await writeFile(HTML, html.replace('new Study();', 'window.study = new Study();'), { flag: 'wx' });
 		created = true;
@@ -36,7 +36,7 @@ app.whenReady().then(async () => {
 				contextIsolation: true,
 				enableDeprecatedPaste: true,
 				nodeIntegration: false,
-				preload: path.join(ROOT, 'app/study/preload.js'),
+				preload: path.join(ROOT, 'app/preload.js'),
 			},
 		});
 		allowPaste(window.webContents, HTML);

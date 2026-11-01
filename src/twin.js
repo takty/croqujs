@@ -5,17 +5,15 @@
  * @version 2026-11-01
  */
 
-'use strict';
+import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
+import * as OS from 'node:os';
+import * as FS from 'node:fs';
+import * as PATH from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { Backup } from './backup.js';
+import { Exporter } from './exporter.js';
 
-const electron = require('electron');
-const { ipcMain, BrowserWindow, dialog } = electron;
-const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
-
-const OS       = require_('os');
-const FS       = require_('fs');
-const PATH     = require_('path');
-const Backup   = require('./backup.js');
-const Exporter = require('./exporter.js');
+const __dirname = PATH.dirname(fileURLToPath(import.meta.url));
 
 const DEFAULT_EXT = '.js';
 const FILE_FILTERS = [
@@ -23,7 +21,7 @@ const FILE_FILTERS = [
 	{ name: 'All Files', extensions: ['*'] }
 ];
 
-class Twin {
+export class Twin {
 
 	constructor(id, path) {
 		this._id       = id;
@@ -66,7 +64,7 @@ class Twin {
 		});
 		this._studyWin.webContents.setWindowOpenHandler(({ url }) => {
 			if (!url.startsWith(`file://${__dirname}/`)) {
-				electron.shell.openExternal(url);
+				shell.openExternal(url);
 				return { action: 'deny' };
 			}
 			return { action: 'allow' };
@@ -89,10 +87,10 @@ class Twin {
 			this._tempFilePath = filePath;
 			filePath = null;
 		}
-		const readOnly = filePath ? ((FS().statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
-		const name     = filePath ? PATH().basename(filePath, PATH().extname(filePath)) : '';
-		const baseName = filePath ? PATH().basename(filePath) : '';
-		const dirName  = filePath ? PATH().dirname(filePath) : '';
+		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
+		const name     = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
+		const baseName = filePath ? PATH.basename(filePath) : '';
+		const dirName  = filePath ? PATH.dirname(filePath) : '';
 
 		this._filePath   = filePath;
 		this._isReadOnly = readOnly;
@@ -181,13 +179,13 @@ class Twin {
 
 	doFileDropped(path) {
 		try {
-			const isDir = FS().statSync(path).isDirectory();
+			const isDir = FS.statSync(path).isDirectory();
 			if (!isDir) return this._openFile(path);
 
-			const fns = FS().readdirSync(path);
-			const fps = fns.map(e => PATH().join(path, e)).filter((fp) => {
+			const fns = FS.readdirSync(path);
+			const fps = fns.map(e => PATH.join(path, e)).filter((fp) => {
 				try {
-					return FS().statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
+					return FS.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
 				} catch (e) {
 					return ['nop'];
 				}
@@ -201,7 +199,7 @@ class Twin {
 
 	async _openFile(filePath) {
 		const text = await new Promise(resolve => {
-			FS().readFile(filePath, 'utf-8', (error, contents) => { resolve(contents); });
+			FS.readFile(filePath, 'utf-8', (error, contents) => { resolve(contents); });
 		});
 		if (text === null) return this._returnAlertError('', filePath);
 		return ['init', this._initializeDocument(text, filePath)];
@@ -228,7 +226,7 @@ class Twin {
 		if (!fp) return ['nop'];  // No file is selected.
 		let writable = true;
 		try {
-			writable = ((FS().statSync(fp).mode & 0x0080) !== 0);  // check write flag
+			writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
 		} catch (e) {
 			if (e.code !== 'ENOENT') return this._returnAlertError(e, fp);
 		}
@@ -246,15 +244,15 @@ class Twin {
 		this._backup.setFilePath(fp);
 		this._backup.backupExistingFile(text, this._filePath);
 		try {
-			FS().writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
+			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
 			if (this._tempFilePath) {
-				this._exporter.copyLibraryOfTemplate(text, this._tempFilePath, PATH().dirname(this._filePath));
+				this._exporter.copyLibraryOfTemplate(text, this._tempFilePath, PATH.dirname(this._filePath));
 				this._tempFilePath = null;
 			}
 
-			const name     = PATH().basename(this._filePath, PATH().extname(this._filePath));
-			const baseName = PATH().basename(this._filePath);
-			const dirName  = PATH().dirname(this._filePath);
+			const name     = PATH.basename(this._filePath, PATH.extname(this._filePath));
+			const baseName = PATH.basename(this._filePath);
+			const dirName  = PATH.dirname(this._filePath);
 
 			const defJsons = this._loadDefJsons(text, this._filePath);
 
@@ -269,7 +267,7 @@ class Twin {
 		if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
 		this._backup.backupExistingFile(text, fp);
 		try {
-			FS().writeFileSync(fp, text.replace(/\n/g, '\r\n'));
+			FS.writeFileSync(fp, text.replace(/\n/g, '\r\n'));
 			return ['nop'];
 		} catch (e) {
 			return this._returnAlertError(e, fp);
@@ -289,7 +287,7 @@ class Twin {
 	doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
 		const codeStructure = JSON.parse(jsonCodeStructure);
 		const name = libName.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
-		const expDir = PATH().join(PATH().dirname(this._filePath), name + '.lib.js');
+		const expDir = PATH.join(PATH.dirname(this._filePath), name + '.lib.js');
 
 		try {
 			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure, isUseDecIncluded);
@@ -304,7 +302,7 @@ class Twin {
 		const expDir = this._makeExportPath(this._filePath);
 		try {
 			this._rmdirSync(expDir);
-			FS().mkdirSync(expDir);
+			FS.mkdirSync(expDir);
 
 			this._exporter.exportAsWebPage(text, this._filePath, expDir);
 			return ['success_export', 'exportedAsWebPage'];
@@ -354,7 +352,7 @@ class Twin {
 		const expDir = this._getTempPath();
 		try {
 			this._rmdirSync(expDir);
-			FS().mkdirSync(expDir);
+			FS.mkdirSync(expDir);
 			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath ?? this._tempFilePath, expDir, true);
 			if (!success) return this._returnExecutionError(expPath);
 
@@ -369,27 +367,27 @@ class Twin {
 	// -------------------------------------------------------------------------
 
 	_makeExportPath(fp) {
-		const name = PATH().basename(fp, PATH().extname(fp));
-		return PATH().join(PATH().dirname(fp), name + '.export');
+		const name = PATH.basename(fp, PATH.extname(fp));
+		return PATH.join(PATH.dirname(fp), name + '.export');
 	}
 
 	_rmdirSync(dirPath) {
-		if (!FS().existsSync(dirPath)) return;
-		for (let fp of FS().readdirSync(dirPath)) {
-			fp = PATH().join(dirPath, fp);
-			if (FS().lstatSync(fp).isDirectory()) {
+		if (!FS.existsSync(dirPath)) return;
+		for (let fp of FS.readdirSync(dirPath)) {
+			fp = PATH.join(dirPath, fp);
+			if (FS.lstatSync(fp).isDirectory()) {
 				this._rmdirSync(fp);
 			} else {
-				FS().unlinkSync(fp);
+				FS.unlinkSync(fp);
 			}
 		}
-		FS().rmdirSync(dirPath);
+		FS.rmdirSync(dirPath);
 	}
 
 	_getTempPath() {
-		const tmpdir = OS().tmpdir();
+		const tmpdir = OS.tmpdir();
 		const name = 'croqujs-' + Date.now();
-		const path = PATH().join(tmpdir, name);
+		const path = PATH.join(tmpdir, name);
 		this._tempDirs.push(path);
 		return path;
 	}
@@ -401,17 +399,16 @@ class Twin {
 
 }
 
-module.exports = Twin;
+
 
 // -----------------------------------------------------------------------------
 
-const { pathToFileURL } = require('node:url');
 
 // Sessions are shared by multiple windows. Only registered editor pages may use
 // the legacy synchronous clipboard read needed by document.execCommand('paste').
 const sessions = new WeakMap();
 
-function allowPaste(contents, pagePath) {
+export function allowPaste(contents, pagePath) {
 	const session = contents.session;
 	let pages = sessions.get(session);
 	if (!pages) {

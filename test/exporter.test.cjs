@@ -3,10 +3,11 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
-const { test } = require('node:test');
+const { test, before } = require('node:test');
 
 // Load the built app so missing packaged parser dependencies fail this test.
-const Exporter = require('../app/exporter.js');
+let Exporter;
+before(async () => { ({ Exporter } = await import('../app/exporter.js')); });
 
 test('built exporter resolves and parses a local @use library', () => {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'croqujs-exporter-'));

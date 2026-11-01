@@ -5,14 +5,10 @@
  * @version 2026-08-22
  */
 
-'use strict';
-
-const { app } = require('electron');
-const require_ = (path) => { let r; return () => { return r || (r = require(path)); }; }
-
-const FS   = require_('fs');
-const PROC = require_('process');
-const Twin = require('./twin.js');
+import { app } from 'electron';
+import * as FS from 'node:fs';
+import PROC from 'node:process';
+import { Twin } from './twin.js';
 
 class Main {
 
@@ -47,15 +43,15 @@ class Main {
 		});
 	}
 
-	_getArgPath(argv = PROC().argv) {
+	_getArgPath(argv = PROC.argv) {
 		if (argv.length === 1) return null;
 		return this._checkArgPath(argv[argv.length - 1]);
 	}
 
 	_checkArgPath(path) {
 		try {
-			if (!FS().existsSync(path)) return null;
-			if (FS().statSync(path).isDirectory()) return null;
+			if (!FS.existsSync(path)) return null;
+			if (FS.statSync(path).isDirectory()) return null;
 		} catch (e) {
 			console.error(e);
 			return null;

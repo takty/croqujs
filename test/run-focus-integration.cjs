@@ -2,7 +2,6 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const { readFile, writeFile, unlink } = require('node:fs/promises');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const Twin = require('../app/twin.js');
 
 const root = path.resolve(__dirname, '..');
 const html = path.join(root, 'app/study/study.focus-test.html');
@@ -24,6 +23,7 @@ async function until(predicate, message) {
 
 app.whenReady().then(async () => {
 	try {
+		const { Twin } = await import('../app/twin.js');
 		await writeFile(html, (await readFile(path.join(root, 'app/study/study.html'), 'utf8')).replace('new Study();', 'window.study = new Study();'), { flag: 'wx' });
 		created.push(html);
 		await writeFile(program, '<!doctype html><body><script>document.body.dataset.ran = location.hash.slice(1);</script></body>', { flag: 'wx' });
@@ -44,7 +44,7 @@ app.whenReady().then(async () => {
 			if (method === 'doRun') return twin.doRun(...args);
 			return ['nop'];
 		});
-		study = new BrowserWindow({ show: false, width: 1000, height: 750, webPreferences: { contextIsolation: true, nodeIntegration: false, preload: path.join(root, 'app/study/preload.js') } });
+		study = new BrowserWindow({ show: false, width: 1000, height: 750, webPreferences: { contextIsolation: true, nodeIntegration: false, preload: path.join(root, 'app/preload.js') } });
 		twin._studyWin = study;
 		await study.loadFile(html, { hash: 'focus-test' });
 		await study.webContents.executeJavaScript('window.study.ready');

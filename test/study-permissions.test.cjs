@@ -1,9 +1,11 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { fileURLToPath } = require('node:url');
-const { allowPaste } = require('../src/paste-permissions.js');
+const { fileURLToPath, pathToFileURL } = require('node:url');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
 
-test('legacy paste is limited to registered editor main frames, including multiple windows', () => {
+async function checkPermissions() {
+	const { allowPaste } = await import('../app/twin.js');
 	let check, request;
 	const session = {
 		setPermissionCheckHandler: handler => { check = handler; },
@@ -24,4 +26,18 @@ test('legacy paste is limited to registered editor main frames, including multip
 	assert.equal(check(first, permission, 'file://', details), false);
 	request(second, permission, allowed => assert.equal(allowed, true), details);
 	request(field, permission, allowed => assert.equal(allowed, false), details);
-});
+}
+
+if (process.versions.electron) {
+	const { app } = require('electron');
+	app.whenReady().then(checkPermissions).then(() => app.exit(0), error => {
+		console.error(error);
+		app.exit(1);
+	});
+} else {
+	test('legacy paste is limited to registered editor main frames, including multiple windows', () => {
+		const result = spawnSync(process.execPath, [path.join(__dirname, 'run-study-integration.mjs'), pathToFileURL(__filename).href], { encoding: 'utf8', timeout: 50000, windowsHide: true });
+		assert.ifError(result.error);
+		assert.equal(result.status, 0, result.stdout + result.stderr);
+	});
+}

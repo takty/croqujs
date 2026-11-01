@@ -5,12 +5,13 @@
  * @version 2020-09-28
  */
 
-'use strict';
+import * as acorn from './study/lib/acorn/acorn.mjs';
+import { base as walkBase } from './study/lib/acorn/walk.mjs';
 
-function analyze(code) {
+export function analyze(code) {
 	function walk(node, visitors, base, state, override) {
 		if (!base) {
-			base = acorn.walk.base;
+			base = walkBase;
 		}
 		(function c(node, st, override) {
 			var type = override || node.type, found = visitors[type];
@@ -58,8 +59,4 @@ function analyze(code) {
 		success = false;
 	}
 	return { fnNames, success };
-}
-
-if (typeof module === 'object') {
-	module.exports = analyze;
 }

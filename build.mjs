@@ -73,8 +73,8 @@ async function copyPackageFiles(name, srcDir, dstDir, filter = () => true) {
 
 async function copyLibraries() {
 	await Promise.all([
-		copyPackageFiles('acorn', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'acorn.js'),
-		copyPackageFiles('acorn-walk', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'walk.js'),
+		copyPackageFiles('acorn', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'acorn.mjs'),
+		copyPackageFiles('acorn-walk', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'walk.mjs'),
 		copyPackageFiles('sweetalert2', 'dist', 'sweetalert2', (_srcPath, relPath) => ['sweetalert2.esm.min.js', 'sweetalert2.min.css'].includes(relPath)),
 	]);
 }
