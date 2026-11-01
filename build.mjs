@@ -19,7 +19,6 @@ const SRC_DIR      = './src';
 const APP_DIR      = './app';
 const ICON_SRC_DIR = './res/icon';
 const APP_RES_DIR  = path.join(APP_DIR, 'res');
-const LIB_DIST_DIR = path.join(APP_DIR, 'study/lib');
 
 const VERSION_PATHS = [
 	'package.json',
@@ -68,14 +67,14 @@ async function copyMain() {
 
 async function copyPackageFiles(name, srcDir, dstDir, filter = () => true) {
 	const packageDir = resolvePackageDir(name);
-	await copyFilesFiltered(path.join(packageDir, srcDir), path.join(LIB_DIST_DIR, dstDir), filter);
+	await copyFilesFiltered(path.join(packageDir, srcDir), path.join(APP_DIR, dstDir), filter);
 }
 
 async function copyLibraries() {
 	await Promise.all([
-		copyPackageFiles('acorn', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'acorn.mjs'),
-		copyPackageFiles('acorn-walk', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'walk.mjs'),
-		copyPackageFiles('sweetalert2', 'dist', 'sweetalert2', (_srcPath, relPath) => ['sweetalert2.esm.min.js', 'sweetalert2.min.css'].includes(relPath)),
+		copyPackageFiles('acorn', 'dist', 'lib/acorn', (_srcPath, relPath) => relPath === 'acorn.mjs'),
+		copyPackageFiles('acorn-walk', 'dist', 'lib/acorn', (_srcPath, relPath) => relPath === 'walk.mjs'),
+		copyPackageFiles('sweetalert2', 'dist', 'lib/sweetalert2', (_srcPath, relPath) => ['sweetalert2.esm.min.js', 'sweetalert2.min.css'].includes(relPath)),
 	]);
 }
 
@@ -84,7 +83,7 @@ async function copyCroqMirror() {
 	// Resolve the declared entry URL without loading the browser-only module.
 	const packageDir = fileURLToPath(new URL('../', import.meta.resolve('croq-mirror')));
 	const sourceDir  = path.join(packageDir, 'docs');
-	const targetDir  = path.resolve(APP_DIR, 'croq-mirror');
+	const targetDir  = path.resolve(APP_DIR, 'lib/croq-mirror');
 	const files      = ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css'];
 	for (const file of files) await access(path.join(sourceDir, file));
 	await rm(targetDir, { recursive: true, force: true });
@@ -120,12 +119,16 @@ async function build() {
 }
 
 async function removeLegacyEditorFiles() {
+	const appDir = path.resolve(APP_DIR);
+	const oldEditorDir = path.resolve(appDir, 'croq-mirror');
+	if (!oldEditorDir.startsWith(appDir + path.sep)) throw new Error('Invalid legacy editor path');
+	await rm(oldEditorDir, { recursive: true, force: true });
 	// Remove obsolete build output, including Acorn files replaced by copyLibraries.
 	const studyDir = path.resolve(APP_DIR, 'study');
 	const paths = [
 		'css/study.min.css', 'css/study.min.css.map',
 		'output-pane.js', 'console.js',
-		'dialog-box.js', 'lib/sweetalert2/sweetalert2.min.js',
+		'dialog-box.js', 'lib/sweetalert2',
 		'side-menu.js', 'side-menu.css',
 		'toolbar.js',
 		'editor.js', 'analyzer.js', 'worker-analyzer.js',

@@ -8,7 +8,7 @@
 import * as FS from 'node:fs';
 import * as PATH from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyze } from './extractor.js';
+import { analyze } from './lib/extractor.js';
 
 const __dirname = PATH.dirname(fileURLToPath(import.meta.url));
 
@@ -19,7 +19,7 @@ const HTML_HEAD1 = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TIT
 const HTML_HEAD2 = '</head><body>' + (IS_MODULE ? '<script type="module">' : '<script>');
 const HTML_FOOT  = (IS_MODULE ? ENTRY_CODE : '') + '</script></body>';
 const DEF_DIR    = 'def';
-const INJECTION  = 'injection.js';
+const INJECTION  = './lib/injection.js';
 const EXP_EOL    = '\r\n';
 
 export class Exporter {

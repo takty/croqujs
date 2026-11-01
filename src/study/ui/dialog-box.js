@@ -5,7 +5,7 @@
  * @version 2026-11-01
  */
 
-import Swal from '../lib/sweetalert2/sweetalert2.esm.min.js';
+import Swal from '../../lib/sweetalert2/sweetalert2.esm.min.js';
 
 function loadStyle(path) {
 	return new Promise((resolve, reject) => {
@@ -20,7 +20,7 @@ function loadStyle(path) {
 
 // Module initialization loads each stylesheet once, before any dialog is shown.
 await Promise.all([
-	loadStyle('../lib/sweetalert2/sweetalert2.min.css'),
+	loadStyle('../../lib/sweetalert2/sweetalert2.min.css'),
 	loadStyle('./dialog-box.css'),
 ]);
 

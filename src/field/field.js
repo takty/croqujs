@@ -5,7 +5,7 @@
  * @version 2026-11-01
  */
 
-import { WinState } from '../study/winstate.js';
+import { WinState } from '../lib/winstate.js';
 
 window.addEventListener('DOMContentLoaded', () => { new Field(); });
 

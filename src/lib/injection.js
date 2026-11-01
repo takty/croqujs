@@ -2,7 +2,7 @@
  * Injected Code for Communication Between User Code and Croqujs
  *
  * @author Takuto Yanagida
- * @version 2021-08-14
+ * @version 2026-11-01
  */
 
 (function () {

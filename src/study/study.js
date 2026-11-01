@@ -8,7 +8,7 @@
 import { loadJSON, minmax } from './util.js';
 import { Config } from './config.js';
 import { ErrorTranslator } from './error-translator.js';
-import { WinState } from './winstate.js';
+import { WinState } from '../lib/winstate.js';
 
 export class Study {
 
@@ -149,7 +149,7 @@ export class Study {
 	}
 
 	async _initEditor() {
-		const { createEditor } = await import('../croq-mirror/dist/croq-mirror.min.js');
+		const { createEditor } = await import('../lib/croq-mirror/dist/croq-mirror.min.js');
 		this._editor = await createEditor(document.querySelector('#editor'), {
 			language  : this._lang,
 			fontFamily: this._res.fontSet,

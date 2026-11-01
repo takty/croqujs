@@ -1,12 +1,12 @@
 /**
- * Function Extractor (JS)
+ * Function Extractor
  *
  * @author Takuto Yanagida
- * @version 2020-09-28
+ * @version 2026-11-01
  */
 
-import * as acorn from './study/lib/acorn/acorn.mjs';
-import { base as walkBase } from './study/lib/acorn/walk.mjs';
+import * as acorn from './acorn/acorn.mjs';
+import { base as walkBase } from './acorn/walk.mjs';
 
 export function analyze(code) {
 	function walk(node, visitors, base, state, override) {
