@@ -2,6 +2,8 @@
 	"passed": true,
 	"electron": "45.0.0",
 	"checks": [
+		"Menu and toolbar are loaded as modules",
+		"Menu and toolbar styles load only once",
 		"JSON toolbar preserves button order and spacing",
 		"Standalone toolbar CSS preserves dimensions",
 		"Toolbar opens menu through host callback",

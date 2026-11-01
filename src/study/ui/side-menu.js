@@ -5,9 +5,17 @@
  * @version 2021-02-24
  */
 
-'use strict';
+// Load the component stylesheet once, before initialization completes.
+await new Promise((resolve, reject) => {
+	const link = document.createElement('link');
+	link.rel = 'stylesheet';
+	link.href = new URL('./side-menu.css', import.meta.url).href;
+	link.onload = resolve;
+	link.onerror = () => reject(new Error('Failed to load menu stylesheet: ' + link.href));
+	document.head.appendChild(link);
+});
 
-class SideMenu {
+export class SideMenu {
 
 	// shouldHandleShortcut returns false to leave the key event to the host.
 	constructor(res, menu, { onCommand = () => {}, onClose = () => {}, shouldHandleShortcut = () => true } = {}) {

@@ -52,6 +52,9 @@ app.whenReady().then(async () => {
 			const e = s._editor;
 			const menu = document.querySelector('.side-menu');
 			const toolbar = document.querySelector('.toolbar');
+			check(!window.SideMenu && !window.Toolbar && !document.querySelector('script[src$="side-menu.js"], script[src$="toolbar.js"]'), 'Menu and toolbar are loaded as modules');
+			await Promise.all([import('./ui/side-menu.js'), import('./ui/toolbar.js')]);
+			check(document.querySelectorAll('link[href$="ui/side-menu.css"]').length === 1 && document.querySelectorAll('link[href$="ui/toolbar.css"]').length === 1, 'Menu and toolbar styles load only once');
 			check([...toolbar.querySelectorAll('[data-cmd]')].map(btn => btn.dataset.cmd).join(',') === 'menu,save,saveCopy,undo,copy,paste,tileWin,run' && toolbar.querySelectorAll('.filler').length === 2, 'JSON toolbar preserves button order and spacing');
 			check(getComputedStyle(toolbar).height === '40px' && getComputedStyle(toolbar.querySelector('.btn')).width === '64px', 'Standalone toolbar CSS preserves dimensions');
 			const menuButton = toolbar.querySelector('[data-cmd="menu"]');

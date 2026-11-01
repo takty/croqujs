@@ -69,7 +69,11 @@ class Study {
 
 
 	async _initialize() {
-		const { DialogBox } = await import('./ui/dialog-box.js');
+		const [{ SideMenu }, { Toolbar }, { DialogBox }] = await Promise.all([
+			import('./ui/side-menu.js'),
+			import('./ui/toolbar.js'),
+			import('./ui/dialog-box.js'),
+		]);
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
 		this._res.menu.version = this._res.version;

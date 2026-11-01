@@ -5,9 +5,17 @@
  * @version 2021-09-07
  */
 
-'use strict';
+// Load the component stylesheet once, before initialization completes.
+await new Promise((resolve, reject) => {
+	const link = document.createElement('link');
+	link.rel = 'stylesheet';
+	link.href = new URL('./toolbar.css', import.meta.url).href;
+	link.onload = resolve;
+	link.onerror = () => reject(new Error('Failed to load toolbar stylesheet: ' + link.href));
+	document.head.appendChild(link);
+});
 
-class Toolbar {
+export class Toolbar {
 
 	constructor(res, toolbar, { onCommand = () => {} } = {}) {
 		this._onCommand = onCommand;
