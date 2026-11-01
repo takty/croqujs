@@ -6,14 +6,11 @@
  */
 
 import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
-import * as OS from 'node:os';
-import * as FS from 'node:fs';
-import * as PATH from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import * as FS from './fs-node.js';
 import { Backup } from './backup.js';
 import { Exporter } from './exporter.js';
 
-const __dirname = PATH.dirname(fileURLToPath(import.meta.url));
+const __dirname = FS.moduleDirectory(import.meta.url);
 
 const DEFAULT_EXT = '.js';
 const FILE_FILTERS = [
@@ -87,10 +84,10 @@ export class Twin {
 			this._tempFilePath = filePath;
 			filePath = null;
 		}
-		const readOnly = filePath ? ((FS.statSync(filePath).mode & 0x0080) === 0) : false;  // Check Write Flag
-		const name     = filePath ? PATH.basename(filePath, PATH.extname(filePath)) : '';
-		const baseName = filePath ? PATH.basename(filePath) : '';
-		const dirName  = filePath ? PATH.dirname(filePath) : '';
+		const readOnly = filePath ? !FS.isWritable(filePath) : false;  // Check Write Flag
+		const name     = filePath ? FS.baseName(filePath, FS.extension(filePath)) : '';
+		const baseName = filePath ? FS.baseName(filePath) : '';
+		const dirName  = filePath ? FS.dirName(filePath) : '';
 
 		this._filePath   = filePath;
 		this._isReadOnly = readOnly;
@@ -179,13 +176,13 @@ export class Twin {
 
 	doFileDropped(path) {
 		try {
-			const isDir = FS.statSync(path).isDirectory();
+			const isDir = FS.isDirectory(path);
 			if (!isDir) return this._openFile(path);
 
-			const fns = FS.readdirSync(path);
-			const fps = fns.map(e => PATH.join(path, e)).filter((fp) => {
+			const fns = FS.listDirectory(path);
+			const fps = fns.map(e => FS.joinPath(path, e)).filter((fp) => {
 				try {
-					return FS.statSync(fp).isFile() && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
+					return FS.isFile(fp) && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
 				} catch (e) {
 					return ['nop'];
 				}
@@ -198,9 +195,7 @@ export class Twin {
 	}
 
 	async _openFile(filePath) {
-		const text = await new Promise(resolve => {
-			FS.readFile(filePath, 'utf-8', (error, contents) => { resolve(contents); });
-		});
+		const text = await FS.readTextAsync(filePath);
 		if (text === null) return this._returnAlertError('', filePath);
 		return ['init', this._initializeDocument(text, filePath)];
 	}
@@ -226,7 +221,7 @@ export class Twin {
 		if (!fp) return ['nop'];  // No file is selected.
 		let writable = true;
 		try {
-			writable = ((FS.statSync(fp).mode & 0x0080) !== 0);  // check write flag
+			writable = FS.isWritable(fp);  // check write flag
 		} catch (e) {
 			if (e.code !== 'ENOENT') return this._returnAlertError(e, fp);
 		}
@@ -244,15 +239,15 @@ export class Twin {
 		this._backup.setFilePath(fp);
 		this._backup.backupExistingFile(text, this._filePath);
 		try {
-			FS.writeFileSync(this._filePath, text.replace(/\n/g, '\r\n'));
+			FS.writeText(this._filePath, text.replace(/\n/g, '\r\n'));
 			if (this._tempFilePath) {
-				this._exporter.copyLibraryOfTemplate(text, this._tempFilePath, PATH.dirname(this._filePath));
+				this._exporter.copyLibraryOfTemplate(text, this._tempFilePath, FS.dirName(this._filePath));
 				this._tempFilePath = null;
 			}
 
-			const name     = PATH.basename(this._filePath, PATH.extname(this._filePath));
-			const baseName = PATH.basename(this._filePath);
-			const dirName  = PATH.dirname(this._filePath);
+			const name     = FS.baseName(this._filePath, FS.extension(this._filePath));
+			const baseName = FS.baseName(this._filePath);
+			const dirName  = FS.dirName(this._filePath);
 
 			const defJsons = this._loadDefJsons(text, this._filePath);
 
@@ -267,7 +262,7 @@ export class Twin {
 		if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
 		this._backup.backupExistingFile(text, fp);
 		try {
-			FS.writeFileSync(fp, text.replace(/\n/g, '\r\n'));
+			FS.writeText(fp, text.replace(/\n/g, '\r\n'));
 			return ['nop'];
 		} catch (e) {
 			return this._returnAlertError(e, fp);
@@ -287,7 +282,7 @@ export class Twin {
 	doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
 		const codeStructure = JSON.parse(jsonCodeStructure);
 		const name = libName.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
-		const expDir = PATH.join(PATH.dirname(this._filePath), name + '.lib.js');
+		const expDir = FS.joinPath(FS.dirName(this._filePath), name + '.lib.js');
 
 		try {
 			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure, isUseDecIncluded);
@@ -301,8 +296,8 @@ export class Twin {
 		if (this._filePath === null) return ['nop'];
 		const expDir = this._makeExportPath(this._filePath);
 		try {
-			this._rmdirSync(expDir);
-			FS.mkdirSync(expDir);
+			FS.removeDirectoryTree(expDir);
+			FS.createDirectory(expDir);
 
 			this._exporter.exportAsWebPage(text, this._filePath, expDir);
 			return ['success_export', 'exportedAsWebPage'];
@@ -351,12 +346,12 @@ export class Twin {
 		this._clearTempPath();
 		const expDir = this._getTempPath();
 		try {
-			this._rmdirSync(expDir);
-			FS.mkdirSync(expDir);
+			FS.removeDirectoryTree(expDir);
+			FS.createDirectory(expDir);
 			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath ?? this._tempFilePath, expDir, true);
 			if (!success) return this._returnExecutionError(expPath);
 
-			const baseUrl = 'file:///' + expPath.replace(/\\/g, '/');
+			const baseUrl = FS.executionFileURL(expPath);
 			const url = baseUrl + '#' + this._id + ',' + this._exporter._userCodeOffset;
 			return ['open', url];
 		} catch (e) {
@@ -367,33 +362,20 @@ export class Twin {
 	// -------------------------------------------------------------------------
 
 	_makeExportPath(fp) {
-		const name = PATH.basename(fp, PATH.extname(fp));
-		return PATH.join(PATH.dirname(fp), name + '.export');
-	}
-
-	_rmdirSync(dirPath) {
-		if (!FS.existsSync(dirPath)) return;
-		for (let fp of FS.readdirSync(dirPath)) {
-			fp = PATH.join(dirPath, fp);
-			if (FS.lstatSync(fp).isDirectory()) {
-				this._rmdirSync(fp);
-			} else {
-				FS.unlinkSync(fp);
-			}
-		}
-		FS.rmdirSync(dirPath);
+		const name = FS.baseName(fp, FS.extension(fp));
+		return FS.joinPath(FS.dirName(fp), name + '.export');
 	}
 
 	_getTempPath() {
-		const tmpdir = OS.tmpdir();
+		const tmpdir = FS.temporaryDirectory();
 		const name = 'croqujs-' + Date.now();
-		const path = PATH.join(tmpdir, name);
+		const path = FS.joinPath(tmpdir, name);
 		this._tempDirs.push(path);
 		return path;
 	}
 
 	_clearTempPath() {
-		for (let td of this._tempDirs) this._rmdirSync(td);
+		for (let td of this._tempDirs) FS.removeDirectoryTree(td);
 		this._tempDirs = [];
 	}
 
@@ -424,5 +406,5 @@ export function allowPaste(contents, pagePath) {
 		session.setPermissionCheckHandler((requester, permission, _origin, details) => allow(requester, permission, details));
 		session.setPermissionRequestHandler((requester, permission, callback, details) => callback(allow(requester, permission, details)));
 	}
-	pages.set(contents, pathToFileURL(pagePath).href);
+	pages.set(contents, FS.toFileURL(pagePath));
 }

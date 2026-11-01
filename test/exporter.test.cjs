@@ -27,3 +27,28 @@ test('built exporter resolves and parses a local @use library', () => {
 		fs.rmSync(directory, { recursive: true, force: true });
 	}
 });
+
+test('built exporter copies nested dependencies and runtime injection', () => {
+	const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'croqujs-exporter-'));
+	try {
+		fs.mkdirSync(path.join(directory, 'nested'));
+		fs.writeFileSync(path.join(directory, 'nested', 'helper.js'), 'const message = "日本語";\n');
+		const outputDir = path.join(directory, 'output');
+		fs.mkdirSync(outputDir);
+		const exporter = new Exporter();
+		const [success, output] = exporter.exportAsWebPage(
+			'// @need nested/helper.js\nconsole.log(message);',
+			path.join(directory, 'main.js'), outputDir, true,
+		);
+		assert.equal(success, true);
+		const html = fs.readFileSync(output, 'utf8');
+		assert.match(html, /console\.log\(message\)/);
+		const scripts = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(match => match[1]);
+		assert.equal(scripts.length, 2);
+		for (const script of scripts) assert.equal(fs.existsSync(path.join(outputDir, script)), true);
+		assert.equal(fs.readFileSync(path.join(outputDir, scripts[0]), 'utf8'), fs.readFileSync(path.join(__dirname, '../app/lib/injection.js'), 'utf8'));
+		assert.equal(fs.readFileSync(path.join(outputDir, scripts[1]), 'utf8'), 'const message = "日本語";\n');
+	} finally {
+		fs.rmSync(directory, { recursive: true, force: true });
+	}
+});

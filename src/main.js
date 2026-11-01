@@ -6,7 +6,7 @@
  */
 
 import { app } from 'electron';
-import * as FS from 'node:fs';
+import * as FS from './fs-node.js';
 import PROC from 'node:process';
 import { Twin } from './twin.js';
 
@@ -50,8 +50,8 @@ class Main {
 
 	_checkArgPath(path) {
 		try {
-			if (!FS.existsSync(path)) return null;
-			if (FS.statSync(path).isDirectory()) return null;
+			if (!FS.exists(path)) return null;
+			if (FS.isDirectory(path)) return null;
 		} catch (e) {
 			console.error(e);
 			return null;

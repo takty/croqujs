@@ -5,11 +5,8 @@
  * @version 2020-04-30
  */
 
-import * as FS from 'node:fs';
-import * as PATH from 'node:path';
+import * as FS from './fs-node.js';
 import * as CRYPTO from 'node:crypto';
-import PROCESS from 'node:process';
-import { spawn } from 'node:child_process';
 
 export class Backup {
 
@@ -30,14 +27,14 @@ export class Backup {
 		const digest = this._getDigest(text);
 		if (digest === this._digest) return false;
 
-		const ext  = PATH.extname(this._filePath);
-		const name = PATH.basename(this._filePath, ext);
+		const ext  = FS.extension(this._filePath);
+		const name = FS.baseName(this._filePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(this._filePath);
 			this._lastTimeStampStr = this._createTimeStampStr();
-			const to = PATH.join(backupDir, name + this._lastTimeStampStr + ext);
-			FS.writeFile(to, text, (err) => { if (err) console.log(err); });
+			const to = FS.joinPath(backupDir, name + this._lastTimeStampStr + ext);
+			FS.writeTextAsync(to, text).catch(err => console.log(err));
 		} catch (e) {
 			console.error(e);
 			return false;
@@ -52,13 +49,13 @@ export class Backup {
 		this.backupText(text);
 
 		const log  = JSON.stringify(info, null, '\t');
-		const ext  = PATH.extname(this._filePath);
-		const name = PATH.basename(this._filePath, ext);
+		const ext  = FS.extension(this._filePath);
+		const name = FS.baseName(this._filePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(this._filePath);
-			const to = PATH.join(backupDir, name + this._lastTimeStampStr + '.log');
-			FS.writeFile(to, log, (err) => { if (err) console.log(err); });
+			const to = FS.joinPath(backupDir, name + this._lastTimeStampStr + '.log');
+			FS.writeTextAsync(to, log).catch(err => console.log(err));
 		} catch (e) {
 			console.error(e);
 			return false;
@@ -67,22 +64,22 @@ export class Backup {
 	}
 
 	backupExistingFile(text, existingFilePath) {
-		if (!FS.existsSync(existingFilePath)) return false;
+		if (!FS.exists(existingFilePath)) return false;
 
 		text = text.replace(/\n/g, '\r\n');
-		const oldText = FS.readFileSync(existingFilePath, 'utf-8');
+		const oldText = FS.readText(existingFilePath);
 
 		const digest = this._getDigest(text);
 		if (digest === this._getDigest(oldText)) return false;
 
-		const ext  = PATH.extname(existingFilePath);
-		const name = PATH.basename(existingFilePath, ext);
+		const ext  = FS.extension(existingFilePath);
+		const name = FS.baseName(existingFilePath, ext);
 
 		try {
 			const backupDir = this._ensureBackupDir(existingFilePath);
 			this._lastTimeStampStr = this._createTimeStampStr();
-			const to = PATH.join(backupDir, name + this._lastTimeStampStr + ext);
-			FS.writeFileSync(to, oldText);
+			const to = FS.joinPath(backupDir, name + this._lastTimeStampStr + ext);
+			FS.writeText(to, oldText);
 		} catch (e) {
 			console.error(e);
 			return false;
@@ -104,13 +101,11 @@ export class Backup {
 	}
 
 	_ensureBackupDir(fp) {
-		const name = PATH.basename(fp, PATH.extname(fp));
-		const dir = PATH.join(PATH.dirname(fp), '.' + name + '.backup');
+		const name = FS.baseName(fp, FS.extension(fp));
+		const dir = FS.joinPath(FS.dirName(fp), '.' + name + '.backup');
 		try {
-			FS.mkdirSync(dir);  // if the dir exists, an exception is thrown.
-			if (PROCESS.platform === 'win32') {
-				spawn('attrib', ['+H', dir]);
-			}
+			FS.createDirectory(dir);  // if the dir exists, an exception is thrown.
+			FS.hideDirectory(dir);
 		} catch (e) {
 			return dir;
 		}

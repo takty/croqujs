@@ -5,12 +5,10 @@
  * @version 2020-11-02
  */
 
-import * as FS from 'node:fs';
-import * as PATH from 'node:path';
-import { fileURLToPath } from 'node:url';
+import * as FS from './fs-node.js';
 import { analyze } from './lib/extractor.js';
 
-const __dirname = PATH.dirname(fileURLToPath(import.meta.url));
+const __dirname = FS.moduleDirectory(import.meta.url);
 
 const IS_MODULE = false;
 
@@ -29,7 +27,7 @@ export class Exporter {
 	}
 
 	checkLibraryReadable(codeStr, filePath) {
-		const bp = (filePath) ? PATH.dirname(filePath) : null;
+		const bp = (filePath) ? FS.dirName(filePath) : null;
 		const decs = this._extractUseDeclarations(codeStr.split('\n'));
 
 		for (let dec of decs) {
@@ -37,7 +35,7 @@ export class Exporter {
 			if (p.indexOf('http') === 0) {
 			} else {
 				let cont = null;
-				if (bp) cont = this._readFile(PATH.join(bp, p));
+				if (bp) cont = FS.readTextOrNull(FS.joinPath(bp, p));
 				if (cont === null) return p;  // Error
 			}
 		}
@@ -45,7 +43,7 @@ export class Exporter {
 	}
 
 	loadDefJsons(codeStr, filePath) {
-		const bp = (filePath) ? PATH.dirname(filePath) : null;
+		const bp = (filePath) ? FS.dirName(filePath) : null;
 		const decs = this._extractUseDeclarations(codeStr.split('\n'));
 		const ret = [];
 
@@ -54,11 +52,11 @@ export class Exporter {
 			if (p.indexOf('http') === 0) {
 			} else {
 				if (!bp) continue;
-				const path = PATH.join(bp, p);
-				const cont = this._readFile(path);
+				const path = FS.joinPath(bp, p);
+				const cont = FS.readTextOrNull(path);
 				if (cont === null) continue;  // Error
 				const dp = makeDefPath(path);
-				const defJson = this._readFile(dp);
+				const defJson = FS.readTextOrNull(dp);
 				if (defJson === null) continue;
 				ret.push(defJson);
 			}
@@ -66,10 +64,10 @@ export class Exporter {
 		return ret;
 
 		function makeDefPath(path) {
-			const dir = PATH.dirname(path);
-			const ext = PATH.extname(path);
-			const bn  = PATH.basename(path, ext);
-			return PATH.join(dir, DEF_DIR, bn + '.json');
+			const dir = FS.dirName(path);
+			const ext = FS.extension(path);
+			const bn  = FS.baseName(path, ext);
+			return FS.joinPath(dir, DEF_DIR, bn + '.json');
 		}
 	}
 
@@ -79,11 +77,11 @@ export class Exporter {
 		if (isUseDecIncluded) {
 			const lines = codeText.split('\n');
 			const decs = this._extractUseDeclarations(lines);
-			const bp = PATH.dirname(filePath);
+			const bp = FS.dirName(filePath);
 			const libCodes = [];
 			for (let dec of decs) {
 				if (!Array.isArray(dec)) continue;
-				const libPath = PATH.join(bp, dec[0]), libNs = dec[1];
+				const libPath = FS.joinPath(bp, dec[0]), libNs = dec[1];
 				const libCode = this._readAsLibraryCode(libPath, libNs, 1);
 				if (libCode === false) return [false, dec[0]];
 				libCodes.push(libCode);
@@ -92,8 +90,8 @@ export class Exporter {
 			inc = libCodes.join(EXP_EOL);
 		}
 		const libCode = this._createLibraryCode(codeText, exportedSymbols, nameSpace, 0, inc);
-		FS.writeFileSync(filePath, libCode);
-		return [FS.existsSync(filePath), filePath];
+		FS.writeText(filePath, libCode);
+		return [FS.exists(filePath), filePath];
 	}
 
 	exportAsWebPage(codeText, filePath, dirPath, injection = false) {
@@ -103,31 +101,31 @@ export class Exporter {
 		let title = 'Croqujs';
 
 		if (injection) {
-			this._copyFile(PATH.join(__dirname, INJECTION), PATH.join(dirPath, INJECTION));
+			FS.copyTextFile(FS.joinPath(__dirname, INJECTION), FS.joinPath(dirPath, INJECTION));
 			pushTag(INJECTION);
 		}
 		if (filePath) {
-			const bp = PATH.dirname(filePath);
+			const bp = FS.dirName(filePath);
 			for (let dec of decs) {
 				if (Array.isArray(dec)) {
 					const p = dec[0];
 					if (p.startsWith('http')) return [false, p];
-					const destFn = PATH.basename(p, PATH.extname(p)) + '.lib.js';
-					const res = this._writeLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, destFn));
+					const destFn = FS.baseName(p, FS.extension(p)) + '.lib.js';
+					const res = this._writeLibraryImmediately(FS.joinPath(bp, p), dec[1], FS.joinPath(dirPath, destFn));
 					if (!res) return [false, p];
 					pushTag(destFn);
 				} else {
 					const p = dec;
 					let q = dec;
 					if (!p.startsWith('http')) {
-						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(PATH.sep);
-						const res = this._copyFile(PATH.join(bp, p), PATH.join(dirPath, q));
+						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(FS.pathSeparator);
+						const res = FS.copyTextFile(FS.joinPath(bp, p), FS.joinPath(dirPath, q));
 						if (!res) return [false, p];
 					}
 					pushTag(q);
 				}
 			}
-			title = PATH.basename(filePath, '.js');
+			title = FS.baseName(filePath, '.js');
 			title = title.charAt(0).toUpperCase() + title.slice(1);
 		} else {
 			for (let dec of decs) {
@@ -137,11 +135,11 @@ export class Exporter {
 			}
 		}
 		const head = HTML_HEAD1.replace('%TITLE%', title);
-		const expPath = PATH.join(dirPath, 'index.html');
+		const expPath = FS.joinPath(dirPath, 'index.html');
 		const libTagStr = libs.join('');
 		this._userCodeOffset = HTML_HEAD1.length + libTagStr.length + HTML_HEAD2.length;
 
-		FS.writeFileSync(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
+		FS.writeText(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
 		return [true, expPath];
 	}
 
@@ -150,21 +148,21 @@ export class Exporter {
 	copyLibraryOfTemplate(codeText, tempFilePath, dirPath) {
 		const decs = this._extractUseDeclarations(codeText.split('\n'));
 
-		const bp = PATH.dirname(tempFilePath);
+		const bp = FS.dirName(tempFilePath);
 		for (let dec of decs) {
 			if (Array.isArray(dec)) {
 				const p = dec[0];
 				if (p.startsWith('http')) return [false, p];
-				const destFn = PATH.basename(p, PATH.extname(p)) + '.lib.js';
-				const res = this._writeLibraryImmediately(PATH.join(bp, p), dec[1], PATH.join(dirPath, destFn));
+				const destFn = FS.baseName(p, FS.extension(p)) + '.lib.js';
+				const res = this._writeLibraryImmediately(FS.joinPath(bp, p), dec[1], FS.joinPath(dirPath, destFn));
 				if (!res) return [false, p];
 			} else {
 				const p = dec;
 				if (p.startsWith('http')) continue;
-				const destFn = dec.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(PATH.sep);
-				const destPath = PATH.join(dirPath, destFn);
-				if (FS.existsSync(destPath)) continue;
-				const res = this._copyFile(PATH.join(bp, p), destPath);
+				const destFn = dec.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(FS.pathSeparator);
+				const destPath = FS.joinPath(dirPath, destFn);
+				if (FS.exists(destPath)) continue;
+				const res = FS.copyTextFile(FS.joinPath(bp, p), destPath);
 				if (!res) return [false, p];
 			}
 		}
@@ -285,12 +283,12 @@ export class Exporter {
 	_writeLibraryImmediately(origPath, nameSpace, destPath) {
 		const libCode = this._readAsLibraryCode(origPath, nameSpace);
 		if (libCode === false) return false;
-		FS.writeFileSync(destPath, libCode);
-		return FS.existsSync(destPath);
+		FS.writeText(destPath, libCode);
+		return FS.exists(destPath);
 	}
 
 	_readAsLibraryCode(origPath, nameSpace, indent = 0) {
-		const ct = this._readFile(origPath);
+		const ct = FS.readTextOrNull(origPath);
 		if (ct === null) return false;
 		const cs = analyze(ct);
 		return this._createLibraryCode(ct, cs.fnNames, nameSpace, indent);
@@ -307,64 +305,6 @@ export class Exporter {
 
 		if (0 < inc.length) return [head, inc, src, ret, foot].join(EXP_EOL);
 		return [head, src, ret, foot].join(EXP_EOL);
-	}
-
-	// -------------------------------------------------------------------------
-
-	_copyFile(from, to) {
-		let cont;
-		try {
-			cont = FS.readFileSync(from, 'utf-8');
-		} catch (e) {
-			console.error(e);
-			return false;
-		}
-		try {
-			FS.writeFileSync(to, cont);
-		} catch (e) {
-			if (e.code === 'ENOENT') {
-				this._makeParentDir(to);
-				try {
-					FS.writeFileSync(to, cont);
-					return true;
-				} catch (e1) {
-					console.error(e1);
-					return false;
-				}
-			}
-			console.error(e);
-			return false;
-		}
-		return true;
-	}
-
-	_makeParentDir(dirPath) {
-		const nd = PATH.dirname(dirPath);
-		try {
-			FS.mkdirSync(nd);
-		} catch (e) {
-			if (e.code === 'ENOENT') {
-				this._makeParentDir(nd);
-				try {
-					FS.mkdirSync(nd);
-					return true;
-				} catch(e1) {
-					console.error(e1);
-					return false;
-				}
-			}
-			console.error(e);
-			return false;
-		}
-		return true;
-	}
-
-	_readFile(filePath) {
-		try {
-			return FS.readFileSync(filePath, 'utf-8');
-		} catch (e) {
-			return null;
-		}
 	}
 
 }
