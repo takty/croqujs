@@ -69,6 +69,7 @@ class Study {
 
 
 	async _initialize() {
+		const { DialogBox } = await import('./ui/dialog-box.js');
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
 		this._res.menu.version = this._res.version;
@@ -90,7 +91,16 @@ class Study {
 				return !(isMac && isCopy && !this._editor.hasFocus());
 			},
 		});
-		this._dialogBox  = new DialogBox(this, this._res);
+		this._dialogBox  = new DialogBox(this._res, {
+			onOpen: () => {
+				this._sideMenu.close();
+				this._editor.setSettings({ disabled: true });
+			},
+			onClose: () => {
+				this._editor.setSettings({ disabled: false });
+				this._editor.focus();
+			},
+		});
 		this._outputPane = new OutputPane(this._res);
 
 		this._filePath    = null;

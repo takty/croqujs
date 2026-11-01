@@ -7,7 +7,22 @@
 
 @use 'sass:math';
 @use 'variables' as *;
-@use 'dialog-box';
+
+// Host settings for the standalone ui/dialog-box.css.
+:root {
+	--dialog-box-font-family: #{$font-ui};
+	--dialog-box-font-console: #{$font-console};
+	--dialog-box-font-size: #{$font-size};
+	--dialog-box-info: #{$L-Aqua};
+	--dialog-box-info-border: #{rgba($L-Aqua, 0.2)};
+	--dialog-box-error-border: #{rgba($L-Red, 0.2)};
+	--dialog-box-warning: #{$L-Orange};
+	--dialog-box-warning-border: #{rgba($L-Orange, 0.2)};
+	--dialog-box-success: #{$L-YellowGreen};
+	--dialog-box-confirm-hover: #{$L-Orange-b};
+	--dialog-box-cancel: #{$L-Gray};
+	--dialog-box-cancel-hover: #{$L-DarkGray};
+}
 
 // Host settings for the standalone ui/toolbar.css.
 .toolbar {

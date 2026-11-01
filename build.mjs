@@ -78,7 +78,7 @@ async function copyLibraries() {
 	await Promise.all([
 		copyPackageFiles('acorn', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'acorn.js'),
 		copyPackageFiles('acorn-walk', 'dist', 'acorn', (_srcPath, relPath) => relPath === 'walk.js'),
-		copyPackageFiles('sweetalert2', 'dist', 'sweetalert2', (_srcPath, relPath) => path.dirname(relPath) === '.' && path.basename(relPath).startsWith('sweetalert2.min.')),
+		copyPackageFiles('sweetalert2', 'dist', 'sweetalert2', (_srcPath, relPath) => ['sweetalert2.esm.min.js', 'sweetalert2.min.css'].includes(relPath)),
 	]);
 }
 
@@ -141,6 +141,7 @@ async function removeLegacyEditorFiles() {
 	// Remove obsolete build output, including Acorn files replaced by copyLibraries.
 	const studyDir = path.resolve(APP_DIR, 'study');
 	const paths = [
+		'dialog-box.js', 'lib/sweetalert2/sweetalert2.min.js',
 		'side-menu.js', 'side-menu.css',
 		'toolbar.js',
 		'editor.js', 'analyzer.js', 'worker-analyzer.js',

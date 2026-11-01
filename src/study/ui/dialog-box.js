@@ -5,40 +5,56 @@
  * @version 2020-05-23
  */
 
-'use strict';
+import Swal from '../lib/sweetalert2/sweetalert2.esm.min.js';
 
-class DialogBox {
+function loadStyle(path) {
+	return new Promise((resolve, reject) => {
+		const link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = new URL(path, import.meta.url).href;
+		link.onload = resolve;
+		link.onerror = () => reject(new Error('Failed to load dialog stylesheet: ' + link.href));
+		document.head.appendChild(link);
+	});
+}
 
-	constructor(study, res) {
-		this._study      = study;
+// Module initialization loads each stylesheet once, before any dialog is shown.
+await Promise.all([
+	loadStyle('../lib/sweetalert2/sweetalert2.min.css'),
+	loadStyle('./dialog-box.css'),
+]);
+
+export class DialogBox {
+
+	constructor(res, { onOpen = () => {}, onClose = () => {} } = {}) {
+		this._onOpen     = onOpen;
+		this._onClose    = onClose;
 		this._textCancel = res.btn.cancel;
 	}
 
 	showAlert(text, type) {
 		window.focus();
-		this._disableBackground();
-		return Swal.fire(this._makeOption(text, type)
-		).then(() => {
-			this._enableBackground();
+		this._onOpen();
+		return Swal.fire(this._makeOption(text, type)).then(() => {}).finally(() => {
+			this._onClose();
 		});
 	}
 
 	showConfirm(text, type) {
 		window.focus();
-		this._disableBackground();
+		this._onOpen();
 		return Swal.fire(this._makeOption(text, type, {
 			confirmButtonText: 'OK',
 			showCancelButton: true,
 			cancelButtonText: this._textCancel,
-		})).then((res) => {
-			this._enableBackground();
-			return res;
+		})).finally(() => {
+			this._onClose();
 		});
 	}
 
 	showPromptWithOption(text, type, placeholder, value, optText) {
 		window.focus();
-		this._disableBackground();
+		this._onOpen();
 		return Swal.fire({
 			title: '',
 			icon: type,
@@ -68,9 +84,8 @@ class DialogBox {
 				backdrop: 'swal2-backdrop-hide',
 				icon    : 'swal2-icon-hide'
 			}
-		}).then((res) => {
-			this._enableBackground();
-			return res;
+		}).finally(() => {
+			this._onClose();
 		});
 	}
 
@@ -93,16 +108,6 @@ class DialogBox {
 				icon    : 'swal2-icon-hide'
 			}
 		});
-	}
-
-	_disableBackground() {
-		this._study._sideMenu.close();
-		this._study._editor.setSettings({ disabled: true });
-	}
-
-	_enableBackground() {
-		this._study._editor.setSettings({ disabled: false });
-		this._study._editor.focus();
 	}
 
 }
