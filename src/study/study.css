@@ -1,0 +1,138 @@
+/**
+ * Study Window Style
+ *
+ * @author Takuto Yanagida
+ * @version 2026-08-22
+ */
+
+:root {
+	--L-Red         : #e61e58;
+	--L-Red-35      : #f6b0c5;
+	--L-Red-15      : #fbdde6;
+	--L-Orange      : #f5a200;
+	--L-Orange-b    : #f18400;
+	--L-Orange-50   : #fbd290;
+	--L-Yellow      : #fdde00;
+	--L-Yellow-35   : #fef3a6;
+	--L-YellowGreen : #7eba2e;
+	--L-PaleGreen   : #4db28d;
+	--L-PaleGreen-25: #d2ece2;
+	--L-Turquoise   : #005363;
+	--L-Cyan        : #009ddf;
+	--L-Aqua        : #60b3e5;
+	--L-Aqua-60     : #a0d1ef;
+	--L-Blue        : #2e449a;
+	--L-Purple      : #9a74a3;
+	--L-Brown       : #4e4138;
+	--L-BodyBrown   : #7c6a5a;
+	--L-LightGray   : #e8e8e8;
+	--L-Gray        : #b5b5b6;
+	--L-DarkGray    : #898989;
+
+	--color-text  : #110;
+	--color-window: #f8f8f8;
+	--color-handle: #d7d7d7;
+
+	--font-ui     : "Lucida Grande", "Hiragino Sans", "Yu Gothic UI", "Meiryo UI", sans-serif;
+	--font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
+	--font-size   : 14px;
+
+	--size-toolbar-button: 40px;
+}
+
+/* Host settings for the standalone ui/dialog-box.css. */
+:root {
+	--dialog-box-font-family: var(--font-ui);
+	--dialog-box-font-console: var(--font-console);
+	--dialog-box-font-size: var(--font-size);
+	--dialog-box-info: var(--L-Aqua);
+	--dialog-box-info-border: color-mix(in srgb, var(--L-Aqua) 20%, transparent);
+	--dialog-box-error-border: color-mix(in srgb, var(--L-Red) 20%, transparent);
+	--dialog-box-warning: var(--L-Orange);
+	--dialog-box-warning-border: color-mix(in srgb, var(--L-Orange) 20%, transparent);
+	--dialog-box-success: var(--L-YellowGreen);
+	--dialog-box-confirm-hover: var(--L-Orange-b);
+	--dialog-box-cancel: var(--L-Gray);
+	--dialog-box-cancel-hover: var(--L-DarkGray);
+}
+
+/* Host settings for the standalone ui/toolbar.css. */
+.toolbar {
+	--toolbar-size: var(--size-toolbar-button);
+	--toolbar-background: var(--color-window);
+	--toolbar-font-family: var(--font-ui);
+	--toolbar-font-size: var(--font-size);
+	--toolbar-muted: var(--L-DarkGray);
+}
+
+/* Host settings for the standalone ui/side-menu.css. */
+.side-menu {
+	--side-menu-top: var(--size-toolbar-button);
+	--side-menu-background: var(--color-window);
+	--side-menu-font-size: var(--font-size);
+	--side-menu-font-family: var(--font-ui);
+	--side-menu-padding: 10px;
+	--side-menu-highlight: var(--L-LightGray);
+	--side-menu-muted: var(--L-DarkGray);
+	--side-menu-disabled: var(--L-Gray);
+	/* Relative URLs in custom properties resolve where they are used (ui/side-menu.css). */
+	--side-menu-check: url('../res/icon-check.svg');
+}
+
+@font-face {
+	font-family: 'Inconsolata';
+	src: url('res/Inconsolata-dz.woff') format('woff');
+}
+
+@font-face {
+	font-family: 'LaMono';
+	font-weight: 400;
+	src: url('res/LaMono-Regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'LaMono';
+	font-weight: 700;
+	src: url('res/LaMono-Bold.ttf') format('truetype');
+}
+
+#editor .croq-mirror {
+	--croq-mirror-font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
+}
+
+html, body {
+	height: 100%;
+	min-height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+/* Main Splitter --------------------------------------------------------------- */
+
+#handle {
+	cursor: row-resize;
+	height: 8px;
+	background-color: var(--color-handle);
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
+	transition: 0.25s;
+
+	&:hover { background-color: var(--L-DarkGray); }
+}
+
+#editor {
+	height: 100%;
+}
+
+/* Host layout and settings for ui/output-pane.css. */
+.sub {
+	height: 0;
+	--output-pane-font-family: var(--font-console);
+	--output-pane-color: var(--color-text);
+	--output-pane-type-background: color-mix(in srgb, var(--color-text) 5%, transparent);
+	--output-pane-type-border: color-mix(in srgb, var(--color-text) 10%, transparent);
+	--output-pane-type-hover: color-mix(in srgb, var(--color-text) 50%, transparent);
+	--output-pane-error: var(--L-Red);
+	--output-pane-muted: var(--L-Gray);
+	--output-pane-count: var(--L-PaleGreen);
+}

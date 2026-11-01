@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 import builder from 'electron-builder';
 
 import {
-	buildSassFile,
 	copyFilesFiltered,
 	processFiles,
 	resolvePackageDir,
@@ -20,8 +19,6 @@ const SRC_DIR      = './src';
 const APP_DIR      = './app';
 const ICON_SRC_DIR = './res/icon';
 const APP_RES_DIR  = path.join(APP_DIR, 'res');
-const SCSS_SRC_DIR = path.join(SRC_DIR, 'study/scss');
-const CSS_DIST_DIR = path.join(APP_DIR, 'study/css');
 const LIB_DIST_DIR = path.join(APP_DIR, 'study/lib');
 
 const VERSION_PATHS = [
@@ -60,7 +57,7 @@ async function getVersionInfo() {
 async function copyMain() {
 	await Promise.all([
 		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => {
-			return !relPath.startsWith(`${path.join('study', 'scss')}${path.sep}`) && !VERSION_PATHS.includes(relPath);
+			return !VERSION_PATHS.includes(relPath);
 		}),
 		copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
 			const name = path.basename(relPath);
@@ -114,33 +111,19 @@ async function updateVersion() {
 	});
 }
 
-async function buildSass() {
-	for await (const srcPath of walk(SCSS_SRC_DIR, '.scss')) {
-		const relPath = path.relative(SCSS_SRC_DIR, srcPath);
-		const name    = path.basename(relPath);
-
-		if (name.startsWith('_')) {
-			continue;
-		}
-		const parsed  = path.parse(relPath);
-		const dstPath = path.join(CSS_DIST_DIR, parsed.dir, `${parsed.name}.min.css`);
-		await buildSassFile(srcPath, dstPath);
-	}
-}
-
 async function build() {
 	await removeLegacyEditorFiles();
 	await copyMain();
 	await copyLibraries();
 	await copyCroqMirror();
 	await updateVersion();
-	await buildSass();
 }
 
 async function removeLegacyEditorFiles() {
 	// Remove obsolete build output, including Acorn files replaced by copyLibraries.
 	const studyDir = path.resolve(APP_DIR, 'study');
 	const paths = [
+		'css/study.min.css', 'css/study.min.css.map',
 		'output-pane.js', 'console.js',
 		'dialog-box.js', 'lib/sweetalert2/sweetalert2.min.js',
 		'side-menu.js', 'side-menu.css',

@@ -92,6 +92,16 @@ app.whenReady().then(async () => {
 			}
 			const menu = document.querySelector('.side-menu');
 			const toolbar = document.querySelector('.toolbar');
+			check(!!document.querySelector('link[href="study.css"]') && !document.querySelector('link[href*="study.min.css"]'), 'Study loads the plain CSS beside its HTML');
+			toolbar.style.transition = 'none';
+			document.documentElement.style.setProperty('--color-window', 'rgb(12, 34, 56)');
+			try {
+				check(getComputedStyle(toolbar).backgroundColor === 'rgb(12, 34, 56)' && getComputedStyle(menu).backgroundColor === 'rgb(12, 34, 56)', 'Shared CSS custom properties update both toolbar and menu');
+			} finally {
+				document.documentElement.style.removeProperty('--color-window');
+				getComputedStyle(toolbar).backgroundColor;
+				toolbar.style.removeProperty('transition');
+			}
 			check(!window.SideMenu && !window.Toolbar && !document.querySelector('script[src$="side-menu.js"], script[src$="toolbar.js"]'), 'Menu and toolbar are loaded as modules');
 			await Promise.all([import('./ui/side-menu.js'), import('./ui/toolbar.js')]);
 			check(document.querySelectorAll('link[href$="ui/side-menu.css"]').length === 1 && document.querySelectorAll('link[href$="ui/toolbar.css"]').length === 1, 'Menu and toolbar styles load only once');

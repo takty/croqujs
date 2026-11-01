@@ -197,35 +197,3 @@ export async function buildJavaScriptFiles(srcDir, dstDir, filter = () => true, 
 	}
 	return written;
 }
-
-export async function buildSassFile(srcPath, dstPath, { sassOptions = {}, autoprefixerOptions = { remove: false } } = {}) {
-	const [sass, { default: postcss }, { default: autoprefixer }] = await Promise.all([
-		import('sass'),
-		import('postcss'),
-		import('autoprefixer'),
-	]);
-	const compiled = await sass.compileAsync(srcPath, {
-		style    : 'compressed',
-		sourceMap: true,
-		...sassOptions,
-	});
-	const result = await postcss([autoprefixer(autoprefixerOptions)]).process(compiled.css, {
-		from: srcPath,
-		to  : dstPath,
-		map : {
-			inline    : false,
-			annotation: `${path.basename(dstPath)}.map`,
-			prev      : compiled.sourceMap,
-		},
-	});
-	const results = [await writeFileIfChanged(dstPath, result.css)];
-	if (result.map) {
-		results.push(await writeFileIfChanged(`${dstPath}.map`, result.map.toString()));
-	}
-	if (results.some(Boolean)) {
-		console.log(`written: ${srcPath} -> ${dstPath}`);
-		return true;
-	}
-	console.log('no changes');
-	return false;
-}

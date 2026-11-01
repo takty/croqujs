@@ -10,6 +10,8 @@
 		"Standalone worker combines repeated output and assigns type labels",
 		"Standalone output preserves error callbacks without operating the Study handle",
 		"Output retains the latest 100 lines",
+		"Study loads the plain CSS beside its HTML",
+		"Shared CSS custom properties update both toolbar and menu",
 		"Menu and toolbar are loaded as modules",
 		"Menu and toolbar styles load only once",
 		"JSON toolbar preserves button order and spacing",
