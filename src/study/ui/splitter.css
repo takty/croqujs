@@ -1,0 +1,9 @@
+.splitter-handle {
+	cursor          : row-resize;
+	height          : var(--splitter-size, 8px);
+	background-color: var(--splitter-background);
+	box-shadow      : 0 0 2px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.25);
+	transition      : 0.25s;
+
+	&:hover { background-color: var(--splitter-hover); }
+}

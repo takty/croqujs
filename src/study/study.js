@@ -35,7 +35,7 @@ class Study {
 
 		this._initFileDrop();
 		this.ready = this._initialize();
-		window.addEventListener('unload', () => { this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
+		window.addEventListener('unload', () => { this._splitter?.destroy(); this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
 	}
 
 
@@ -69,11 +69,12 @@ class Study {
 
 
 	async _initialize() {
-		const [{ SideMenu }, { Toolbar }, { DialogBox }, { OutputPane }] = await Promise.all([
+		const [{ SideMenu }, { Toolbar }, { DialogBox }, { OutputPane }, { Splitter }] = await Promise.all([
 			import('./ui/side-menu.js'),
 			import('./ui/toolbar.js'),
 			import('./ui/dialog-box.js'),
 			import('./ui/output-pane.js'),
+			import('./ui/splitter.js'),
 		]);
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
@@ -107,7 +108,7 @@ class Study {
 			},
 		});
 		this._outputPane = new OutputPane(document.querySelector('#output-pane'), this._res, {
-			onVisibilityChange: flag => this._setOutputPaneVisible(flag),
+			onVisibilityChange: flag => this._splitter.setVisible(flag),
 		});
 
 		this._filePath    = null;
@@ -118,7 +119,16 @@ class Study {
 		this._isModified  = false;
 		this._errorMarker = null;
 
-		this._setOutputPaneVisible = this._initWindowResizing(this._editor);
+		this._splitter = new Splitter(document.querySelector('#splitter'), {
+			main: document.querySelector('.main'),
+			handle: document.querySelector('#handle'),
+			sub: document.querySelector('#output-pane'),
+			minMain: document.querySelector('.toolbar').offsetHeight + 100,
+			onResize: mainHeight => {
+				document.querySelector('#editor').style.height = (mainHeight - document.querySelector('.toolbar').offsetHeight) + 'px';
+				this._editor.refresh();
+			},
+		});
 		this._initFieldConnection();
 
 		document.addEventListener('focus', (e) => {
@@ -159,70 +169,6 @@ class Study {
 		this._editor.on('error', (error) => { console.error(error.message); });
 		this._editor.on('copy', ({ text }) => { this._reflectClipboardState(text); });
 		this._editor.on('cut',  ({ text }) => { this._reflectClipboardState(text); });
-	}
-
-	_initWindowResizing(ed) {
-		const main   = document.querySelector('.main');
-		const editor = document.querySelector('#editor');
-		const handle = document.querySelector('#handle');
-		const sub    = document.querySelector('.sub');
-
-		const TH = document.querySelector('.toolbar').offsetHeight;
-		const HH = 8;
-		const MIN_MAIN_H = 100;
-		const MIN_SUB_H  = 32;
-
-		const setSubPaneHeight = (h) => {
-			const bh = document.body.offsetHeight;
-			editor.style.height = (bh - (TH + HH + h)) + 'px';
-			main.style.height   = (bh - (HH + h)) + 'px';
-			sub.style.height    = h + 'px';
-			ed.refresh();
-		};
-
-		let pressed = false, resizing = false;
-		let lastSubH = 100, py;
-
-		const onHandleDown = (e) => {
-			py = e.pageY - handle.offsetTop;
-			pressed = true;
-			resizing = false;
-		};
-		const onHandleMove = (e) => {
-			if (!pressed) return;
-			resizing = true;
-
-			const bh = document.body.offsetHeight;
-			const mainH = e.pageY - py;
-
-			let subH = bh - (mainH + HH);
-			if (mainH - TH < MIN_MAIN_H) subH = bh - (TH + MIN_MAIN_H + HH);
-			if (subH < MIN_SUB_H) subH = 0;
-			setSubPaneHeight(subH);
-			e.preventDefault();
-		};
-		const onHandleUp = (e) => {
-			if (!pressed) return;
-			pressed = false;
-			if (MIN_SUB_H < sub.offsetHeight) lastSubH = sub.offsetHeight;
-			e.preventDefault();
-		};
-		handle.addEventListener('mousedown', onHandleDown);
-		handle.addEventListener('mousemove', onHandleMove);
-		handle.addEventListener('mouseup', onHandleUp);
-		handle.addEventListener('click', () => {
-			if (!resizing) setSubPaneHeight(sub.offsetHeight === 0 ? lastSubH : 0);
-		});
-		document.body.addEventListener('mousemove', onHandleMove);
-		document.body.addEventListener('mouseup', onHandleUp);
-		document.body.addEventListener('mouseenter', (e) => {
-			if (pressed && !e.buttons) pressed = false;
-		});
-		window.addEventListener('resize', () => { setSubPaneHeight(sub.offsetHeight); });
-		setSubPaneHeight(sub.offsetHeight);
-		return flag => {
-			if (flag !== (sub.offsetHeight > 0)) setSubPaneHeight(flag ? lastSubH : 0);
-		};
 	}
 
 	_initFieldConnection() {

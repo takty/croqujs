@@ -91,6 +91,50 @@ app.whenReady().then(async () => {
 				standalone.remove();
 			}
 			const menu = document.querySelector('.side-menu');
+			const { Splitter } = await import('./ui/splitter.js');
+			check(document.querySelectorAll('link[href$="ui/splitter.css"]').length === 1, 'Splitter loads its own stylesheet once');
+			const handle = document.querySelector('#handle');
+			handle.click();
+			check(output.offsetHeight === 100 && document.querySelector('#editor').offsetHeight + 40 + 8 + output.offsetHeight === document.body.offsetHeight, 'Splitter handle opens output and resizes the editor');
+			handle.click();
+			check(output.offsetHeight === 0, 'Splitter handle closes output');
+			const host = document.createElement('div');
+			host.style.cssText = 'position: fixed; top: 60px; left: 20px; width: 200px; height: 400px';
+			host.innerHTML = '<div></div><div></div><div style="height: 0"></div>';
+			document.body.appendChild(host);
+			const [mainPane, divider, subPane] = host.children;
+			let resizeCount = 0;
+			const split = new Splitter(host, { main: mainPane, handle: divider, sub: subPane, onResize: () => { resizeCount += 1; } });
+			const drag = mainHeight => {
+				divider.dispatchEvent(new MouseEvent('mousedown', { clientY: divider.getBoundingClientRect().top + 2 }));
+				document.dispatchEvent(new MouseEvent('mousemove', { clientY: host.getBoundingClientRect().top + mainHeight + 2, cancelable: true }));
+				document.dispatchEvent(new MouseEvent('mouseup', { cancelable: true }));
+				divider.click();
+			};
+			try {
+				drag(220);
+				check(mainPane.offsetHeight === 220 && subPane.offsetHeight === 172, 'Standalone splitter accounts for container position and suppresses click after drag');
+				split.setVisible(false);
+				split.setVisible(true);
+				check(subPane.offsetHeight === 172, 'Splitter restores the last dragged height');
+				drag(10);
+				check(mainPane.offsetHeight === 100, 'Splitter preserves the minimum main pane height');
+				drag(380);
+				check(subPane.offsetHeight === 0, 'Splitter collapses output below its minimum height');
+				host.style.height = '450px';
+				await waitFor(() => mainPane.offsetHeight === 442);
+				check(true, 'Splitter responds to container resizing');
+				split.destroy();
+				const count = resizeCount;
+				divider.dispatchEvent(new MouseEvent('mousedown'));
+				divider.click();
+				host.style.height = '500px';
+				await new Promise(resolve => setTimeout(resolve, 50));
+				check(resizeCount === count, 'Splitter destroy removes listeners and observer');
+			} finally {
+				split.destroy();
+				host.remove();
+			}
 			const toolbar = document.querySelector('.toolbar');
 			check(!!document.querySelector('link[href="study.css"]') && !document.querySelector('link[href*="study.min.css"]'), 'Study loads the plain CSS beside its HTML');
 			toolbar.style.transition = 'none';
