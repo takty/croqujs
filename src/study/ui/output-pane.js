@@ -2,7 +2,7 @@
  * Output Pane
  *
  * @author Takuto Yanagida
- * @version 2021-02-26
+ * @version 2026-11-01
  */
 
 // Load the component stylesheet before initialization completes.

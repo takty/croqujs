@@ -2,10 +2,8 @@
  * Console Message Collector (JS)
  *
  * @author Takuto Yanagida
- * @version 2021-08-14
+ * @version 2026-11-01
  */
-
-'use strict';
 
 const MAX_SIZE     = 100;
 const MSG_INTERVAL = 200;

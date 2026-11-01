@@ -24,7 +24,7 @@
 		"sweetalert2": "11.26.25"
 	},
 	"devDependencies": {
-		"electron": "^45.0.0",
+		"electron": "^45.2.1",
 		"electron-builder": "^26.18.0"
 	},
 	"packageManager": "yarn@4.18.0"

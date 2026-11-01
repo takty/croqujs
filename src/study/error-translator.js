@@ -5,7 +5,7 @@
  * @version 2021-02-25
  */
 
-class ErrorTranslator {
+export class ErrorTranslator {
 
 	constructor(lang) {
 		this._lang = lang;

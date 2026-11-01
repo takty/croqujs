@@ -2,7 +2,7 @@
  * Dialog Box
  *
  * @author Takuto Yanagida
- * @version 2020-05-23
+ * @version 2026-11-01
  */
 
 import Swal from '../lib/sweetalert2/sweetalert2.esm.min.js';
@@ -45,8 +45,8 @@ export class DialogBox {
 		this._onOpen();
 		return Swal.fire(this._makeOption(text, type, {
 			confirmButtonText: 'OK',
-			showCancelButton: true,
-			cancelButtonText: this._textCancel,
+			showCancelButton : true,
+			cancelButtonText : this._textCancel,
 		})).finally(() => {
 			this._onClose();
 		});

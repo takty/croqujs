@@ -1,36 +1,36 @@
 /**
- * SweetAlert2 (CSS)
+ * Dialog Box - SweetAlert2
  *
  * @author Takuto Yanagida
- * @version 2026-08-22
+ * @version 2026-11-01
  */
 
 .swal2-container.swal2-backdrop-show {
 	background: rgba(0, 0, 0, 0.5);
-	outline: none;
+	outline   : none;
 }
 
 .swal2-popup {
-	box-shadow: 0 0 0.25rem rgba(0, 0, 0, 0.15), 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+	box-shadow : 0 0 0.25rem rgba(0, 0, 0, 0.15), 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
 	user-select: none;
 
 	font-family: var(--dialog-box-font-family);
-	font-size: var(--dialog-box-font-size);
-	color: rgba(0, 0, 0, 0.95);
+	font-size  : var(--dialog-box-font-size);
+	color      : rgba(0, 0, 0, 0.95);
 }
 
 .swal2-icon {
 	&.swal2-info {
 		border-color: var(--dialog-box-info-border);
-		color: var(--dialog-box-info);
+		color       : var(--dialog-box-info);
 	}
 	&.swal2-error {
 		border-color: var(--dialog-box-error-border);
 	}
 	&.swal2-warning {
 		border-color: var(--dialog-box-warning-border);
-		color: var(--dialog-box-warning);
-		line-height: 1.25;
+		color       : var(--dialog-box-warning);
+		line-height : 1.25;
 	}
 	&.swal2-success {
 		border-color: var(--dialog-box-success);
@@ -38,23 +38,23 @@
 }
 
 .swal2-html-container {
-	display: flex !important;
+	display       : flex !important;
 	flex-direction: column;
     align-items: center;
 
 	padding: 1rem 2rem 0;
 
-	color: inherit;
-	font-size: inherit;
+	color      : inherit;
+	font-size  : inherit;
 	line-height: 150%;
-	text-align: left;
+	text-align : left;
 
 	h1 {
-		width: 100%;
-		margin-top: 0;
+		width        : 100%;
+		margin-top   : 0;
 		margin-bottom: 0.5rem;
 		span {
-			font-size: 14px;
+			font-size  : 14px;
 			font-weight: normal;
 		}
 	}
@@ -63,28 +63,28 @@
 	}
 	code {
 		font-family: var(--dialog-box-font-console);
-		font-size: 12px;
+		font-size  : 12px;
 		line-height: 135%;
 	}
 	ul {
-		margin-top: 0.5rem;
+		margin-top   : 0.5rem;
 		margin-bottom: 1rem;
-		max-height: 7.5rem;
-		overflow-y: auto;
-		line-height: 135%;
+		max-height   : 7.5rem;
+		overflow-y   : auto;
+		line-height  : 135%;
 	}
 }
 
 .swal2-popup {
 	.swal2-input {
 		font-family: var(--dialog-box-font-console);
-		font-size: inherit;
-		color: inherit;
+		font-size  : inherit;
+		color      : inherit;
 	}
 	.swal2-styled {
-		margin: 0.5rem 0.75rem;
-		padding: 0 1rem;
-		min-width: 8rem;
+		margin    : 0.5rem 0.75rem;
+		padding   : 0 1rem;
+		min-width : 8rem;
 		min-height: 2.5rem;
 
 		transition: 0.25s;
@@ -102,7 +102,7 @@
 		}
 		&:focus {
 			box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
-			outline: none;
+			outline   : none;
 		}
 	}
 }
@@ -114,8 +114,8 @@
 		}
 	}
 	.swal2-input {
-		width: 100%;
-		margin-left: 0;
+		width       : 100%;
+		margin-left : 0;
 		margin-right: 0;
 	}
 	.swal2-checkbox-opt {

@@ -1,5 +1,8 @@
 /**
- * Vertical Pane Splitter
+ * Splitter
+ *
+ * @author Takuto Yanagida
+ * @version 2026-11-01
  */
 
 await new Promise((resolve, reject) => {

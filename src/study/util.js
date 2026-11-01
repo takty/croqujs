@@ -2,12 +2,10 @@
  * Utilities (JS)
  *
  * @author Takuto Yanagida
- * @version 2020-11-03
+ * @version 2026-11-01
  */
 
-'use strict';
-
-async function loadJSON(fileNames) {
+export async function loadJSON(fileNames) {
 	const fs = fileNames.map((url) => {
 		return fetch(url);
 	});
@@ -18,3 +16,5 @@ async function loadJSON(fileNames) {
 	}
 	return ret;
 }
+
+export const minmax = (val, min, max) => Math.min(max, Math.max(min, val));

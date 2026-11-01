@@ -2,7 +2,7 @@
  * Toolbar
  *
  * @author Takuto Yanagida
- * @version 2021-09-07
+ * @version 2026-11-01
  */
 
 // Load the component stylesheet once, before initialization completes.

@@ -2,12 +2,10 @@
  * Config
  *
  * @author Takuto Yanagida
- * @version 2020-04-30
+ * @version 2026-11-01
  */
 
-'use strict';
-
-class Config {
+export class Config {
 
 	constructor(defaultConf = {}, key = '$config') {
 		this._lsKey       = key;

@@ -2,12 +2,15 @@
  * Study (JS)
  *
  * @author Takuto Yanagida
- * @version 2026-08-22
+ * @version 2026-11-01
  */
 
-'use strict';
+import { loadJSON, minmax } from './util.js';
+import { Config } from './config.js';
+import { ErrorTranslator } from './error-translator.js';
+import { WinState } from './winstate.js';
 
-class Study {
+export class Study {
 
 	constructor() {
 		this._id = window.location.hash;
@@ -406,8 +409,6 @@ class Study {
 	executeCommand(cmd, close = true) {
 		if (close) this._sideMenu.close();
 		this._editor.setLineSelectionMode(false);
-
-		const minmax = (val, min, max) => Math.min(max, Math.max(min, val));
 
 		setTimeout(() => {
 			const cfg = this._config;

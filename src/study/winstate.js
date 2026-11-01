@@ -2,15 +2,13 @@
  * WinState (JS)
  *
  * @author Takuto Yanagida
- * @version 2020-09-28
+ * @version 2026-11-01
  */
-
-'use strict';
 
 const WINSTATE_MIN_WIDTH  = 400;
 const WINSTATE_MIN_HEIGHT = 300;
 
-class WinState {
+export class WinState {
 
 	constructor(win, key = 'winState', suppressRestore = false, config = win.localStorage) {
 		this._state  = {};

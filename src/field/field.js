@@ -1,11 +1,11 @@
 /**
- * Field (JS)
+ * Field
  *
  * @author Takuto Yanagida
- * @version 2021-08-13
+ * @version 2026-11-01
  */
 
-'use strict';
+import { WinState } from '../study/winstate.js';
 
 window.addEventListener('DOMContentLoaded', () => { new Field(); });
 
