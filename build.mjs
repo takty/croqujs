@@ -141,6 +141,7 @@ async function removeLegacyEditorFiles() {
 	// Remove obsolete build output, including Acorn files replaced by copyLibraries.
 	const studyDir = path.resolve(APP_DIR, 'study');
 	const paths = [
+		'output-pane.js', 'console.js',
 		'dialog-box.js', 'lib/sweetalert2/sweetalert2.min.js',
 		'side-menu.js', 'side-menu.css',
 		'toolbar.js',

@@ -5,28 +5,50 @@
  * @version 2021-02-26
  */
 
-'use strict';
+// Load the component stylesheet before initialization completes.
+await new Promise((resolve, reject) => {
+	const link = document.createElement('link');
+	link.rel = 'stylesheet';
+	link.href = new URL('./output-pane.css', import.meta.url).href;
+	link.onload = resolve;
+	link.onerror = () => reject(new Error('Failed to load output stylesheet: ' + link.href));
+	document.head.appendChild(link);
+});
 
 const MAX_SIZE = 100;
 const DELAY    = 100;
 
-class OutputPane {
+export class OutputPane {
 
-	constructor(res) {
-		const ELM_ID = 'output-pane';
+	constructor(elm, res, { onVisibilityChange = () => {} } = {}) {
+		this._onVisibilityChange = onVisibilityChange;
 		this._res = res;
 
-		this._elm = document.getElementById(ELM_ID);
+		this._elm = elm;
+		this._elm.classList.add('output-pane');
+		this._elm.replaceChildren(document.createElement('div'));
 		this._msgsCache = [];
 		this._stOutput = null;
 		this._stEnabled = null;
+		this._stScroll = null;
 
 		this._errorCount = 0;
 		this._clickEvents = [];
 
-		const con = new Worker('console.js');
+		const con = new Worker(new URL('./output-pane-worker.js', import.meta.url));
+		this._worker = con;
 		con.addEventListener('message', (e) => { this._addMessages(e.data); }, false);
 		this._console = (type, msgs = false) => { con.postMessage(JSON.stringify({ type, msgs })); };
+	}
+
+	destroy() {
+		this._worker.terminate();
+		clearTimeout(this._stOutput);
+		clearTimeout(this._stEnabled);
+		clearTimeout(this._stScroll);
+		this._msgsCache = [];
+		this._clickEvents = [];
+		this._elm.replaceChildren();
 	}
 
 	initialize() {
@@ -87,7 +109,7 @@ class OutputPane {
 				this._stOutput = setTimeout(fn, DELAY);
 			}
 		};
-		if (!this._stOutput) setTimeout(fn, DELAY);
+		if (!this._stOutput) this._stOutput = setTimeout(fn, DELAY);
 	}
 
 	_compactMessages(msgs, cache) {
@@ -114,12 +136,12 @@ class OutputPane {
 
 	_setEnabled(flag) {
 		if ((flag && this._elm.offsetHeight === 0) || (!flag && this._elm.offsetHeight > 0)) {
-			const ev = document.createEvent('HTMLEvents');
-			ev.initEvent('click', true, false);
-			const r = document.querySelector('#handle');
-			r.dispatchEvent(ev);
+			this._onVisibilityChange(flag);
 		}
-		if (flag) setTimeout(() => { this._elm.scrollTop = this._elm.scrollHeight }, DELAY);
+		if (flag) {
+			clearTimeout(this._stScroll);
+			this._stScroll = setTimeout(() => { this._elm.scrollTop = this._elm.scrollHeight }, DELAY);
+		}
 	}
 
 	_outputs(msgs) {

@@ -35,7 +35,7 @@ class Study {
 
 		this._initFileDrop();
 		this.ready = this._initialize();
-		window.addEventListener('unload', () => { this._editor?.destroy(); }, { once: true });
+		window.addEventListener('unload', () => { this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
 	}
 
 
@@ -69,10 +69,11 @@ class Study {
 
 
 	async _initialize() {
-		const [{ SideMenu }, { Toolbar }, { DialogBox }] = await Promise.all([
+		const [{ SideMenu }, { Toolbar }, { DialogBox }, { OutputPane }] = await Promise.all([
 			import('./ui/side-menu.js'),
 			import('./ui/toolbar.js'),
 			import('./ui/dialog-box.js'),
+			import('./ui/output-pane.js'),
 		]);
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
@@ -105,7 +106,9 @@ class Study {
 				this._editor.focus();
 			},
 		});
-		this._outputPane = new OutputPane(this._res);
+		this._outputPane = new OutputPane(document.querySelector('#output-pane'), this._res, {
+			onVisibilityChange: flag => this._setOutputPaneVisible(flag),
+		});
 
 		this._filePath    = null;
 		this._name        = null;
@@ -115,7 +118,7 @@ class Study {
 		this._isModified  = false;
 		this._errorMarker = null;
 
-		this._initWindowResizing(this._editor);
+		this._setOutputPaneVisible = this._initWindowResizing(this._editor);
 		this._initFieldConnection();
 
 		document.addEventListener('focus', (e) => {
@@ -217,6 +220,9 @@ class Study {
 		});
 		window.addEventListener('resize', () => { setSubPaneHeight(sub.offsetHeight); });
 		setSubPaneHeight(sub.offsetHeight);
+		return flag => {
+			if (flag !== (sub.offsetHeight > 0)) setSubPaneHeight(flag ? lastSubH : 0);
+		};
 	}
 
 	_initFieldConnection() {

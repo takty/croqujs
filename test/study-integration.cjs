@@ -50,6 +50,46 @@ app.whenReady().then(async () => {
 			await window.study.ready;
 			const s = window.study;
 			const e = s._editor;
+			const { OutputPane } = await import('./ui/output-pane.js');
+			check(!window.OutputPane && !document.querySelector('script[src$="output-pane.js"]') && document.querySelectorAll('link[href$="ui/output-pane.css"]').length === 1, 'Output pane loads as a module with one stylesheet');
+			const output = document.querySelector('#output-pane');
+			s._outputPane.addError('Output error', 'err');
+			check(output.offsetHeight > 0, 'Output error opens the pane through the host callback');
+			s._outputPane.toggle();
+			check(output.offsetHeight === 0, 'Output pane toggle closes the host layout');
+			s._outputPane.toggle();
+			check(output.offsetHeight > 0, 'Output pane toggle restores the host layout');
+			s._outputPane.initialize();
+			check(output.offsetHeight === 0 && s._outputPane.getErrorCount() === 0, 'Output initialization clears errors and closes the pane');
+			const standalone = document.createElement('div');
+			standalone.style.height = '0px';
+			document.body.appendChild(standalone);
+			const pane = new OutputPane(standalone, { typeLabels: [{ type: 'number', label: 'Number' }] }, {
+				onVisibilityChange: visible => { standalone.style.height = visible ? '120px' : '0px'; },
+			});
+			const waitFor = async predicate => {
+				const deadline = Date.now() + 3000;
+				while (!predicate()) {
+					if (Date.now() > deadline) throw new Error('Output pane did not update');
+					await new Promise(resolve => setTimeout(resolve, 20));
+				}
+			};
+			try {
+				let clicked = 0;
+				pane.addError('Clickable error', 'err', () => { clicked += 1; });
+				const msg = '<span class="type-number">42</span>';
+				pane.addOutput([{ type: 'std', msg, count: 1 }, { type: 'std', msg, count: 1 }]);
+				await waitFor(() => standalone.querySelector('.count'));
+				check(standalone.querySelector('.count').textContent === '2' && standalone.querySelector('.type-number').title === 'Number', 'Standalone worker combines repeated output and assigns type labels');
+				standalone.querySelector('.err').click();
+				check(clicked === 1 && output.offsetHeight === 0, 'Standalone output preserves error callbacks without operating the Study handle');
+				pane.addOutput(Array.from({ length: 105 }, (_, i) => ({ type: 'std', msg: String(i), count: 1 })));
+				await waitFor(() => standalone.firstChild.lastChild?.textContent === '104');
+				check(standalone.firstChild.children.length === 100 && standalone.firstChild.firstChild.textContent === '5', 'Output retains the latest 100 lines');
+			} finally {
+				pane.destroy();
+				standalone.remove();
+			}
 			const menu = document.querySelector('.side-menu');
 			const toolbar = document.querySelector('.toolbar');
 			check(!window.SideMenu && !window.Toolbar && !document.querySelector('script[src$="side-menu.js"], script[src$="toolbar.js"]'), 'Menu and toolbar are loaded as modules');

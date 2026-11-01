@@ -5,7 +5,6 @@
  * @version 2026-08-22
  */
 
-@use 'sass:math';
 @use 'variables' as *;
 
 // Host settings for the standalone ui/dialog-box.css.
@@ -92,79 +91,15 @@ html, body {
 	height: 100%;
 }
 
-// Output Pane -----------------------------------------------------------------
-
+// Host layout and settings for ui/output-pane.css.
 .sub {
-	overflow-y: scroll;
 	height: 0;
-	font-family: $font-console;
-
-	> div > div {  /* Output Pane -> inner -> items */
-		margin: 4px;
-		word-wrap: break-word;
-		line-height: 1.35;
-	}
-
-	div.std {
-		color: $color-text;
-		[class ^= 'type'] {
-			border-radius: 0.25em;
-			margin: 0 1px;
-			padding: 1px;
-
-			background-color: rgba($color-text, 0.05);
-			&:hover { background-color: rgba($color-text, 0.1); }
-		}
-		.type-function,
-		.type-set,
-		.type-weakset,
-		.type-map,
-		.type-weakmap,
-		.type-object,
-		[class ^= 'type-array'] {
-			display: inline-block;
-			vertical-align: top;
-
-			background-color: transparent;
-			border: 1px solid rgba($color-text, 0.1);
-			&:hover {
-				background-color: transparent;
-				border-color: rgba($color-text, 0.5);
-			}
-		}
-	}
-
-	div.err {
-		color: $L-Red;
-
-		span {
-			display: inline-block;
-
-			margin-right: 0.5rem;
-			padding: math.div(1rem - 0.85rem, 2) 0.25rem;
-
-			border-radius: 0.25rem;
-			background-color: $L-Red;
-			color: #fff;
-			font-size: 0.85rem;
-		}
-		div {
-			color: $L-Gray;
-			font-size: 0.8em;
-			margin-top: 0;
-		}
-	}
-
-	div.std,
-	div.err {
-		.count {
-			background-color: $L-PaleGreen;
-			border-radius: 2px;
-			color: #fff;
-			margin-right: 4px;
-			font-size: 0.8em;
-			padding: 2px 3px;
-		}
-	}
-
+	--output-pane-font-family: #{$font-console};
+	--output-pane-color: #{$color-text};
+	--output-pane-type-background: #{rgba($color-text, 0.05)};
+	--output-pane-type-border: #{rgba($color-text, 0.1)};
+	--output-pane-type-hover: #{rgba($color-text, 0.5)};
+	--output-pane-error: #{$L-Red};
+	--output-pane-muted: #{$L-Gray};
+	--output-pane-count: #{$L-PaleGreen};
 }
