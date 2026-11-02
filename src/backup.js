@@ -6,7 +6,7 @@
  */
 
 import * as FS from './fs-node.js';
-import * as CRYPTO from 'node:crypto';
+import jsSHA from './lib/jssha/sha256.mjs';
 
 export class Backup {
 
@@ -89,9 +89,9 @@ export class Backup {
 	}
 
 	_getDigest(text) {
-		const hash = CRYPTO.createHash('sha256');
-		hash.update(text);
-		return hash.digest('hex');
+		const hash = new jsSHA('SHA-256', 'UINT8ARRAY');
+		hash.update(new TextEncoder().encode(text));
+		return hash.getHash('HEX');
 	}
 
 	_createTimeStampStr() {

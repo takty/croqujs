@@ -74,8 +74,10 @@ async function copyLibraries() {
 	await Promise.all([
 		copyPackageFiles('acorn', 'dist', 'lib/acorn', (_srcPath, relPath) => relPath === 'acorn.mjs'),
 		copyPackageFiles('acorn-walk', 'dist', 'lib/acorn', (_srcPath, relPath) => relPath === 'walk.mjs'),
+		copyPackageFiles('jssha', 'dist', 'lib/jssha', (_srcPath, relPath) => relPath === 'sha256.mjs'),
 		copyPackageFiles('sweetalert2', 'dist', 'lib/sweetalert2', (_srcPath, relPath) => ['sweetalert2.esm.min.js', 'sweetalert2.min.css'].includes(relPath)),
 	]);
+	await copyFile(path.join(resolvePackageDir('jssha'), 'LICENSE'), path.join(APP_DIR, 'lib/jssha/LICENSE'));
 }
 
 async function copyCroqMirror() {

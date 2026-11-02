@@ -4,7 +4,15 @@ import * as fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import * as files from '../src/fs-node.js';
-import { Backup } from '../src/backup.js';
+import { Backup } from '../app/backup.js';
+import { createHash } from 'node:crypto';
+
+test('backup digest matches synchronous UTF-8 SHA-256', () => {
+	const backup = new Backup();
+	for (const text of ['', 'abc', '日本語', '😀', 'a\r\nb', '\ud800']) {
+		assert.equal(backup._getDigest(text), createHash('sha256').update(text).digest('hex'));
+	}
+});
 
 test('file adapter preserves UTF-8 text, creates copy parents and removes a tree', async () => {
 	const root = fs.mkdtempSync(path.join(os.tmpdir(), 'croqujs-files-'));

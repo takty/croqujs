@@ -21,6 +21,7 @@
 		"acorn": "8.19.0",
 		"acorn-walk": "8.3.5",
 		"croq-mirror": "github:takty/croq-mirror#main",
+		"jssha": "^3.3.2",
 		"sweetalert2": "11.26.25"
 	},
 	"devDependencies": {
