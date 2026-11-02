@@ -5,11 +5,14 @@ import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 import builder from 'electron-builder';
+import { Lsc } from './src/lib/lsc.js';
+import { installInjection } from './src/lib/injection.js';
 
 import {
 	copyFilesFiltered,
 	processFiles,
 	resolvePackageDir,
+	writeFileIfChanged,
 	walk,
 } from './tasks.mjs';
 
@@ -56,13 +59,15 @@ async function getVersionInfo() {
 async function copyMain() {
 	await Promise.all([
 		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => {
-			return !VERSION_PATHS.includes(relPath);
+			return !VERSION_PATHS.includes(relPath) && relPath !== path.join('lib', 'injection.js');
 		}),
 		copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
 			const name = path.basename(relPath);
 			return path.dirname(relPath) === '.' && (name.startsWith('icon.') || name === 'icon-mac.png');
 		}),
 	]);
+	// A classic script must install the console and error hooks before user code runs.
+	await writeFileIfChanged(path.join(APP_DIR, 'lib/injection.js'), `(${installInjection})(${Lsc});\n`);
 }
 
 async function copyPackageFiles(name, srcDir, dstDir, filter = () => true) {

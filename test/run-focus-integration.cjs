@@ -26,12 +26,15 @@ app.whenReady().then(async () => {
 		const { Twin } = await import('../app/twin.js');
 		await writeFile(html, (await readFile(path.join(root, 'app/study/study.html'), 'utf8')).replace('new Study();', 'window.study = new Study();'), { flag: 'wx' });
 		created.push(html);
-		await writeFile(program, '<!doctype html><body><script>document.body.dataset.ran = location.hash.slice(1);</script></body>', { flag: 'wx' });
+		const programHTML = '<!doctype html><body><script src="../lib/injection.js"></script><script>'
+			+ 'document.body.dataset.ran = location.hash.split(",")[2]; console.log("LSC run " + document.body.dataset.ran);'
+			+ '</script></body>';
+		await writeFile(program, programHTML, { flag: 'wx' });
 		created.push(program);
 		twin = Object.create(Twin.prototype);
 		Object.assign(twin, {
 			_id: 'focus-test', _fieldWin: null, _isModified: false,
-			_execute: () => ['open', pathToFileURL(program).href + '#' + (++runs)],
+			_execute: () => ['open', pathToFileURL(program).href + '#focus-test,0,' + (++runs)],
 			_createFieldWindow() {
 				const ready = Twin.prototype._createFieldWindow.call(this);
 				this._fieldWin.on('focus', () => { fieldFocus++; });
@@ -65,6 +68,7 @@ app.whenReady().then(async () => {
 				study.webContents.sendInputEvent({ type: 'mouseUp', button: 'left', clickCount: 1, ...point });
 			}
 			await until(async () => runs === expected && twin._fieldWin?.isVisible() && await twin._fieldWin.webContents.executeJavaScript(`document.querySelector('iframe')?.contentDocument?.body?.dataset.ran === '${expected}'`), 'Program did not load: ' + state);
+			await until(() => study.webContents.executeJavaScript(`document.querySelector('#output-pane').textContent.includes('LSC run ${expected}')`), 'First console output did not reach Study: ' + state);
 			await delay(150);
 			if (!study.isFocused() || fieldFocus || !await study.webContents.executeJavaScript('window.study._editor.hasFocus()')) throw new Error('Execution stole editor focus: ' + state);
 			console.log('PASS: ' + state + ' execution window, ' + action + ', editor focus retained after program load');

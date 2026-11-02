@@ -8,6 +8,7 @@
 import { loadJSON, minmax } from './util.js';
 import { Config } from './config.js';
 import { ErrorTranslator } from './error-translator.js';
+import { Lsc } from '../lib/lsc.js';
 import { WinState } from '../lib/winstate.js';
 
 export class Study {
@@ -15,6 +16,7 @@ export class Study {
 	constructor() {
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
+		this._lsc = new Lsc('#study_' + this._id);
 
 		this._winstate = new WinState(window, '$winstate_study');
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, autoIndent: true, language: 'ja' });
@@ -38,7 +40,7 @@ export class Study {
 
 		this._initFileDrop();
 		this.ready = this._initialize();
-		window.addEventListener('unload', () => { this._splitter?.destroy(); this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
+		window.addEventListener('unload', () => { this._lsc.dispose(); this._splitter?.destroy(); this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
 	}
 
 
@@ -175,13 +177,7 @@ export class Study {
 	}
 
 	_initFieldConnection() {
-		const msg_id = '#study_' + this._id;
-		window.addEventListener('storage', () => {
-			const v = window.localStorage.getItem(msg_id);
-			if (!v) return;
-			window.localStorage.removeItem(msg_id);
-			const ma = JSON.parse(v);
-
+		this._lsc.listen(ma => {
 			if (ma.message === 'error') {
 				this._notifyServer('onStudyErrorOccurred', ma.params);
 				this._addErrorMessage(ma.params);
@@ -222,7 +218,7 @@ export class Study {
 					break;
 			}
 		}
-		window.localStorage.setItem('#injection_' + this._id, JSON.stringify({ message: 'permission', params: { type: type, result: this._permissions[type] } }));
+		this._lsc.send('#injection_' + this._id, { message: 'permission', params: { type: type, result: this._permissions[type] } });
 	}
 
 	// -------------------------------------------------------------------------
@@ -236,7 +232,7 @@ export class Study {
 	}
 
 	_callField(method, ...args) {
-		window.localStorage.setItem('#field_' + this._id, JSON.stringify({ message: 'callFieldMethod', params: { method: method, args: args } }));
+		this._lsc.send('#field_' + this._id, { message: 'callFieldMethod', params: { method: method, args: args } });
 	}
 
 	// -------------------------------------------------------------------------

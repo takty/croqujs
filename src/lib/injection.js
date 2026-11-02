@@ -5,21 +5,16 @@
  * @version 2026-11-01
  */
 
-(function () {
+export function installInjection(Lsc) {
 	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
 
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
-	const MSG_ID = '#injection_' + ID;
+	const lsc = new Lsc('#injection_' + ID);
 	const URL = window.location.href.replace(window.location.hash, '');
 
 	const afterPermitted = {};
 
-	window.addEventListener('storage', () => {
-		const v = window.localStorage.getItem(MSG_ID);
-		if (!v) return;
-		window.localStorage.removeItem(MSG_ID);
-		const ma = JSON.parse(v);
-
+	lsc.listen(ma => {
 		if (ma.message === 'window-fullscreen-entered') {
 			document.body.style.overflow = 'hidden';
 			document.body.scrollTop = 0;
@@ -41,12 +36,12 @@
 		const base = URL.replace('index.html', '');
 		info.fileName = info.url ? info.url.replace(base, '') : '';
 
-		window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'error', params: info }));
+		lsc.send('#study_' + ID, { message: 'error', params: info });
 	});
 
 	window.addEventListener('unhandledrejection', (e) => {
 		const info = { msg: 'DOMException: ' + e.reason.message, isPromise: true, isUserCode: false };
-		window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'error', params: info }));
+		lsc.send('#study_' + ID, { message: 'error', params: info });
 	});
 
 	// -------------------------------------------------------------------------
@@ -64,7 +59,7 @@
 			const sub = outputCache.slice(Math.max(0, outputCache.length - MAX_SENT_OUTPUT_COUNT));
 			outputCache.length = 0;  // Clear old outputs after sending the newest MAX_SENT_OUTPUT_COUNT lines.
 			sendOutputTimeout = null;
-			window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'output', params: sub }));
+			lsc.send('#study_' + ID, { message: 'output', params: sub });
 			lastTime = window.performance.now();
 		};
 
@@ -172,7 +167,7 @@
 	function createPseudoGetCurrentPosition() {
 		return function (success, error) {
 			afterPermitted['geolocation'] = (result) => { if (result) actualGetCurrentPosition(success, error); };
-			window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'requestPermission', params: 'geolocation' }));
+			lsc.send('#study_' + ID, { message: 'requestPermission', params: 'geolocation' });
 		}
 	}
 
@@ -221,7 +216,7 @@
 					else reject(new DOMException('NotAllowedError'));
 				};
 			});
-			window.localStorage.setItem('#study_' + ID, JSON.stringify({ message: 'requestPermission', params: ps }));
+			lsc.send('#study_' + ID, { message: 'requestPermission', params: ps });
 			return p.then(() => { return origFn(constraints); });
 		}
 	}
@@ -230,4 +225,4 @@
 		navigator.mediaDevices.getUserMedia = createGetUserMediaWrapper(navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices));
 	}
 
-})();
+}
