@@ -1,6 +1,6 @@
 {
 	"passed": true,
-	"electron": "45.0.0",
+	"electron": "45.2.1",
 	"checks": [
 		"Output pane loads as a module with one stylesheet",
 		"Output error opens the pane through the host callback",

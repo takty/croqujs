@@ -10,7 +10,7 @@ app.setPath('userData', path.join(__dirname, '.profiles/run-focus'));
 app.commandLine.appendSwitch('disable-gpu');
 const created = [];
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-let study, twin;
+let study, server;
 let runs = 0, fieldFocus = 0;
 
 async function until(predicate, message) {
@@ -23,7 +23,7 @@ async function until(predicate, message) {
 
 app.whenReady().then(async () => {
 	try {
-		const { Twin } = await import('../app/twin.js');
+		const { SessionServer } = await import('../app/session-server.js');
 		await writeFile(html, (await readFile(path.join(root, 'app/study/study.html'), 'utf8')).replace('new Study();', 'window.study = new Study();'), { flag: 'wx' });
 		created.push(html);
 		const programHTML = '<!doctype html><body><script src="../lib/injection.js"></script><script>'
@@ -31,12 +31,12 @@ app.whenReady().then(async () => {
 			+ '</script></body>';
 		await writeFile(program, programHTML, { flag: 'wx' });
 		created.push(program);
-		twin = Object.create(Twin.prototype);
-		Object.assign(twin, {
+		server = Object.create(SessionServer.prototype);
+		Object.assign(server, {
 			_id: 'focus-test', _fieldWin: null, _isModified: false,
 			_execute: () => ['open', pathToFileURL(program).href + '#focus-test,0,' + (++runs)],
 			_createFieldWindow() {
-				const ready = Twin.prototype._createFieldWindow.call(this);
+				const ready = SessionServer.prototype._createFieldWindow.call(this);
 				this._fieldWin.on('focus', () => { fieldFocus++; });
 				return ready;
 			},
@@ -44,17 +44,17 @@ app.whenReady().then(async () => {
 		ipcMain.on('notifyServer_focus-test', () => {});
 		ipcMain.handle('callServer_focus-test', (_event, method, ...args) => {
 			if (method === 'doReady') return ['init', [null, 'focus-test', null, null, false, [], 'console.log("focus test");']];
-			if (method === 'doRun') return twin.doRun(...args);
+			if (method === 'doRun') return server.doRun(...args);
 			return ['nop'];
 		});
 		study = new BrowserWindow({ show: false, width: 1000, height: 750, webPreferences: { contextIsolation: true, nodeIntegration: false, preload: path.join(root, 'app/preload.js') } });
-		twin._studyWin = study;
+		server._studyWin = study;
 		await study.loadFile(html, { hash: 'focus-test' });
 		await study.webContents.executeJavaScript('window.study.ready');
 		study.show();
 		for (const [state, action] of [['new', 'keyboard'], ['visible', 'button'], ['hidden', 'keyboard'], ['closed', 'button']]) {
-			if (state === 'hidden') twin._fieldWin.hide();
-			if (state === 'closed') twin._fieldWin.destroy();
+			if (state === 'hidden') server._fieldWin.hide();
+			if (state === 'closed') server._fieldWin.destroy();
 			study.focus();
 			await study.webContents.executeJavaScript('window.study._editor.focus()');
 			await until(() => study.isFocused(), 'Test editor window did not gain focus');
@@ -67,7 +67,7 @@ app.whenReady().then(async () => {
 				study.webContents.sendInputEvent({ type: 'mouseDown', button: 'left', clickCount: 1, ...point });
 				study.webContents.sendInputEvent({ type: 'mouseUp', button: 'left', clickCount: 1, ...point });
 			}
-			await until(async () => runs === expected && twin._fieldWin?.isVisible() && await twin._fieldWin.webContents.executeJavaScript(`document.querySelector('iframe')?.contentDocument?.body?.dataset.ran === '${expected}'`), 'Program did not load: ' + state);
+			await until(async () => runs === expected && server._fieldWin?.isVisible() && await server._fieldWin.webContents.executeJavaScript(`document.querySelector('iframe')?.contentDocument?.body?.dataset.ran === '${expected}'`), 'Program did not load: ' + state);
 			await until(() => study.webContents.executeJavaScript(`document.querySelector('#output-pane').textContent.includes('LSC run ${expected}')`), 'First console output did not reach Study: ' + state);
 			await delay(150);
 			if (!study.isFocused() || fieldFocus || !await study.webContents.executeJavaScript('window.study._editor.hasFocus()')) throw new Error('Execution stole editor focus: ' + state);
@@ -77,7 +77,7 @@ app.whenReady().then(async () => {
 		console.error(error.stack);
 		process.exitCode = 1;
 	} finally {
-		twin?._fieldWin?.destroy();
+		server?._fieldWin?.destroy();
 		study?.destroy();
 		for (const file of created) await unlink(file);
 		app.exit(process.exitCode || 0);

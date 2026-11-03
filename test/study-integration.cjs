@@ -17,7 +17,7 @@ let created = false;
 
 app.whenReady().then(async () => {
 	try {
-		const { allowPaste } = await import('../app/twin.js');
+		const { allowPaste } = await import('../app/session-server.js');
 		const html = await readFile(path.join(ROOT, 'app/study/study.html'), 'utf8');
 		await writeFile(HTML, html.replace('new Study();', 'window.study = new Study();'), { flag: 'wx' });
 		created = true;

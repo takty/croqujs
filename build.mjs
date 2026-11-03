@@ -127,12 +127,14 @@ async function build() {
 
 async function removeLegacyEditorFiles() {
 	const appDir = path.resolve(APP_DIR);
+	await rm(path.join(appDir, 'twin.js'), { force: true });
 	const oldEditorDir = path.resolve(appDir, 'croq-mirror');
 	if (!oldEditorDir.startsWith(appDir + path.sep)) throw new Error('Invalid legacy editor path');
 	await rm(oldEditorDir, { recursive: true, force: true });
 	// Remove obsolete build output, including Acorn files replaced by copyLibraries.
 	const studyDir = path.resolve(APP_DIR, 'study');
 	const paths = [
+		'server-proxy-ipc.js', 'server-proxy-local.js',
 		'css/study.min.css', 'css/study.min.css.map',
 		'output-pane.js', 'console.js',
 		'dialog-box.js', 'lib/sweetalert2',

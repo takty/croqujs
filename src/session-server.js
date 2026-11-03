@@ -1,5 +1,5 @@
 /**
- * Twin (JS)
+ * SessionServer (JS)
  *
  * @author Takuto Yanagida
  * @version 2026-11-01
@@ -18,7 +18,7 @@ const FILE_FILTERS = [
 	{ name: 'All Files', extensions: ['*'] }
 ];
 
-export class Twin {
+export class SessionServer {
 
 	constructor(id, path) {
 		this._id       = id;

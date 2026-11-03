@@ -1,11 +1,11 @@
 import { app } from 'electron';
 import { fileURLToPath } from 'node:url';
 import '../app/main.js';
-import { Twin } from '../app/twin.js';
+import { SessionServer } from '../app/session-server.js';
 
 let initialized = false;
-const doReady = Twin.prototype.doReady;
-Twin.prototype.doReady = async function (...args) {
+const doReady = SessionServer.prototype.doReady;
+SessionServer.prototype.doReady = async function (...args) {
 	const result = await doReady.apply(this, args);
 	initialized = result[0] === 'init';
 	return result;

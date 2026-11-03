@@ -8,7 +8,7 @@
 import { app } from 'electron';
 import * as FS from './fs-node.js';
 import PROC from 'node:process';
-import { Twin } from './twin.js';
+import { SessionServer } from './session-server.js';
 
 class Main {
 
@@ -61,7 +61,7 @@ class Main {
 
 	_createWindow(path = null) {
 		this._gId += 1;
-		const g = new Twin(this._gId, path);
+		const g = new SessionServer(this._gId, path);
 		g._studyWin.on('closed', () => { this._gs.splice(this._gs.indexOf(g), 1); });
 		this._gs.push(g);
 	}

@@ -5,7 +5,7 @@ const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
 async function checkPermissions() {
-	const { allowPaste } = await import('../app/twin.js');
+	const { allowPaste } = await import('../app/session-server.js');
 	let check, request;
 	const session = {
 		setPermissionCheckHandler: handler => { check = handler; },
