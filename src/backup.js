@@ -1,8 +1,8 @@
 /**
- * Backup (JS)
+ * Backup
  *
  * @author Takuto Yanagida
- * @version 2020-04-30
+ * @version 2026-11-03
  */
 
 import * as FS from './fs-node.js';
@@ -104,8 +104,8 @@ export class Backup {
 		const name = FS.baseName(fp, FS.extension(fp));
 		const dir = FS.joinPath(FS.dirName(fp), '.' + name + '.backup');
 		try {
-			FS.createDirectory(dir);  // if the dir exists, an exception is thrown.
-			FS.hideDirectory(dir);
+			FS.createDir(dir);  // if the dir exists, an exception is thrown.
+			FS.hideDir(dir);
 		} catch (e) {
 			return dir;
 		}

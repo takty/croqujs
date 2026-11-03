@@ -1,16 +1,17 @@
 /**
- * SessionServer (JS)
+ * Session Server
  *
  * @author Takuto Yanagida
- * @version 2026-11-01
+ * @version 2026-11-03
  */
 
 import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
 import * as FS from './fs-node.js';
 import { Backup } from './backup.js';
 import { Exporter } from './exporter.js';
+import { UrlProvider, LibraryError } from './url-provider.js';
 
-const __dirname = FS.moduleDirectory(import.meta.url);
+const __dirname = FS.moduleDir(import.meta.url);
 
 const DEFAULT_EXT = '.js';
 const FILE_FILTERS = [
@@ -20,7 +21,7 @@ const FILE_FILTERS = [
 
 export class SessionServer {
 
-	constructor(id, path) {
+	constructor(id, path, urlProvider) {
 		this._id       = id;
 		this._studyWin = null;
 		this._fieldWin = null;
@@ -31,10 +32,10 @@ export class SessionServer {
 		this._isReadOnly = false;
 		this._isModified = false;
 
-		this._backup    = new Backup();
-		this._exporter  = new Exporter();
-		this._tempDirs  = [];
-		this._codeCache = '';
+		this._backup      = new Backup();
+		this._exporter    = new Exporter();
+		this._urlProvider = urlProvider ?? new UrlProvider(id, this._exporter);
+		this._codeCache   = '';
 
 		ipcMain.on('notifyServer_' + this._id, (ev, msg, ...args) => { this[msg](...args); });
 		ipcMain.handle('callServer_' + this._id, (ev, msg, ...args) => {
@@ -176,10 +177,10 @@ export class SessionServer {
 
 	doFileDropped(path) {
 		try {
-			const isDir = FS.isDirectory(path);
+			const isDir = FS.isDir(path);
 			if (!isDir) return this._openFile(path);
 
-			const fns = FS.listDirectory(path);
+			const fns = FS.listDir(path);
 			const fps = fns.map(e => FS.joinPath(path, e)).filter((fp) => {
 				try {
 					return FS.isFile(fp) && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
@@ -276,7 +277,7 @@ export class SessionServer {
 		this._studyWin = null;
 		if (this._fieldWin) this._fieldWin.close();
 
-		this._clearTempPath();
+		this._urlProvider.dispose();
 	}
 
 	doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
@@ -297,7 +298,7 @@ export class SessionServer {
 		const expDir = this._makeExportPath(this._filePath);
 		try {
 			FS.removeDirectoryTree(expDir);
-			FS.createDirectory(expDir);
+			FS.createDir(expDir);
 
 			this._exporter.exportAsWebPage(text, this._filePath, expDir);
 			return ['success_export', 'exportedAsWebPage'];
@@ -324,7 +325,7 @@ export class SessionServer {
 		while (!this._fieldWin.isVisible()) {
 			await new Promise(resolve => setTimeout(resolve, 200));
 		}
-		return this._execute(text);
+		return this._getRunResponse(text);
 	}
 
 	async doRunWithoutWindow(text) {
@@ -336,26 +337,16 @@ export class SessionServer {
 		} else {
 			this._fieldWin.hide();
 		}
-		return this._execute(text);
+		return this._getRunResponse(text);
 	}
 
-	_execute(codeStr) {
-		const ret = this._exporter.checkLibraryReadable(codeStr, this._filePath ?? this._tempFilePath);
-		if (ret !== true) return this._returnExecutionError(ret);
-
-		this._clearTempPath();
-		const expDir = this._getTempPath();
+	async _getRunResponse(text) {
 		try {
-			FS.removeDirectoryTree(expDir);
-			FS.createDirectory(expDir);
-			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, this._filePath ?? this._tempFilePath, expDir, true);
-			if (!success) return this._returnExecutionError(expPath);
-
-			const baseUrl = FS.executionFileURL(expPath);
-			const url = baseUrl + '#' + this._id + ',' + this._exporter._userCodeOffset;
+			const url = await this._urlProvider.createUrl(text, this._filePath ?? this._tempFilePath);
 			return ['open', url];
 		} catch (e) {
-			return this._returnAlertError(e, expDir);
+			if (e instanceof LibraryError) return this._returnExecutionError(e.message);
+			return this._returnAlertError(e, e.path ?? '');
 		}
 	}
 
@@ -364,19 +355,6 @@ export class SessionServer {
 	_makeExportPath(fp) {
 		const name = FS.baseName(fp, FS.extension(fp));
 		return FS.joinPath(FS.dirName(fp), name + '.export');
-	}
-
-	_getTempPath() {
-		const tmpdir = FS.temporaryDirectory();
-		const name = 'croqujs-' + Date.now();
-		const path = FS.joinPath(tmpdir, name);
-		this._tempDirs.push(path);
-		return path;
-	}
-
-	_clearTempPath() {
-		for (let td of this._tempDirs) FS.removeDirectoryTree(td);
-		this._tempDirs = [];
 	}
 
 }

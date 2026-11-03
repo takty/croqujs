@@ -1,4 +1,9 @@
 /**
+ * Local File and Path Operations
+ *
+ * @author Takuto Yanagida
+ * @version 2026-11-03
+ *
  * Node.js implementation of local file and path operations.
  * Sync operations throw the original filesystem error unless documented otherwise.
  * Text is UTF-8. Callers own naming, line endings and application state.
@@ -11,27 +16,27 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawn } from 'node:child_process';
 import process from 'node:process';
 
-export const joinPath           = (...parts) => PATH.join(...parts);
-export const baseName           = (path, suffix) => PATH.basename(path, suffix);
-export const dirName            = path => PATH.dirname(path);
-export const extension          = path => PATH.extname(path);
-export const pathSeparator      = PATH.sep;
-export const moduleDirectory    = url => PATH.dirname(fileURLToPath(url));
-export const toFileURL          = path => pathToFileURL(path).href;
-export const temporaryDirectory = () => tmpdir();
+export const joinPath      = (...parts) => PATH.join(...parts);
+export const baseName      = (path, suffix) => PATH.basename(path, suffix);
+export const dirName       = path => PATH.dirname(path);
+export const extension     = path => PATH.extname(path);
+export const pathSeparator = PATH.sep;
+export const moduleDir     = url => PATH.dirname(fileURLToPath(url));
+export const toFileURL     = path => pathToFileURL(path).href;
+export const createTempDir = prefix => FS.mkdtempSync(PATH.join(tmpdir(), prefix));
 
 // Preserve the URL spelling used by the existing program runner.
 export const executionFileURL = path => 'file:///' + path.replace(/\\/g, '/');
 
-export const exists          = path => FS.existsSync(path);
-export const isDirectory     = path => FS.statSync(path).isDirectory();
-export const isFile          = path => FS.statSync(path).isFile();
+export const exists     = path => FS.existsSync(path);
+export const isDir      = path => FS.statSync(path).isDirectory();
+export const isFile     = path => FS.statSync(path).isFile();
 // Preserve the existing owner-write-bit check, rather than changing permissions policy.
-export const isWritable      = path => (FS.statSync(path).mode & 0x0080) !== 0;
-export const listDirectory   = path => FS.readdirSync(path);
-export const createDirectory = path => FS.mkdirSync(path);
-export const readText        = path => FS.readFileSync(path, 'utf-8');
-export const writeText       = (path, text) => FS.writeFileSync(path, text);
+export const isWritable = path => (FS.statSync(path).mode & 0x0080) !== 0;
+export const listDir    = path => FS.readdirSync(path);
+export const createDir  = path => FS.mkdirSync(path);
+export const readText   = path => FS.readFileSync(path, 'utf-8');
+export const writeText  = (path, text) => FS.writeFileSync(path, text);
 
 // Preserve the open-file operation's existing undefined result on read failure.
 export function readTextAsync(path) {
@@ -54,7 +59,7 @@ export function readTextOrNull(path) {
 	}
 }
 
-export function hideDirectory(path) {
+export function hideDir(path) {
 	if (process.platform === 'win32') {
 		spawn('attrib', ['+H', path], { windowsHide: true });
 	}

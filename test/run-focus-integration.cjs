@@ -34,7 +34,7 @@ app.whenReady().then(async () => {
 		server = Object.create(SessionServer.prototype);
 		Object.assign(server, {
 			_id: 'focus-test', _fieldWin: null, _isModified: false,
-			_execute: () => ['open', pathToFileURL(program).href + '#focus-test,0,' + (++runs)],
+			_urlProvider: { createUrl: async () => pathToFileURL(program).href + '#focus-test,0,' + (++runs) },
 			_createFieldWindow() {
 				const ready = SessionServer.prototype._createFieldWindow.call(this);
 				this._fieldWin.on('focus', () => { fieldFocus++; });

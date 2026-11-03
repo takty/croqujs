@@ -2,13 +2,13 @@
  * Exporter
  *
  * @author Takuto Yanagida
- * @version 2020-11-02
+ * @version 2020-11-03
  */
 
 import * as FS from './fs-node.js';
 import { analyze } from './lib/extractor.js';
 
-const __dirname = FS.moduleDirectory(import.meta.url);
+const __dirname = FS.moduleDir(import.meta.url);
 
 const IS_MODULE = false;
 
@@ -24,6 +24,10 @@ export class Exporter {
 
 	constructor() {
 		this._userCodeOffset = 0;
+	}
+
+	userCodeOffset() {
+		return this._userCodeOffset;
 	}
 
 	checkLibraryReadable(codeStr, filePath) {
