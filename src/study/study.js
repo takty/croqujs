@@ -1,8 +1,8 @@
 /**
- * Study (JS)
+ * Study
  *
  * @author Takuto Yanagida
- * @version 2026-11-01
+ * @version 2026-11-03
  */
 
 import { loadJSON, minmax } from './util.js';
@@ -477,28 +477,28 @@ export class Study {
 	_executeCommandFile(cmd) {
 		switch (cmd) {
 			case 'new':
-				this._handleOpening(this._res.msg.confirmNew, 'doNew');
+				this._handleOpening(this._res.msg.confirmNew, () => this._callServer('doNew'));
 				return true;
 			case 'open':
-				this._handleOpening(this._res.msg.confirmOpen, 'doOpen');
+				this._handleOpening(this._res.msg.confirmOpen, () => this._callServer('doOpen'));
 				return true;
 			case 'close':
-				this._handleOpening(this._res.msg.confirmExit, 'doClose', this._editor.getValue());
+				this._handleOpening(this._res.msg.confirmExit, () => this._callServer('doClose', this._editor.getValue()));
 				return true;
 			case 'save':
-				this._handleSaving('doSave', this._res.dialogTitle.saveAs);
+				this._handleSaving(text => this._callServer('doSave', text, this._res.dialogTitle.saveAs));
 				return true;
 			case 'saveAs':
-				this._handleSaving('doSaveAs', this._res.dialogTitle.saveAs);
+				this._handleSaving(text => this._callServer('doSaveAs', text, this._res.dialogTitle.saveAs));
 				return true;
 			case 'saveCopy':
-				this._handleSaving('doSaveCopy', this._res.dialogTitle.saveCopy);
+				this._handleSaving(text => this._callServer('doSaveCopy', text, this._res.dialogTitle.saveCopy));
 				return true;
 			case 'exportAsLibrary':
 				this._onExportAsLibrary();
 				return true;
 			case 'exportAsWebPage':
-				this._handleSaving('doExportAsWebPage');
+				this._handleSaving(text => this._callServer('doExportAsWebPage', text));
 				return true;
 		}
 		return false;
@@ -508,7 +508,7 @@ export class Study {
 		e.preventDefault();
 		if (e.dataTransfer.files.length > 0) {
 			const filePath = window.ipc.getPathForFile(e.dataTransfer.files[0]);
-			this._handleOpening(this._res.msg.confirmOpen, 'doFileDropped', filePath);
+			this._handleOpening(this._res.msg.confirmOpen, () => this._callServer('doFileDropped', filePath));
 		}
 	}
 
@@ -526,17 +526,17 @@ export class Study {
 		return true;
 	}
 
-	async _handleOpening(text, method, ...args) {
+	async _handleOpening(text, open) {
 		if (this._isModified) {
 			const { value: res } = await this._dialogBox.showConfirm(text, 'warning');
 			if (!res) return;
 		}
-		const [msg, arg] = await this._callServer(method, ...args);
+		const [msg, arg] = await open();
 		this._handleServerResponse(msg, arg);
 	}
 
-	async _handleSaving(method, ...opts) {
-		const [msg, arg] = await this._callServer(method, this._editor.getValue(), ...opts);
+	async _handleSaving(save) {
+		const [msg, arg] = await save(this._editor.getValue());
 		this._handleServerResponse(msg, arg);
 	}
 
@@ -545,10 +545,10 @@ export class Study {
 	_executeCommandCode(cmd) {
 		switch (cmd) {
 			case 'run':
-				this._handleExecution('doRun');
+				this._handleExecution(text => this._callServer('doRun', text));
 				return true;
 			case 'runWithoutWindow':
-				this._handleExecution('doRunWithoutWindow');
+				this._handleExecution(text => this._callServer('doRunWithoutWindow', text));
 				return true;
 			case 'stop':
 				this._callField('closeProgram');
@@ -558,9 +558,9 @@ export class Study {
 		return false;
 	}
 
-	async _handleExecution(method) {
+	async _handleExecution(run) {
 		await this._resetOutputPane();
-		const [msg, arg] = await this._callServer(method, this._editor.getValue());
+		const [msg, arg] = await run(this._editor.getValue());
 		this._handleServerResponse(msg, arg);
 	}
 
