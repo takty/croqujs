@@ -2,13 +2,15 @@
  * Main (JS)
  *
  * @author Takuto Yanagida
- * @version 2026-08-22
+ * @version 2026-11-03
  */
 
 import { app } from 'electron';
-import * as FS from './fs-node.js';
+import { NodeFileSystem } from './lib/file-system-node.js';
 import PROC from 'node:process';
 import { SessionServer } from './session-server.js';
+
+const FS = new NodeFileSystem();
 
 class Main {
 
@@ -24,34 +26,36 @@ class Main {
 			if (this._gs.length === 0) this._createWindow();
 		});
 		app.on('will-finish-launching', () => {  // for Mac
-			app.on('open-file', (e, p) => {
+			app.on('open-file', async (e, p) => {
 				e.preventDefault();
-				if (this._isReady) this._createWindow(this._checkArgPath(p));
-				else this._macPath = this._checkArgPath(p);
+				if (this._isReady) this._createWindow(await this._checkArgPath(p));
+				else this._macPath = p;
 			});
 		});
-		app.on('ready', () => {
-			this._createWindow(this._macPath ? this._macPath : this._getArgPath());
+		app.on('ready', async () => {
+			const initialPath = this._macPath;
 			this._macPath = null;
 			this._isReady = true;
+			const path = initialPath ? await this._checkArgPath(initialPath) : await this._getArgPath();
+			this._createWindow(path);
 		});
-		app.on('second-instance', (e, argv, workDir) => {
-			this._createWindow(this._getArgPath(argv));
+		app.on('second-instance', async (e, argv, workDir) => {
+			this._createWindow(await this._getArgPath(argv));
 		});
 		app.on('window-all-closed', () => {
 			app.quit();
 		});
 	}
 
-	_getArgPath(argv = PROC.argv) {
+	async _getArgPath(argv = PROC.argv) {
 		if (argv.length === 1) return null;
 		return this._checkArgPath(argv[argv.length - 1]);
 	}
 
-	_checkArgPath(path) {
+	async _checkArgPath(path) {
 		try {
-			if (!FS.exists(path)) return null;
-			if (FS.isDirectory(path)) return null;
+			if (!(await FS.exists(path))) return null;
+			if (await FS.isDirectory(path)) return null;
 		} catch (e) {
 			console.error(e);
 			return null;

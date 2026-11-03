@@ -5,21 +5,21 @@
  * @version 2026-11-03
  */
 
-import * as FS from './fs-node.js';
 import jsSHA from './lib/jssha/sha256.mjs';
 
 export class Backup {
 
-	constructor() {
+	constructor(fs) {
+		this._fs = fs;
 	}
 
 	setFilePath(filePath) {
-		this._filePath = filePath;
-		this._digest = '';
+		this._filePath         = filePath;
+		this._digest           = '';
 		this._lastTimeStampStr = '';
 	}
 
-	backupText(text) {
+	async backupText(text) {
 		if (!this._filePath) return false;
 
 		text = text.replace(/\n/g, '\r\n');
@@ -27,14 +27,14 @@ export class Backup {
 		const digest = this._getDigest(text);
 		if (digest === this._digest) return false;
 
-		const ext  = FS.extension(this._filePath);
-		const name = FS.baseName(this._filePath, ext);
+		const ext  = this._fs.extension(this._filePath);
+		const name = this._fs.baseName(this._filePath, ext);
 
 		try {
-			const backupDir = this._ensureBackupDir(this._filePath);
+			const backupDir = await this._ensureBackupDir(this._filePath);
 			this._lastTimeStampStr = this._createTimeStampStr();
-			const to = FS.joinPath(backupDir, name + this._lastTimeStampStr + ext);
-			FS.writeTextAsync(to, text).catch(err => console.log(err));
+			const to = this._fs.joinPath(backupDir, name + this._lastTimeStampStr + ext);
+			await this._fs.writeText(to, text);
 		} catch (e) {
 			console.error(e);
 			return false;
@@ -43,19 +43,19 @@ export class Backup {
 		return true;
 	}
 
-	backupErrorLog(info, text) {
+	async backupErrorLog(info, text) {
 		if (!this._filePath) return false;
 
-		this.backupText(text);
+		await this.backupText(text);
 
 		const log  = JSON.stringify(info, null, '\t');
-		const ext  = FS.extension(this._filePath);
-		const name = FS.baseName(this._filePath, ext);
+		const ext  = this._fs.extension(this._filePath);
+		const name = this._fs.baseName(this._filePath, ext);
 
 		try {
-			const backupDir = this._ensureBackupDir(this._filePath);
-			const to = FS.joinPath(backupDir, name + this._lastTimeStampStr + '.log');
-			FS.writeTextAsync(to, log).catch(err => console.log(err));
+			const backupDir = await this._ensureBackupDir(this._filePath);
+			const to = this._fs.joinPath(backupDir, name + this._lastTimeStampStr + '.log');
+			await this._fs.writeText(to, log);
 		} catch (e) {
 			console.error(e);
 			return false;
@@ -63,23 +63,23 @@ export class Backup {
 		return true;
 	}
 
-	backupExistingFile(text, existingFilePath) {
-		if (!FS.exists(existingFilePath)) return false;
+	async backupExistingFile(text, existingFilePath) {
+		if (!(await this._fs.exists(existingFilePath))) return false;
 
 		text = text.replace(/\n/g, '\r\n');
-		const oldText = FS.readText(existingFilePath);
+		const oldText = await this._fs.readText(existingFilePath);
 
 		const digest = this._getDigest(text);
 		if (digest === this._getDigest(oldText)) return false;
 
-		const ext  = FS.extension(existingFilePath);
-		const name = FS.baseName(existingFilePath, ext);
+		const ext  = this._fs.extension(existingFilePath);
+		const name = this._fs.baseName(existingFilePath, ext);
 
 		try {
-			const backupDir = this._ensureBackupDir(existingFilePath);
+			const backupDir = await this._ensureBackupDir(existingFilePath);
 			this._lastTimeStampStr = this._createTimeStampStr();
-			const to = FS.joinPath(backupDir, name + this._lastTimeStampStr + ext);
-			FS.writeText(to, oldText);
+			const to = this._fs.joinPath(backupDir, name + this._lastTimeStampStr + ext);
+			await this._fs.writeText(to, oldText);
 		} catch (e) {
 			console.error(e);
 			return false;
@@ -95,19 +95,22 @@ export class Backup {
 	}
 
 	_createTimeStampStr() {
-		const d = new Date();
+		const d  = new Date();
 		const zp = (n) => { return n < 10 ? ('0' + n) : ('' + n); };
 		return d.getFullYear() + zp(d.getMonth() + 1) + zp(d.getDate()) + zp(d.getHours()) + zp(d.getMinutes()) + zp(d.getSeconds()) + d.getMilliseconds();
 	}
 
-	_ensureBackupDir(fp) {
-		const name = FS.baseName(fp, FS.extension(fp));
-		const dir = FS.joinPath(FS.dirName(fp), '.' + name + '.backup');
+	async _ensureBackupDir(fp) {
+		const name = this._fs.baseName(fp, this._fs.extension(fp));
+		const dir  = this._fs.joinPath(this._fs.directoryName(fp), '.' + name + '.backup');
 		try {
-			FS.createDir(dir);  // if the dir exists, an exception is thrown.
-			FS.hideDir(dir);
+			await this._fs.createDirectory(dir);
 		} catch (e) {
+			if (e.code !== 'EEXIST' || !(await this._fs.isDirectory(dir))) throw e;
 			return dir;
+		}
+		if (this._fs.capabilities.hideDirectory) {
+			await this._fs.hideDirectory(dir);
 		}
 		return dir;
 	}

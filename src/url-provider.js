@@ -5,41 +5,46 @@
  * @version 2026-11-03
  */
 
-import * as FS from './fs-node.js';
-import { Exporter } from './exporter.js';
-
 export class LibraryError extends Error {}
 
 /** Issues program URLs for one session. A URL is valid until replacement or disposal. */
 export class UrlProvider {
 
-	constructor(sessionId, exporter = new Exporter()) {
+	constructor(fs, sessionId, exporter) {
+		this._fs        = fs;
 		this._sessionId = sessionId;
 		this._exporter  = exporter;
 		this._expDir    = null;
 	}
 
-	createUrl(codeStr, filePath) {
-		const ret = this._exporter.checkLibraryReadable(codeStr, filePath);
+	async createUrl(codeStr, filePath) {
+		const ret = await this._exporter.checkLibraryReadable(codeStr, filePath);
 		if (ret !== true) throw new LibraryError(ret);
 
-		this.dispose();
-		this._expDir = FS.createTempDir('croqujs-');
+		await this.dispose();
+		const expDir = await this._fs.createTempDirectory('croqujs-');
+		this._expDir = expDir;
 		try {
-			const [success, expPath] = this._exporter.exportAsWebPage(codeStr, filePath, this._expDir, true);
+			const [success, expPath] = await this._exporter.exportAsWebPage(codeStr, filePath, expDir, true);
 			if (!success) throw new LibraryError(expPath);
 
-			const baseUrl = FS.executionFileURL(expPath);
+			const baseUrl = await this._fs.executionFileURL(expPath);
 			return baseUrl + '#' + this._sessionId + ',' + this._exporter.userCodeOffset();
 		} catch (error) {
-			this.dispose();
+			try {
+				await this._fs.removeDirectoryTree(expDir);
+				if (this._expDir === expDir) this._expDir = null;
+			} catch (cleanupError) {
+				console.error(cleanupError);
+			}
 			throw error;
 		}
 	}
 
-	dispose() {
+	async dispose() {
 		if (this._expDir === null) return;
-		FS.removeDirectoryTree(this._expDir);
-		this._expDir = null;
+		const expDir = this._expDir;
+		await this._fs.removeDirectoryTree(expDir);
+		if (this._expDir === expDir) this._expDir = null;
 	}
 }

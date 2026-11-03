@@ -2,13 +2,10 @@
  * Exporter
  *
  * @author Takuto Yanagida
- * @version 2020-11-03
+ * @version 2020-11-04
  */
 
-import * as FS from './fs-node.js';
 import { analyze } from './lib/extractor.js';
-
-const __dirname = FS.moduleDir(import.meta.url);
 
 const IS_MODULE = false;
 
@@ -17,12 +14,14 @@ const HTML_HEAD1 = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>%TIT
 const HTML_HEAD2 = '</head><body>' + (IS_MODULE ? '<script type="module">' : '<script>');
 const HTML_FOOT  = (IS_MODULE ? ENTRY_CODE : '') + '</script></body>';
 const DEF_DIR    = 'def';
-const INJECTION  = './lib/injection.js';
+const INJECTION  = 'lib/injection.js';
 const EXP_EOL    = '\r\n';
 
 export class Exporter {
 
-	constructor() {
+	constructor(fs, injectionPath = INJECTION) {
+		this._fs             = fs;
+		this._injectionPath  = injectionPath;
 		this._userCodeOffset = 0;
 	}
 
@@ -30,8 +29,8 @@ export class Exporter {
 		return this._userCodeOffset;
 	}
 
-	checkLibraryReadable(codeStr, filePath) {
-		const bp = (filePath) ? FS.dirName(filePath) : null;
+	async checkLibraryReadable(codeStr, filePath) {
+		const bp = (filePath) ? this._fs.directoryName(filePath) : null;
 		const decs = this._extractUseDeclarations(codeStr.split('\n'));
 
 		for (let dec of decs) {
@@ -39,28 +38,29 @@ export class Exporter {
 			if (p.indexOf('http') === 0) {
 			} else {
 				let cont = null;
-				if (bp) cont = FS.readTextOrNull(FS.joinPath(bp, p));
+				if (bp !== null) cont = await this._fs.readTextOrNull(this._fs.joinPath(bp, p));
 				if (cont === null) return p;  // Error
 			}
 		}
 		return true;
 	}
 
-	loadDefJsons(codeStr, filePath) {
-		const bp = (filePath) ? FS.dirName(filePath) : null;
+	async loadDefJsons(codeStr, filePath) {
+		const fs   = this._fs;
+		const bp   = (filePath) ? fs.directoryName(filePath) : null;
 		const decs = this._extractUseDeclarations(codeStr.split('\n'));
-		const ret = [];
+		const ret  = [];
 
 		for (let dec of decs) {
 			const p = Array.isArray(dec) ? dec[0] : dec;
 			if (p.indexOf('http') === 0) {
 			} else {
-				if (!bp) continue;
-				const path = FS.joinPath(bp, p);
-				const cont = FS.readTextOrNull(path);
+				if (bp === null) continue;
+				const path = fs.joinPath(bp, p);
+				const cont = await fs.readTextOrNull(path);
 				if (cont === null) continue;  // Error
 				const dp = makeDefPath(path);
-				const defJson = FS.readTextOrNull(dp);
+				const defJson = await fs.readTextOrNull(dp);
 				if (defJson === null) continue;
 				ret.push(defJson);
 			}
@@ -68,25 +68,25 @@ export class Exporter {
 		return ret;
 
 		function makeDefPath(path) {
-			const dir = FS.dirName(path);
-			const ext = FS.extension(path);
-			const bn  = FS.baseName(path, ext);
-			return FS.joinPath(dir, DEF_DIR, bn + '.json');
+			const dir = fs.directoryName(path);
+			const ext = fs.extension(path);
+			const bn  = fs.baseName(path, ext);
+			return fs.joinPath(dir, DEF_DIR, bn + '.json');
 		}
 	}
 
-	exportAsLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded = false) {
+	async exportAsLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded = false) {
 		let inc = '';
 		const exportedSymbols = codeStructure.fnNames.slice(0);
 		if (isUseDecIncluded) {
-			const lines = codeText.split('\n');
-			const decs = this._extractUseDeclarations(lines);
-			const bp = FS.dirName(filePath);
+			const lines    = codeText.split('\n');
+			const decs     = this._extractUseDeclarations(lines);
+			const bp       = this._fs.directoryName(filePath);
 			const libCodes = [];
 			for (let dec of decs) {
 				if (!Array.isArray(dec)) continue;
-				const libPath = FS.joinPath(bp, dec[0]), libNs = dec[1];
-				const libCode = this._readAsLibraryCode(libPath, libNs, 1);
+				const libPath = this._fs.joinPath(bp, dec[0]), libNs = dec[1];
+				const libCode = await this._readAsLibraryCode(libPath, libNs, 1);
 				if (libCode === false) return [false, dec[0]];
 				libCodes.push(libCode);
 				exportedSymbols.push(libNs);
@@ -94,42 +94,43 @@ export class Exporter {
 			inc = libCodes.join(EXP_EOL);
 		}
 		const libCode = this._createLibraryCode(codeText, exportedSymbols, nameSpace, 0, inc);
-		FS.writeText(filePath, libCode);
-		return [FS.exists(filePath), filePath];
+		await this._fs.writeText(filePath, libCode);
+		return [await this._fs.exists(filePath), filePath];
 	}
 
-	exportAsWebPage(codeText, filePath, dirPath, injection = false) {
+	async exportAsWebPage(codeText, filePath, dirPath, injection = false) {
 		const lines = codeText.split('\n');
 		const decs = this._extractUseDeclarations(lines), libs = [];
 		const pushTag = (src) => { libs.push('<script src="' + src + '"></script>'); };
 		let title = 'Croqujs';
 
 		if (injection) {
-			FS.copyTextFile(FS.joinPath(__dirname, INJECTION), FS.joinPath(dirPath, INJECTION));
+			const copied = await this._fs.copyTextFile(this._injectionPath, this._fs.joinPath(dirPath, INJECTION));
+			if (!copied) return [false, this._injectionPath];
 			pushTag(INJECTION);
 		}
 		if (filePath) {
-			const bp = FS.dirName(filePath);
+			const bp = this._fs.directoryName(filePath);
 			for (let dec of decs) {
 				if (Array.isArray(dec)) {
 					const p = dec[0];
 					if (p.startsWith('http')) return [false, p];
-					const destFn = FS.baseName(p, FS.extension(p)) + '.lib.js';
-					const res = this._writeLibraryImmediately(FS.joinPath(bp, p), dec[1], FS.joinPath(dirPath, destFn));
+					const destFn = this._fs.baseName(p, this._fs.extension(p)) + '.lib.js';
+					const res    = await this._writeLibraryImmediately(this._fs.joinPath(bp, p), dec[1], this._fs.joinPath(dirPath, destFn));
 					if (!res) return [false, p];
 					pushTag(destFn);
 				} else {
 					const p = dec;
 					let q = dec;
 					if (!p.startsWith('http')) {
-						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(FS.pathSeparator);
-						const res = FS.copyTextFile(FS.joinPath(bp, p), FS.joinPath(dirPath, q));
+						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(this._fs.pathSeparator);
+						const res = await this._fs.copyTextFile(this._fs.joinPath(bp, p), this._fs.joinPath(dirPath, q));
 						if (!res) return [false, p];
 					}
 					pushTag(q);
 				}
 			}
-			title = FS.baseName(filePath, '.js');
+			title = this._fs.baseName(filePath, '.js');
 			title = title.charAt(0).toUpperCase() + title.slice(1);
 		} else {
 			for (let dec of decs) {
@@ -138,35 +139,35 @@ export class Exporter {
 				pushTag(p);
 			}
 		}
-		const head = HTML_HEAD1.replace('%TITLE%', title);
-		const expPath = FS.joinPath(dirPath, 'index.html');
+		const head      = HTML_HEAD1.replace('%TITLE%', title);
+		const expPath   = this._fs.joinPath(dirPath, 'index.html');
 		const libTagStr = libs.join('');
 		this._userCodeOffset = HTML_HEAD1.length + libTagStr.length + HTML_HEAD2.length;
 
-		FS.writeText(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
+		await this._fs.writeText(expPath, [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
 		return [true, expPath];
 	}
 
 	// -------------------------------------------------------------------------
 
-	copyLibraryOfTemplate(codeText, tempFilePath, dirPath) {
+	async copyLibraryOfTemplate(codeText, tempFilePath, dirPath) {
 		const decs = this._extractUseDeclarations(codeText.split('\n'));
 
-		const bp = FS.dirName(tempFilePath);
+		const bp = this._fs.directoryName(tempFilePath);
 		for (let dec of decs) {
 			if (Array.isArray(dec)) {
 				const p = dec[0];
 				if (p.startsWith('http')) return [false, p];
-				const destFn = FS.baseName(p, FS.extension(p)) + '.lib.js';
-				const res = this._writeLibraryImmediately(FS.joinPath(bp, p), dec[1], FS.joinPath(dirPath, destFn));
+				const destFn = this._fs.baseName(p, this._fs.extension(p)) + '.lib.js';
+				const res    = await this._writeLibraryImmediately(this._fs.joinPath(bp, p), dec[1], this._fs.joinPath(dirPath, destFn));
 				if (!res) return [false, p];
 			} else {
 				const p = dec;
 				if (p.startsWith('http')) continue;
-				const destFn = dec.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(FS.pathSeparator);
-				const destPath = FS.joinPath(dirPath, destFn);
-				if (FS.exists(destPath)) continue;
-				const res = FS.copyTextFile(FS.joinPath(bp, p), destPath);
+				const destFn   = dec.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join(this._fs.pathSeparator);
+				const destPath = this._fs.joinPath(dirPath, destFn);
+				if (await this._fs.exists(destPath)) continue;
+				const res = await this._fs.copyTextFile(this._fs.joinPath(bp, p), destPath);
 				if (!res) return [false, p];
 			}
 		}
@@ -284,15 +285,15 @@ export class Exporter {
 
 	// -------------------------------------------------------------------------
 
-	_writeLibraryImmediately(origPath, nameSpace, destPath) {
-		const libCode = this._readAsLibraryCode(origPath, nameSpace);
+	async _writeLibraryImmediately(origPath, nameSpace, destPath) {
+		const libCode = await this._readAsLibraryCode(origPath, nameSpace);
 		if (libCode === false) return false;
-		FS.writeText(destPath, libCode);
-		return FS.exists(destPath);
+		await this._fs.writeText(destPath, libCode);
+		return await this._fs.exists(destPath);
 	}
 
-	_readAsLibraryCode(origPath, nameSpace, indent = 0) {
-		const ct = FS.readTextOrNull(origPath);
+	async _readAsLibraryCode(origPath, nameSpace, indent = 0) {
+		const ct = await this._fs.readTextOrNull(origPath);
 		if (ct === null) return false;
 		const cs = analyze(ct);
 		return this._createLibraryCode(ct, cs.fnNames, nameSpace, indent);

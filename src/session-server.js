@@ -6,12 +6,13 @@
  */
 
 import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
-import * as FS from './fs-node.js';
+import { NodeFileSystem } from './lib/file-system-node.js';
 import { Backup } from './backup.js';
 import { Exporter } from './exporter.js';
 import { UrlProvider, LibraryError } from './url-provider.js';
 
-const __dirname = FS.moduleDir(import.meta.url);
+const FS = new NodeFileSystem();
+const __dirname = FS.moduleDirectory(import.meta.url);
 
 const DEFAULT_EXT = '.js';
 const FILE_FILTERS = [
@@ -31,29 +32,36 @@ export class SessionServer {
 		this._filePath   = null;
 		this._isReadOnly = false;
 		this._isModified = false;
+		this._modificationVersion = 0;
 
-		this._backup      = new Backup();
-		this._exporter    = new Exporter();
-		this._urlProvider = urlProvider ?? new UrlProvider(id, this._exporter);
+		this._backup      = new Backup(FS);
+		this._exporter    = new Exporter(FS, FS.joinPath(__dirname, './lib/injection.js'));
+		this._urlProvider = urlProvider ?? new UrlProvider(FS, id, this._exporter);
 		this._codeCache   = '';
 
-		ipcMain.on('notifyServer_' + this._id, (ev, msg, ...args) => { this[msg](...args); });
-		ipcMain.handle('callServer_' + this._id, (ev, msg, ...args) => {
+		ipcMain.on('notifyServer_' + this._id, async (ev, msg, ...args) => {
 			try {
-				return this[msg](...args);
+				await this[msg](...args);
+			} catch (e) {
+				console.error(e);
+			}
+		});
+		ipcMain.handle('callServer_' + this._id, async (ev, msg, ...args) => {
+			try {
+				return await this[msg](...args);
 			} catch (e) {
 				console.error(e);
 			}
 		});
 
-		this._createStudyWindow();
+		this._createStudyWindow().catch(error => console.error(error));
 		// this._studyWin.show();
 		// this._studyWin.webContents.toggleDevTools();
 	}
 
-	_createStudyWindow() {
+	async _createStudyWindow() {
 		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, enableDeprecatedPaste: true, preload: `${__dirname}/preload.js` } });
-		allowPaste(this._studyWin.webContents, `${__dirname}/study/study.html`);
+		await allowPaste(this._studyWin.webContents, `${__dirname}/study/study.html`);
 		this._studyWin.loadURL(`file://${__dirname}/study/study.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
@@ -79,32 +87,32 @@ export class SessionServer {
 		});
 	}
 
-	_initializeDocument(text = '', filePath = null) {
+	async _initializeDocument(text = '', filePath = null) {
 		this._tempFilePath = null;
 		if (filePath && filePath.trim().endsWith('.template.js')) {
 			this._tempFilePath = filePath;
 			filePath = null;
 		}
-		const readOnly = filePath ? !FS.isWritable(filePath) : false;  // Check Write Flag
+		const readOnly = filePath ? !(await FS.isWritable(filePath)) : false;  // Check Write Flag
 		const name     = filePath ? FS.baseName(filePath, FS.extension(filePath)) : '';
 		const baseName = filePath ? FS.baseName(filePath) : '';
-		const dirName  = filePath ? FS.dirName(filePath) : '';
+		const dirName  = filePath ? FS.directoryName(filePath) : '';
 
 		this._filePath   = filePath;
 		this._isReadOnly = readOnly;
 		this._isModified = false;
 		this._backup.setFilePath(filePath);
 
-		const defJsons = this._loadDefJsons(text, this._tempFilePath ?? filePath);
+		const defJsons = await this._loadDefJsons(text, this._tempFilePath ?? filePath);
 
 		this.stop();
 		this._studyWin.show();
 		return [filePath, name, baseName, dirName, readOnly, defJsons, text];
 	}
 
-	_loadDefJsons(text, filePath) {
+	async _loadDefJsons(text, filePath) {
 		let ret = [];
-		if (text !== '' && filePath) ret = this._exporter.loadDefJsons(text, filePath);
+		if (text !== '' && filePath) ret = await this._exporter.loadDefJsons(text, filePath);
 		return ret;
 	}
 
@@ -112,14 +120,15 @@ export class SessionServer {
 
 	onStudyModified() {
 		this._isModified = true;
+		this._modificationVersion++;
 	}
 
 	onStudyTitleChanged(title) {
 		this._studyWin.setTitle(title);
 	}
 
-	onStudyErrorOccurred(info) {
-		this._backup.backupErrorLog(info, this._codeCache);
+	async onStudyErrorOccurred(info) {
+		await this._backup.backupErrorLog(info, this._codeCache);
 	}
 
 	onStudyProgramClosed() {
@@ -142,9 +151,9 @@ export class SessionServer {
 		return ['alert_error', `\n${dir}\n${err}`];
 	}
 
-	_returnExecutionError(msg) {
+	async _returnExecutionError(msg) {
 		const info = { msg: msg, library: true, isUserCode: false };
-		this._backup.backupErrorLog(info, this._codeCache);
+		await this._backup.backupErrorLog(info, this._codeCache);
 		return ['error', info];
 	}
 
@@ -164,8 +173,8 @@ export class SessionServer {
 
 	// -------------------------------------------------------------------------
 
-	doNew() {
-		return ['init', this._initializeDocument()];
+	async doNew() {
+		return ['init', await this._initializeDocument()];
 	}
 
 	doOpen(dirPath = '') {
@@ -175,30 +184,29 @@ export class SessionServer {
 		return ['nop'];
 	}
 
-	doFileDropped(path) {
+	async doFileDropped(path) {
 		try {
-			const isDir = FS.isDir(path);
-			if (!isDir) return this._openFile(path);
+			const isDir = await FS.isDirectory(path);
+			if (!isDir) return await this._openFile(path);
 
-			const fns = FS.listDir(path);
-			const fps = fns.map(e => FS.joinPath(path, e)).filter((fp) => {
-				try {
-					return FS.isFile(fp) && /.*\.js$/.test(fp) && !(/.*\.lib\.js$/.test(fp));
-				} catch (e) {
-					return ['nop'];
-				}
-			});
-			if (fps.length === 1) return this._openFile(fps[0]);
-			if (fps.length > 1)   return this.doOpen(path);
+			const entries = await FS.readDirectory(path);
+			const fps = entries
+				.filter(entry => entry.kind === 'file' && /.*\.js$/.test(entry.name) && !/.*\.lib\.js$/.test(entry.name))
+				.map(entry => FS.joinPath(path, entry.name));
+			if (fps.length === 1) return await this._openFile(fps[0]);
+			if (fps.length > 1)   return await this.doOpen(path);
 		} catch (e) {
 			if (e.code !== 'ENOENT' && e.code !== 'EPERM') return this._returnAlertError(e, path);
 		}
 	}
 
 	async _openFile(filePath) {
-		const text = await FS.readTextAsync(filePath);
-		if (text === null) return this._returnAlertError('', filePath);
-		return ['init', this._initializeDocument(text, filePath)];
+		try {
+			const text = await FS.readText(filePath);
+			return ['init', await this._initializeDocument(text, filePath)];
+		} catch (e) {
+			return this._returnAlertError(e, filePath);
+		}
 	}
 
 	doSave(text, dlgTitle) {
@@ -217,12 +225,12 @@ export class SessionServer {
 		return this._prepareSaving(text, dlgTitle, true);
 	}
 
-	_prepareSaving(text, dlgTitle, copy) {
+	async _prepareSaving(text, dlgTitle, copy) {
 		const fp = dialog.showSaveDialogSync(this._studyWin, { title: dlgTitle, defaultPath: this._filePath ? this._filePath : '', filters: FILE_FILTERS });
 		if (!fp) return ['nop'];  // No file is selected.
 		let writable = true;
 		try {
-			writable = FS.isWritable(fp);  // check write flag
+			writable = await FS.isWritable(fp);  // check write flag
 		} catch (e) {
 			if (e.code !== 'ENOENT') return this._returnAlertError(e, fp);
 		}
@@ -234,73 +242,76 @@ export class SessionServer {
 		return this._returnAlertError('', fp);
 	}
 
-	_save(fp, text) {
+	async _save(fp, text) {
+		const modificationVersion = this._modificationVersion;
 		if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
 		this._filePath = fp;
 		this._backup.setFilePath(fp);
-		this._backup.backupExistingFile(text, this._filePath);
 		try {
-			FS.writeText(this._filePath, text.replace(/\n/g, '\r\n'));
+			await this._backup.backupExistingFile(text, this._filePath);
+			await FS.writeText(fp, text.replace(/\n/g, '\r\n'));
 			if (this._tempFilePath) {
-				this._exporter.copyLibraryOfTemplate(text, this._tempFilePath, FS.dirName(this._filePath));
+				await this._exporter.copyLibraryOfTemplate(text, this._tempFilePath, FS.directoryName(this._filePath));
 				this._tempFilePath = null;
 			}
 
 			const name     = FS.baseName(this._filePath, FS.extension(this._filePath));
 			const baseName = FS.baseName(this._filePath);
-			const dirName  = FS.dirName(this._filePath);
+			const dirName  = FS.directoryName(this._filePath);
 
-			const defJsons = this._loadDefJsons(text, this._filePath);
+			const defJsons = await this._loadDefJsons(text, this._filePath);
 
-			this._isModified = false;
+			// Edits received while saving still need to be saved.
+			this._isModified = this._modificationVersion !== modificationVersion;
 			return ['path', [this._filePath, name, baseName, dirName, false, defJsons]];
 		} catch (e) {
 			return this._returnAlertError(e, this._filePath);
 		}
 	}
 
-	_saveCopy(fp, text) {
+	async _saveCopy(fp, text) {
 		if (fp.indexOf('.') === -1) fp += DEFAULT_EXT;
-		this._backup.backupExistingFile(text, fp);
 		try {
-			FS.writeText(fp, text.replace(/\n/g, '\r\n'));
+			await this._backup.backupExistingFile(text, fp);
+			await FS.writeText(fp, text.replace(/\n/g, '\r\n'));
 			return ['nop'];
 		} catch (e) {
 			return this._returnAlertError(e, fp);
 		}
 	}
 
-	doClose(text) {
-		if (this._isModified) this._backup.backupText(text);
+	async doClose(text) {
+		if (this._isModified) await this._backup.backupText(text);
+
+		await this._urlProvider.dispose();
 
 		this._studyWin.destroy();
 		this._studyWin = null;
 		if (this._fieldWin) this._fieldWin.close();
 
-		this._urlProvider.dispose();
 	}
 
-	doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
+	async doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
 		const codeStructure = JSON.parse(jsonCodeStructure);
 		const name = libName.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
-		const expDir = FS.joinPath(FS.dirName(this._filePath), name + '.lib.js');
+		const expDir = FS.joinPath(FS.directoryName(this._filePath), name + '.lib.js');
 
 		try {
-			this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure, isUseDecIncluded);
+			await this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure, isUseDecIncluded);
 			return ['success_export', 'exportedAsLibrary'];
 		} catch (e) {
 			return this._returnAlertError(e, expDir);
 		}
 	}
 
-	doExportAsWebPage(text) {
+	async doExportAsWebPage(text) {
 		if (this._filePath === null) return ['nop'];
 		const expDir = this._makeExportPath(this._filePath);
 		try {
-			FS.removeDirectoryTree(expDir);
-			FS.createDir(expDir);
+			await FS.removeDirectoryTree(expDir);
+			await FS.createDirectory(expDir);
 
-			this._exporter.exportAsWebPage(text, this._filePath, expDir);
+			await this._exporter.exportAsWebPage(text, this._filePath, expDir);
 			return ['success_export', 'exportedAsWebPage'];
 		} catch (e) {
 			return this._returnAlertError(e, expDir);
@@ -315,7 +326,7 @@ export class SessionServer {
 	}
 
 	async doRun(text) {
-		if (this._isModified) this._backup.backupText(text);
+		if (this._isModified) await this._backup.backupText(text);
 		this._codeCache = text;
 
 		if (!this._fieldWin) {
@@ -329,7 +340,7 @@ export class SessionServer {
 	}
 
 	async doRunWithoutWindow(text) {
-		if (this._isModified) this._backup.backupText(text);
+		if (this._isModified) await this._backup.backupText(text);
 		this._codeCache = text;
 
 		if (!this._fieldWin) {
@@ -354,7 +365,7 @@ export class SessionServer {
 
 	_makeExportPath(fp) {
 		const name = FS.baseName(fp, FS.extension(fp));
-		return FS.joinPath(FS.dirName(fp), name + '.export');
+		return FS.joinPath(FS.directoryName(fp), name + '.export');
 	}
 
 }
@@ -365,7 +376,8 @@ export class SessionServer {
 // the legacy synchronous clipboard read needed by document.execCommand('paste').
 const sessions = new WeakMap();
 
-export function allowPaste(contents, pagePath) {
+export async function allowPaste(contents, pagePath) {
+	const pageURL = await FS.toFileURL(pagePath);
 	const session = contents.session;
 	let pages = sessions.get(session);
 	if (!pages) {
@@ -381,5 +393,5 @@ export function allowPaste(contents, pagePath) {
 		session.setPermissionCheckHandler((requester, permission, _origin, details) => allow(requester, permission, details));
 		session.setPermissionRequestHandler((requester, permission, callback, details) => callback(allow(requester, permission, details)));
 	}
-	pages.set(contents, FS.toFileURL(pagePath));
+	pages.set(contents, pageURL);
 }
