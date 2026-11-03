@@ -381,10 +381,7 @@ export class SessionServer {
 
 }
 
-
-
 // -----------------------------------------------------------------------------
-
 
 // Sessions are shared by multiple windows. Only registered editor pages may use
 // the legacy synchronous clipboard read needed by document.execCommand('paste').
