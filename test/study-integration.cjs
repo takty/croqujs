@@ -272,8 +272,8 @@ app.whenReady().then(async () => {
 			check(!e.getState().canUndo && !s._isModified, 'Document replacement resets modified state and history');
 			s._dialogBox.showPromptWithOption = async () => ({ value: ['Example', false] });
 			await s._onExportAsLibrary();
-			await s._handleSaving(text => s._callServer('doSave', text, 'Save'));
-			await s._handleExecution(text => s._callServer('doRun', text));
+			await s._handleSaving(text => s._session.doSave(text, 'Save'));
+			await s._handleExecution(text => s._session.doRun(text));
 			s._addErrorMessage({ msg: 'Error', isUserCode: true, line: 1, col: 2 });
 			check(!!document.querySelector('#editor .error-line'), 'Runtime error highlights editor line');
 			s._clearErrorMarker();

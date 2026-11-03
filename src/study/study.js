@@ -8,6 +8,7 @@
 import { loadJSON, minmax } from './util.js';
 import { Config } from './config.js';
 import { ErrorTranslator } from './error-translator.js';
+import { SessionClient } from './session-client.js';
 import { Lsc } from '../lib/lsc.js';
 import { WinState } from '../lib/winstate.js';
 
@@ -16,6 +17,7 @@ export class Study {
 	constructor() {
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
+		this._session = new SessionClient(this._id);
 		this._lsc = new Lsc('#study_' + this._id);
 
 		this._winstate = new WinState(window, '$winstate_study');
@@ -25,7 +27,7 @@ export class Study {
 		this._permissions = {};
 		this._permissionRequests = [];
 
-		window.ipc.on('windowClose', () => this.executeCommand('close'));
+		this._session.addWindowCloseListener(() => this.executeCommand('close'));
 		window.onbeforeunload = (e) => {
 			if (!this._isModified) return;
 			e.preventDefault();
@@ -35,7 +37,7 @@ export class Study {
 
 		window.addEventListener('keydown', (e) => {
 			if (this._editor && !this._editor.hasFocus() && e.ctrlKey && e.key === 'a') e.preventDefault();
-			if ((e.ctrlKey || e.metaKey) && e.key === 'F12') this._notifyServer('onStudyToggleDevTools');
+			if ((e.ctrlKey || e.metaKey) && e.key === 'F12') this._session.onStudyToggleDevTools();
 		});
 
 		this._initFileDrop();
@@ -143,7 +145,7 @@ export class Study {
 
 		this._config.notify();
 
-		const [msg, arg] = await this._callServer('doReady');
+		const [msg, arg] = await this._session.doReady();
 		this._handleServerResponse(msg, arg);
 
 		navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
@@ -160,7 +162,7 @@ export class Study {
 			this._clearErrorMarker();
 			if (event.origin !== 'edit') return;
 			this._isModified = true;
-			this._notifyServer('onStudyModified');
+			this._session.onStudyModified();
 		});
 		this._editor.on('state', () => {
 			if (this._toolbar) this._reflectState();
@@ -179,7 +181,7 @@ export class Study {
 	_initFieldConnection() {
 		this._lsc.listen(ma => {
 			if (ma.message === 'error') {
-				this._notifyServer('onStudyErrorOccurred', ma.params);
+				this._session.onStudyErrorOccurred(ma.params);
 				this._addErrorMessage(ma.params);
 			} else if (ma.message === 'output') {
 				this._outputPane.addOutput(ma.params);
@@ -187,7 +189,7 @@ export class Study {
 				this._permissionRequests.push(ma.params);
 				if (this._permissionRequests.length === 1) this._handlePermission();
 			} else if (ma.message === 'toggleDevTools') {
-				this._notifyServer('onStudyToggleDevToolsField');
+				this._session.onStudyToggleDevToolsField();
 			}
 		});
 	}
@@ -222,14 +224,6 @@ export class Study {
 	}
 
 	// -------------------------------------------------------------------------
-
-	_notifyServer(msg, ...args) {
-		window.ipc.send('notifyServer_' + this._id, msg, ...args);
-	}
-
-	_callServer(msg, ...args) {
-		return window.ipc.invoke('callServer_' + this._id, msg, ...args);
-	}
 
 	_callField(method, ...args) {
 		this._lsc.send('#field_' + this._id, { message: 'callFieldMethod', params: { method: method, args: args } });
@@ -315,7 +309,7 @@ export class Study {
 		const title = prefix + fn + fp + ' — ' + 'Croqujs';
 		if (window.title !== title) {
 			window.title = title;
-			this._notifyServer('onStudyTitleChanged', title);
+			this._session.onStudyTitleChanged(title);
 		}
 	}
 
@@ -389,7 +383,7 @@ export class Study {
 	// -------------------------------------------------------------------------
 
 	_cmdTileWindow() {
-		this._callServer('doUnmaximize');
+		this._session.doUnmaximize();
 		const x = window.screen.availLeft, y = window.screen.availTop;
 		const w = window.screen.availWidth / 2, h = window.screen.availHeight;
 		window.moveTo(x, y);
@@ -477,28 +471,28 @@ export class Study {
 	_executeCommandFile(cmd) {
 		switch (cmd) {
 			case 'new':
-				this._handleOpening(this._res.msg.confirmNew, () => this._callServer('doNew'));
+				this._handleOpening(this._res.msg.confirmNew, () => this._session.doNew());
 				return true;
 			case 'open':
-				this._handleOpening(this._res.msg.confirmOpen, () => this._callServer('doOpen'));
+				this._handleOpening(this._res.msg.confirmOpen, () => this._session.doOpen());
 				return true;
 			case 'close':
-				this._handleOpening(this._res.msg.confirmExit, () => this._callServer('doClose', this._editor.getValue()));
+				this._handleOpening(this._res.msg.confirmExit, () => this._session.doClose(this._editor.getValue()));
 				return true;
 			case 'save':
-				this._handleSaving(text => this._callServer('doSave', text, this._res.dialogTitle.saveAs));
+				this._handleSaving(text => this._session.doSave(text, this._res.dialogTitle.saveAs));
 				return true;
 			case 'saveAs':
-				this._handleSaving(text => this._callServer('doSaveAs', text, this._res.dialogTitle.saveAs));
+				this._handleSaving(text => this._session.doSaveAs(text, this._res.dialogTitle.saveAs));
 				return true;
 			case 'saveCopy':
-				this._handleSaving(text => this._callServer('doSaveCopy', text, this._res.dialogTitle.saveCopy));
+				this._handleSaving(text => this._session.doSaveCopy(text, this._res.dialogTitle.saveCopy));
 				return true;
 			case 'exportAsLibrary':
 				this._onExportAsLibrary();
 				return true;
 			case 'exportAsWebPage':
-				this._handleSaving(text => this._callServer('doExportAsWebPage', text));
+				this._handleSaving(text => this._session.doExportAsWebPage(text));
 				return true;
 		}
 		return false;
@@ -507,8 +501,8 @@ export class Study {
 	async _onFileDropped(e) {
 		e.preventDefault();
 		if (e.dataTransfer.files.length > 0) {
-			const filePath = window.ipc.getPathForFile(e.dataTransfer.files[0]);
-			this._handleOpening(this._res.msg.confirmOpen, () => this._callServer('doFileDropped', filePath));
+			const filePath = this._session.getPathForFile(e.dataTransfer.files[0]);
+			this._handleOpening(this._res.msg.confirmOpen, () => this._session.doFileDropped(filePath));
 		}
 	}
 
@@ -517,7 +511,7 @@ export class Study {
 		if (libName) {
 			try {
 				const snapshot = await this._editor.analyzeNow();
-				const [msg, arg] = await this._callServer('doExportAsLibrary', snapshot.text, libName, flag, JSON.stringify(snapshot));
+				const [msg, arg] = await this._session.doExportAsLibrary(snapshot.text, libName, flag, JSON.stringify(snapshot));
 				this._handleServerResponse(msg, arg);
 			} catch (error) {
 				await this._dialogBox.showAlert(this._res.msg.error + error.message, 'error');
@@ -545,14 +539,14 @@ export class Study {
 	_executeCommandCode(cmd) {
 		switch (cmd) {
 			case 'run':
-				this._handleExecution(text => this._callServer('doRun', text));
+				this._handleExecution(text => this._session.doRun(text));
 				return true;
 			case 'runWithoutWindow':
-				this._handleExecution(text => this._callServer('doRunWithoutWindow', text));
+				this._handleExecution(text => this._session.doRunWithoutWindow(text));
 				return true;
 			case 'stop':
 				this._callField('closeProgram');
-				this._notifyServer('onStudyProgramClosed');
+				this._session.onStudyProgramClosed();
 				return true;
 		}
 		return false;
