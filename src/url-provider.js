@@ -25,7 +25,7 @@ export class UrlProvider {
 		const expDir = await this._fs.createTempDirectory('croqujs-');
 		this._expDir = expDir;
 		try {
-			const [success, expPath] = await this._exporter.exportAsWebPage(codeStr, filePath, expDir, true);
+			const [success, expPath] = await this._exporter.exportForExecution(codeStr, filePath, expDir);
 			if (!success) throw new LibraryError(expPath);
 
 			const baseUrl = await this._fs.executionFileURL(expPath);

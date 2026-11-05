@@ -8,7 +8,7 @@
 import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
 import { NodeFileSystem } from './lib/fs-node.js';
 import { Backup } from './backup.js';
-import { Exporter } from './exporter.js';
+import { NodeExporter } from './exporter-node.js';
 import { UrlProvider, LibraryError } from './url-provider.js';
 
 const FS = new NodeFileSystem();
@@ -35,7 +35,7 @@ export class SessionServer {
 		this._modificationVersion = 0;
 
 		this._backup      = new Backup(FS);
-		this._exporter    = new Exporter(FS, FS.joinPath(__dirname, './lib/injection.js'));
+		this._exporter    = new NodeExporter(FS, FS.joinPath(__dirname, './lib/injection.js'));
 		this._urlProvider = urlProvider ?? new UrlProvider(FS, id, this._exporter);
 		this._codeCache   = '';
 

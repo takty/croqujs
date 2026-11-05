@@ -59,7 +59,7 @@ test('async generation cleans up on failure and allows a subsequent request', as
 	};
 	const exporter = {
 		async checkLibraryReadable() { await pause(); return true; },
-		async exportAsWebPage(code, _file, dir) {
+		async exportForExecution(code, _file, dir) {
 			await pause();
 			assert.equal(path.isAbsolute(dir), true);
 			events.push(`export:${path.basename(dir)}`);
