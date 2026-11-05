@@ -1,5 +1,5 @@
-import { FileSystemBase, splitPath, toBytes, sortEntries, unsupported } from './file-system-common.js';
-export { joinPath, baseName, directoryName, extension, pathSeparator } from './file-system-common.js';
+import { FileSystemBase, splitPath, toBytes, sortEntries, unsupported } from './fs-common.js';
+export { joinPath, baseName, directoryName, extension, pathSeparator } from './fs-common.js';
 
 /** File System Access adapter. */
 export class BrowserFileSystem extends FileSystemBase {

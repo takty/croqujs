@@ -4,8 +4,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { tmpdir } from 'node:os';
-import { FileSystemBase, splitPath, toBytes, sortEntries, unsupported } from './file-system-common.js';
-export { joinPath, baseName, directoryName, extension, pathSeparator } from './file-system-common.js';
+import { FileSystemBase, splitPath, toBytes, sortEntries, unsupported } from './fs-common.js';
+export { joinPath, baseName, directoryName, extension, pathSeparator } from './fs-common.js';
 
 /** With a root, paths are portable and root-relative. Without one, use native OS paths. */
 export class NodeFileSystem extends FileSystemBase {
@@ -57,7 +57,7 @@ export class NodeFileSystem extends FileSystemBase {
 		return (await fs.stat(await this.#resolve(relative))).isFile();
 	}
 
-	// Match fs-node's owner-write-bit policy; this is not a guarantee that a write will succeed.
+	// This is not a guarantee that a write will succeed.
 	async isWritable(relative = '') {
 		return ((await fs.stat(await this.#resolve(relative))).mode & 0x0080) !== 0;
 	}

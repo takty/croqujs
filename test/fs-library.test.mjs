@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import * as native from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { NodeFileSystem } from '../src/lib/file-system-node.js';
-import { BrowserFileSystem } from '../src/lib/file-system-browser.js';
-import { directoryHandle } from './file-system-handles.mjs';
+import { NodeFileSystem } from '../src/lib/fs-node.js';
+import { BrowserFileSystem } from '../src/lib/fs-browser.js';
+import { directoryHandle } from './fs-handles.mjs';
 
 test('unrooted Node filesystem supports native paths and temporary directories', async t => {
 	const files = new NodeFileSystem();
@@ -42,7 +42,7 @@ test('unrooted Node filesystem supports native paths and temporary directories',
 });
 
 async function fixture(t) {
-	const root = await native.mkdtemp(path.join(os.tmpdir(), 'file-system-test-'));
+	const root = await native.mkdtemp(path.join(os.tmpdir(), 'fs-test-'));
 	t.after(() => native.rm(root, { recursive: true, force: true }));
 	return root;
 }
@@ -147,7 +147,7 @@ test('Node URLs, module location and owner write bit', async t => {
 	await fs.writeText('a #%.js', 'x');
 	assert.match(await fs.toFileURL('a #%.js'), /a%20%23%25\.js$/);
 	assert.equal(await fs.executionFileURL('a #%.js'), 'file:///' + path.join(await native.realpath(root), 'a #%.js').replace(/\\/g, '/'));
-	assert.equal(fs.moduleDirectory(new URL('../src/lib/file-system-node.js', import.meta.url)), path.resolve('src/lib'));
+	assert.equal(fs.moduleDirectory(new URL('../src/lib/fs-node.js', import.meta.url)), path.resolve('src/lib'));
 	assert.equal(await fs.isWritable('a #%.js'), ((await native.stat(path.join(root, 'a #%.js'))).mode & 0x0080) !== 0);
 	assert.equal(fs.capabilities.fileURL, true);
 });

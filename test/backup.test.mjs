@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { NodeFileSystem } from '../app/lib/file-system-node.js';
+import { NodeFileSystem } from '../app/lib/fs-node.js';
 import { Backup } from '../app/backup.js';
 import { createHash } from 'node:crypto';
 

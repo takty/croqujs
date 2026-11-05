@@ -18,9 +18,9 @@ After building, run `node test/run-study-integration.mjs` to check the Electron
 integration, and `node --test test/exporter.test.cjs` to check library exports.
 
 Local file and path operations use `NodeFileSystem` in
-`src/lib/file-system-node.js`. The main process and SessionServer create instances;
+`src/lib/fs-node.js`. The main process and SessionServer create instances;
 Backup and Exporter receive a filesystem instance from their callers.
 File operations are asynchronous. File dialogs remain in SessionServer;
 backup naming and generated content remain in their callers.
-After building, run `node --test test/backup.test.mjs test/file-system-library.test.mjs test/shared-filesystem.test.mjs test/exporter.test.cjs`
+After building, run `node --test test/backup.test.mjs test/fs-library.test.mjs test/shared-filesystem.test.mjs test/exporter.test.cjs`
 to check file operations, backups, and exports.

@@ -6,9 +6,9 @@ import os from 'node:os';
 import vm from 'node:vm';
 import { Backup } from '../app/backup.js';
 import { Exporter } from '../app/exporter.js';
-import { NodeFileSystem } from '../app/lib/file-system-node.js';
-import { BrowserFileSystem } from '../app/lib/file-system-browser.js';
-import { directoryHandle } from './file-system-handles.mjs';
+import { NodeFileSystem } from '../app/lib/fs-node.js';
+import { BrowserFileSystem } from '../app/lib/fs-browser.js';
+import { directoryHandle } from './fs-handles.mjs';
 
 for (const [label, create] of [
 	['Node', root => new NodeFileSystem(root)],

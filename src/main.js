@@ -6,7 +6,7 @@
  */
 
 import { app } from 'electron';
-import { NodeFileSystem } from './lib/file-system-node.js';
+import { NodeFileSystem } from './lib/fs-node.js';
 import PROC from 'node:process';
 import { SessionServer } from './session-server.js';
 
