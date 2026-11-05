@@ -1,5 +1,6 @@
 import { app } from 'electron';
 import { fileURLToPath } from 'node:url';
+import assert from 'node:assert/strict';
 import '../app/main.js';
 import { SessionServer } from '../app/session-server.js';
 
@@ -7,6 +8,9 @@ let initialized = false;
 const doReady = SessionServer.prototype.doReady;
 SessionServer.prototype.doReady = async function (...args) {
 	const result = await doReady.apply(this, args);
+	assert.equal(result[0], 'init');
+	assert.equal(result[1][0], fileURLToPath(import.meta.url));
+	assert.match(result[1][6], /SessionServer/);
 	initialized = result[0] === 'init';
 	return result;
 };

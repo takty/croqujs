@@ -17,11 +17,10 @@ cursors, source maps, and licenses. It excludes the example page and its scripts
 After building, run `node test/run-study-integration.mjs` to check the Electron
 integration, and `node --test test/exporter.test.cjs` to check library exports.
 
-Local file and path operations are implemented in `src/fs-node.js`. The main
-process, SessionServer, Backup, and Exporter use this module instead of Node's filesystem
-and path APIs directly. File dialogs remain in SessionServer; backup naming and generated
-content remain in their callers. The adapter preserves synchronous operations,
-UTF-8 text, and existing error behavior (including `ENOENT`/`EPERM` codes used by
-callers). A backend with only asynchronous APIs will also require adapting those
-callers. Run `node --test test/fs-node.test.mjs test/exporter.test.cjs` to check
-file operations, backups, and exports.
+Local file and path operations use `NodeFileSystem` in
+`src/lib/file-system-node.js`. The main process and SessionServer create instances;
+Backup and Exporter receive a filesystem instance from their callers.
+File operations are asynchronous. File dialogs remain in SessionServer;
+backup naming and generated content remain in their callers.
+After building, run `node --test test/backup.test.mjs test/file-system-library.test.mjs test/shared-filesystem.test.mjs test/exporter.test.cjs`
+to check file operations, backups, and exports.

@@ -128,6 +128,7 @@ async function build() {
 async function removeLegacyEditorFiles() {
 	const appDir = path.resolve(APP_DIR);
 	await rm(path.join(appDir, 'twin.js'), { force: true });
+	await rm(path.join(appDir, 'fs-node.js'), { force: true });
 	const oldEditorDir = path.resolve(appDir, 'croq-mirror');
 	if (!oldEditorDir.startsWith(appDir + path.sep)) throw new Error('Invalid legacy editor path');
 	await rm(oldEditorDir, { recursive: true, force: true });

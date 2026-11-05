@@ -39,7 +39,7 @@ app.whenReady().then(async () => {
 				preload: path.join(ROOT, 'app/preload.js'),
 			},
 		});
-		allowPaste(window.webContents, HTML);
+		await allowPaste(window.webContents, HTML);
 		await window.loadFile(HTML, { hash: 'integration' });
 		const checks = await window.webContents.executeJavaScript(`(async () => {
 			const checks = [];

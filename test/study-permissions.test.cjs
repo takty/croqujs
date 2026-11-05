@@ -14,8 +14,8 @@ async function checkPermissions() {
 	const page = process.platform === 'win32' ? 'file:///C:/app/study%20files/study%23test.html' : 'file:///app/study%20files/study%23test.html';
 	const make = url => ({ session, getURL: () => url, isDestroyed: () => false });
 	const first = make(page + '#1'), second = make(page + '#2'), field = make(page + '#3');
-	allowPaste(first, fileURLToPath(page));
-	allowPaste(second, fileURLToPath(page));
+	await allowPaste(first, fileURLToPath(page));
+	await allowPaste(second, fileURLToPath(page));
 	const details = { isMainFrame: true, requestingUrl: page + '#1' };
 	const permission = 'deprecated-sync-clipboard-read';
 	for (const editor of [first, second]) assert.equal(check(editor, permission, 'file://', details), true);
