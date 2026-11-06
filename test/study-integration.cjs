@@ -42,7 +42,6 @@ app.whenReady().then(async () => {
 		});
 		await allowPaste(window.webContents, HTML);
 		await window.loadFile(HTML, { hash: 'integration' });
-		const manifest = JSON.parse(await readFile(path.join(ROOT, 'app/.vite/manifest.json'), 'utf8'));
 		const checks = await window.webContents.executeJavaScript(`(async () => {
 			const checks = [];
 			const check = (condition, message) => {
@@ -52,8 +51,10 @@ app.whenReady().then(async () => {
 			await window.study.ready;
 			const s = window.study;
 			const e = s._editor;
-			const { OutputPane } = await import(${JSON.stringify('../' + manifest['study/ui/output-pane.js'].file)});
-			check(!window.OutputPane && !document.querySelector('script[src$="output-pane.js"]') && document.querySelectorAll('link[href*="/output-pane-"][href$=".css"]').length === 1, 'Output pane loads as a module with one stylesheet');
+			const OutputPane = s._outputPane.constructor;
+			const styleUrls = () => [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => link.href);
+			const initialStyles = styleUrls();
+			check(initialStyles.filter(url => url.includes('/assets/')).length === 1, 'Study and all UI components share one bundled stylesheet');
 			const output = document.querySelector('#output-pane');
 			s._outputPane.addError('Output error', 'err');
 			check(output.offsetHeight > 0, 'Output error opens the pane through the host callback');
@@ -93,8 +94,7 @@ app.whenReady().then(async () => {
 				standalone.remove();
 			}
 			const menu = document.querySelector('.side-menu');
-			const { Splitter } = await import(${JSON.stringify('../' + manifest['study/ui/splitter.js'].file)});
-			check(document.querySelectorAll('link[href*="/splitter-"][href$=".css"]').length === 1, 'Splitter loads its own stylesheet once');
+			const Splitter = s._splitter.constructor;
 			const handle = document.querySelector('#handle');
 			handle.click();
 			check(output.offsetHeight === 100 && document.querySelector('#editor').offsetHeight + 40 + 8 + output.offsetHeight === document.body.offsetHeight, 'Splitter handle opens output and resizes the editor');
@@ -138,7 +138,6 @@ app.whenReady().then(async () => {
 				host.remove();
 			}
 			const toolbar = document.querySelector('.toolbar');
-			check(!!document.querySelector('link[href*="/study-"][href$=".css"]'), 'Study loads its Vite-built stylesheet');
 			toolbar.style.transition = 'none';
 			document.documentElement.style.setProperty('--color-window', 'rgb(12, 34, 56)');
 			try {
@@ -149,8 +148,6 @@ app.whenReady().then(async () => {
 				toolbar.style.removeProperty('transition');
 			}
 			check(!window.SideMenu && !window.Toolbar && !document.querySelector('script[src$="side-menu.js"], script[src$="toolbar.js"]'), 'Menu and toolbar are loaded as modules');
-			await Promise.all([import(${JSON.stringify('../' + manifest['study/ui/side-menu.js'].file)}), import(${JSON.stringify('../' + manifest['study/ui/toolbar.js'].file)})]);
-			check(document.querySelectorAll('link[href*="/side-menu-"][href$=".css"]').length === 1 && document.querySelectorAll('link[href*="/toolbar-"][href$=".css"]').length === 1, 'Menu and toolbar styles load only once');
 			check([...toolbar.querySelectorAll('[data-cmd]')].map(btn => btn.dataset.cmd).join(',') === 'menu,save,saveCopy,undo,copy,paste,tileWin,run' && toolbar.querySelectorAll('.filler').length === 2, 'JSON toolbar preserves button order and spacing');
 			check(getComputedStyle(toolbar).height === '40px' && getComputedStyle(toolbar.querySelector('.btn')).width === '64px', 'Standalone toolbar CSS preserves dimensions');
 			const menuButton = toolbar.querySelector('[data-cmd="menu"]');
@@ -269,7 +266,7 @@ app.whenReady().then(async () => {
 			const promptCancel = s._dialogBox.showPromptWithOption('Name', 'info', '', '', 'Option');
 			document.querySelector('.swal2-cancel').click();
 			check((await promptCancel).isDismissed && !e.getState().disabled, 'Prompt cancellation restores editor');
-			check(document.querySelectorAll('link[href*="/sweetalert2.min-"][href$=".css"]').length === 1 && document.querySelectorAll('link[href*="/dialog-box-"][href$=".css"]').length === 1, 'Dialog styles are loaded only once');
+			check(JSON.stringify(styleUrls()) === JSON.stringify(initialStyles), 'Creating components and opening dialogs adds no stylesheets');
 			s._initDocument(null, 'exported', null, null, false, [], 'function exported() { return 3; }');
 			check(!e.getState().canUndo && !s._isModified, 'Document replacement resets modified state and history');
 			s._dialogBox.showPromptWithOption = async () => ({ value: ['Example', false] });

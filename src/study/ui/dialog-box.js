@@ -6,24 +6,8 @@
  */
 
 import Swal from 'sweetalert2';
-import sweetAlertStyle from 'sweetalert2/dist/sweetalert2.min.css?url';
-
-function loadStyle(url) {
-	return new Promise((resolve, reject) => {
-		const link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = url;
-		link.onload = resolve;
-		link.onerror = () => reject(new Error('Failed to load dialog stylesheet: ' + link.href));
-		document.head.appendChild(link);
-	});
-}
-
-// Module initialization loads each stylesheet once, before any dialog is shown.
-await Promise.all([
-	loadStyle(sweetAlertStyle),
-	loadStyle(new URL('./dialog-box.css', import.meta.url).href),
-]);
+import 'sweetalert2/dist/sweetalert2.min.css';
+import './dialog-box.css';
 
 export class DialogBox {
 

@@ -6,6 +6,24 @@ import vm from 'node:vm';
 const app = new URL('../app/', import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('.vite/manifest.json', app), 'utf8'));
 
+test('Study bundles UI styles into one stylesheet separate from Field', async () => {
+	const styles = async entry => {
+		const url = new URL(entry, app);
+		const html = await readFile(url, 'utf8');
+		return [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
+			.map(([, href]) => new URL(href, url)).filter(url => url.pathname.includes('/assets/'));
+	};
+	const study = await styles('study/study.html');
+	const field = await styles('field/field.html');
+	assert.equal(study.length, 1);
+	assert.equal(field.length, 1);
+	assert.notEqual(study[0].href, field[0].href);
+	const css = await readFile(study[0], 'utf8');
+	for (const selector of ['.side-menu', '.toolbar', '.swal2-popup', '.output-pane', '.splitter-handle']) {
+		assert.ok(css.includes(selector), selector);
+	}
+});
+
 test('both renderer HTML entries resolve to complete local Vite asset graphs', async () => {
 	for (const entry of ['study/study.html', 'field/field.html']) {
 		assert.equal(manifest[entry].isEntry, true);

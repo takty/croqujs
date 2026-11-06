@@ -11,6 +11,12 @@ import { ErrorTranslator } from './error-translator.js';
 import { SessionClient } from './session-client.js';
 import { Lsc } from '../lib/lsc.js';
 import { WinState } from '../lib/winstate.js';
+import { SideMenu } from './ui/side-menu.js';
+import { Toolbar } from './ui/toolbar.js';
+import { DialogBox } from './ui/dialog-box.js';
+import { OutputPane } from './ui/output-pane.js';
+import { Splitter } from './ui/splitter.js';
+import './study.css';
 
 export class Study {
 
@@ -76,13 +82,6 @@ export class Study {
 
 
 	async _initialize() {
-		const [{ SideMenu }, { Toolbar }, { DialogBox }, { OutputPane }, { Splitter }] = await Promise.all([
-			import('./ui/side-menu.js'),
-			import('./ui/toolbar.js'),
-			import('./ui/dialog-box.js'),
-			import('./ui/output-pane.js'),
-			import('./ui/splitter.js'),
-		]);
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
 		this._res.menu.version = this._res.version;

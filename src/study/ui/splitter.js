@@ -5,14 +5,7 @@
  * @version 2026-11-01
  */
 
-await new Promise((resolve, reject) => {
-	const link = document.createElement('link');
-	link.rel     = 'stylesheet';
-	link.href    = new URL('./splitter.css', import.meta.url).href;
-	link.onload  = resolve;
-	link.onerror = () => reject(new Error('Failed to load splitter stylesheet: ' + link.href));
-	document.head.appendChild(link);
-});
+import './splitter.css';
 
 export class Splitter {
 

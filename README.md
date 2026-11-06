@@ -32,6 +32,11 @@ paths. The main process, CommonJS preload, exporters, execution URL providers,
 and classic `lib/injection.js` retain their existing paths and formats.
 There is no Vite development server or HMR in the Electron launch command yet.
 
+Study statically imports its UI components and their CSS. Vite combines the
+Study, component, and SweetAlert2 styles into one stylesheet linked from the
+built HTML; components do not insert stylesheet links at runtime. Field keeps
+its own stylesheet, and the prebuilt croq-mirror stylesheet remains separate.
+
 Runtime-selected language JSON and icons keep their paths under `study/res/`;
 version information is inserted into `resource.json` and `package.json`.
 SweetAlert2 is bundled by Vite, while the already-built croq-mirror distribution

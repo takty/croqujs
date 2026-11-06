@@ -5,15 +5,7 @@
  * @version 2026-11-01
  */
 
-// Load the component stylesheet before initialization completes.
-await new Promise((resolve, reject) => {
-	const link = document.createElement('link');
-	link.rel = 'stylesheet';
-	link.href = new URL('./output-pane.css', import.meta.url).href;
-	link.onload = resolve;
-	link.onerror = () => reject(new Error('Failed to load output stylesheet: ' + link.href));
-	document.head.appendChild(link);
-});
+import './output-pane.css';
 
 const MAX_SIZE = 100;
 const DELAY    = 100;

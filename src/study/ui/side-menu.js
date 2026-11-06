@@ -5,15 +5,7 @@
  * @version 2026-11-01
  */
 
-// Load the component stylesheet once, before initialization completes.
-await new Promise((resolve, reject) => {
-	const link = document.createElement('link');
-	link.rel = 'stylesheet';
-	link.href = new URL('./side-menu.css', import.meta.url).href;
-	link.onload = resolve;
-	link.onerror = () => reject(new Error('Failed to load menu stylesheet: ' + link.href));
-	document.head.appendChild(link);
-});
+import './side-menu.css';
 
 export class SideMenu {
 
