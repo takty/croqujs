@@ -58,8 +58,9 @@ async function getVersionInfo() {
 async function copyMain() {
 	await Promise.all([
 		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => {
+			if (relPath.startsWith('node_modules' + path.sep)) return false;
 			if (relPath.startsWith('study' + path.sep) || relPath.startsWith('field' + path.sep)) return false;
-			return !VERSION_PATHS.includes(relPath) && relPath !== path.join('lib', 'injection.js');
+			return !VERSION_PATHS.includes(relPath) && relPath !== 'index.html' && relPath !== path.join('lib', 'injection.js');
 		}),
 		copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
 			const name = path.basename(relPath);
@@ -128,7 +129,7 @@ async function build() {
 	// These paths are constructed at runtime and must retain their original names.
 	await copyFilesFiltered(path.join(SRC_DIR, 'study/res'), path.join(APP_DIR, 'study/res'));
 	await updateVersion();
-	await buildRenderer({ configFile: './vite.config.mjs' });
+	await buildRenderer({ configFile: './vite.config.mjs', mode: 'app' });
 }
 
 async function packageApp() {

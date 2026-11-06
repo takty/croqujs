@@ -8,7 +8,7 @@
 import { loadJSON, minmax } from './util.js';
 import { Config } from './config.js';
 import { ErrorTranslator } from './error-translator.js';
-import { SessionClient } from './session-client.js';
+import { Session } from '#session';
 import { Lsc } from '../lib/lsc.js';
 import { WinState } from '../lib/winstate.js';
 import { SideMenu } from './ui/side-menu.js';
@@ -23,7 +23,7 @@ export class Study {
 	constructor() {
 		this._id = window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
-		this._session = new SessionClient(this._id);
+		this._session = new Session(this._id);
 		this._lsc = new Lsc('#study_' + this._id);
 
 		this._winstate = new WinState(window, '$winstate_study');
@@ -138,7 +138,7 @@ export class Study {
 		this._initFieldConnection();
 
 		document.addEventListener('focus', (e) => {
-			navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
+			this._readClipboard();
 		});
 		setTimeout(() => { this._editor.refresh(); }, 0);  // For making the gutter width correct
 
@@ -147,12 +147,22 @@ export class Study {
 		const [msg, arg] = await this._session.doReady();
 		this._handleServerResponse(msg, arg);
 
-		navigator.clipboard.readText().then(clipText => this._reflectClipboardState(clipText));
+		this._readClipboard();
 		window.focus();
 	}
 
+	async _readClipboard() {
+		try {
+			const text = await navigator.clipboard.readText();
+			this._reflectClipboardState(text);
+		} catch {
+			// Clipboard access may be denied or unavailable until the document has focus.
+		}
+	}
+
 	async _initEditor() {
-		const editorUrl = new URL('../lib/croq-mirror/dist/croq-mirror.min.js', document.baseURI);
+		const root = new URL(import.meta.env.MODE === 'web' ? './' : '../', document.baseURI);
+		const editorUrl = new URL('lib/croq-mirror/dist/croq-mirror.min.js', root);
 		const { createEditor } = await import(/* @vite-ignore */ editorUrl.href);
 		this._editor = await createEditor(document.querySelector('#editor'), {
 			language  : this._lang,

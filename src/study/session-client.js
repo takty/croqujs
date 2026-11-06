@@ -116,3 +116,5 @@ export class SessionClient {
 	}
 
 }
+
+export { SessionClient as Session };

@@ -17,8 +17,7 @@ yarn dev
 | `node build.mjs --dir` | Build `app/`, then create an unpacked application in `dist-app/` |
 
 The existing `start`, `build`, `dev`, and `exec` commands remain available.
-`build` still creates distribution packages. `dist-web/` is reserved and ignored
-by Git; a browser build is not implemented in this step. Existing `dist/` output
+`build` still creates distribution packages. Existing `dist/` output
 is left untouched, and new packages go to `dist-app/`.
 
 Run commands from the repository root. `build.mjs` clears only the generated
@@ -51,6 +50,38 @@ node test/run-study-integration.mjs
 node test/run-study-integration.mjs ./main-integration.mjs
 node test/run-study-integration.mjs ./run-focus-integration.cjs
 ```
+
+## Provisional web build
+
+| Command | Result |
+| --- | --- |
+| `yarn dev:web` | Start Vite's development server and open Study |
+| `yarn build:web` | Build the browser application in `dist-web/` |
+| `yarn preview:web` | Serve the built `dist-web/` application with Vite |
+
+Use the URL printed by Vite (`/index.html`). This is the Study page itself,
+not a redirect. Copy the contents of `dist-web/` into any web-server directory
+(for example `hoge/`) and open `hoge/index.html`; asset URLs are relative to it. Development serves source files directly and supports Vite's
+CSS updates and page reloads. No Electron build or preload is required.
+The build clears `dist-web/`, which is ignored by Git. Use HTTP through the dev
+or preview server rather than opening the HTML as a local file.
+
+Study imports `#session`, resolved by Vite to `session-client.js` for the app
+build and `session-local.js` for `--mode web`. Both expose `Session`, while
+retaining the names `SessionClient` and `SessionLocal` respectively.
+The web build includes only Study; execution and the Field window are not wired
+up yet. SessionLocal initializes an empty editable document and supports New.
+Opening, dropping, saving, exporting, running, and closing through the menu
+currently display an unsupported-operation message and do not discard edits.
+Use the browser's tab controls to close the page. Edits are not saved persistently.
+
+`vite-web-resources.mjs` serves the prebuilt editor and version JSON during
+development and emits the editor, licenses, and Study resources during the web
+build. The editor's worker and relative URLs are preserved.
+
+After `yarn build:web`, run `node --test test/web-integration.test.cjs` to check
+initialization, editing, unsupported saving, and New through both Vite servers and a subdirectory deployment
+in an isolated Chromium renderer without Electron IPC or a preload.
 
 The editor is provided by `github:takty/croq-mirror#main`. `yarn.lock` pins the
 resolved commit. No sibling checkout or local editor build is required.

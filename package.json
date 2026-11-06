@@ -1,6 +1,6 @@
 {
 	"name": "croqujs",
-	"version": "5.9.4",
+	"version": "6.0.0",
 	"description": "The Playground for JavaScript",
 	"productName": "Croqujs",
 	"main": "app/main.js",
@@ -8,13 +8,12 @@
 	"license": "MIT",
 	"homepage": "https://github.com/takty/croqujs#readme",
 	"scripts": {
-		"start": "node build.mjs",
-		"build": "node build.mjs --package",
-		"dev": "node build.mjs && npm run exec",
-		"exec": "electron .",
 		"build:app": "node build.mjs",
 		"package:app": "node build.mjs --package",
-		"dev:app": "node build.mjs && electron ."
+		"dev:app": "node build.mjs && electron .",
+		"build:web": "vite build --mode web",
+		"dev:web": "vite --mode web",
+		"preview:web": "vite preview --mode web"
 	},
 	"repository": {
 		"type": "git",
