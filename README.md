@@ -7,6 +7,46 @@ yarn install
 yarn dev
 ```
 
+## Electron build
+
+| Command | Result |
+| --- | --- |
+| `yarn build:app` | Build the runnable Electron application in `app/` |
+| `yarn package:app` | Build `app/`, then create installers and archives in `dist-app/` |
+| `yarn dev:app` | Build `app/`, then launch Electron |
+| `node build.mjs --dir` | Build `app/`, then create an unpacked application in `dist-app/` |
+
+The existing `start`, `build`, `dev`, and `exec` commands remain available.
+`build` still creates distribution packages. `dist-web/` is reserved and ignored
+by Git; a browser build is not implemented in this step. Existing `dist/` output
+is left untouched, and new packages go to `dist-app/`.
+
+Run commands from the repository root. `build.mjs` clears only the generated
+`app/` directory before assembling it, so stale hashed bundles cannot accumulate.
+Do not store source or user files in `app/`.
+
+Vite builds the Study and Field HTML entries from `src/`, with relative asset
+URLs for Electron's `file:` pages. Bundled JS, CSS, fonts, and the output-pane
+worker are emitted under `app/assets/`. `app/.vite/manifest.json` records their
+paths. The main process, CommonJS preload, exporters, execution URL providers,
+and classic `lib/injection.js` retain their existing paths and formats.
+There is no Vite development server or HMR in the Electron launch command yet.
+
+Runtime-selected language JSON and icons keep their paths under `study/res/`;
+version information is inserted into `resource.json` and `package.json`.
+SweetAlert2 is bundled by Vite, while the already-built croq-mirror distribution
+is copied intact to preserve its worker and asset URLs. `electron-builder`
+continues to create the Electron distribution packages.
+
+Build and renderer validation:
+
+```console
+node --test test/build-output.test.mjs
+node test/run-study-integration.mjs
+node test/run-study-integration.mjs ./main-integration.mjs
+node test/run-study-integration.mjs ./run-focus-integration.cjs
+```
+
 The editor is provided by `github:takty/croq-mirror#main`. `yarn.lock` pins the
 resolved commit. No sibling checkout or local editor build is required.
 

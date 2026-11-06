@@ -153,7 +153,8 @@ export class Study {
 	}
 
 	async _initEditor() {
-		const { createEditor } = await import('../lib/croq-mirror/dist/croq-mirror.min.js');
+		const editorUrl = new URL('../lib/croq-mirror/dist/croq-mirror.min.js', document.baseURI);
+		const { createEditor } = await import(/* @vite-ignore */ editorUrl.href);
 		this._editor = await createEditor(document.querySelector('#editor'), {
 			language  : this._lang,
 			fontFamily: this._res.fontSet,

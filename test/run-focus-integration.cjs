@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { readFile, writeFile, unlink } = require('node:fs/promises');
 const path = require('node:path');
+const { withStudyInstance } = require('./renderer-html.cjs');
 const { pathToFileURL } = require('node:url');
 
 const root = path.resolve(__dirname, '..');
@@ -24,7 +25,7 @@ async function until(predicate, message) {
 app.whenReady().then(async () => {
 	try {
 		const { SessionServer } = await import('../app/session-server.js');
-		await writeFile(html, (await readFile(path.join(root, 'app/study/study.html'), 'utf8')).replace('new Study();', 'window.study = new Study();'), { flag: 'wx' });
+		await writeFile(html, withStudyInstance(await readFile(path.join(root, 'app/study/study.html'), 'utf8')), { flag: 'wx' });
 		created.push(html);
 		const programHTML = '<!doctype html><body><script src="../lib/injection.js"></script><script>'
 			+ 'document.body.dataset.ran = location.hash.split(",")[2]; console.log("LSC run " + document.body.dataset.ran);'

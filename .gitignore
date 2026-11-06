@@ -1,5 +1,7 @@
 /app/
 /dist/
+/dist-app/
+/dist-web/
 /node_modules/
 /test/.profiles/
 npm-debug.log

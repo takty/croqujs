@@ -5,6 +5,7 @@
 const { app, BrowserWindow, ipcMain, clipboard } = require('electron');
 const { readFile, writeFile, unlink } = require('node:fs/promises');
 const path = require('node:path');
+const { withStudyInstance } = require('./renderer-html.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const HTML = path.join(ROOT, 'app/study/study.integration.html');
@@ -19,7 +20,7 @@ app.whenReady().then(async () => {
 	try {
 		const { allowPaste } = await import('../app/session-server.js');
 		const html = await readFile(path.join(ROOT, 'app/study/study.html'), 'utf8');
-		await writeFile(HTML, html.replace('new Study();', 'window.study = new Study();'), { flag: 'wx' });
+		await writeFile(HTML, withStudyInstance(html), { flag: 'wx' });
 		created = true;
 		ipcMain.on('notifyServer_integration', (_event, method) => { calls.push({ method }); });
 		ipcMain.handle('callServer_integration', async (_event, method, ...args) => {
@@ -41,6 +42,7 @@ app.whenReady().then(async () => {
 		});
 		await allowPaste(window.webContents, HTML);
 		await window.loadFile(HTML, { hash: 'integration' });
+		const manifest = JSON.parse(await readFile(path.join(ROOT, 'app/.vite/manifest.json'), 'utf8'));
 		const checks = await window.webContents.executeJavaScript(`(async () => {
 			const checks = [];
 			const check = (condition, message) => {
@@ -50,8 +52,8 @@ app.whenReady().then(async () => {
 			await window.study.ready;
 			const s = window.study;
 			const e = s._editor;
-			const { OutputPane } = await import('./ui/output-pane.js');
-			check(!window.OutputPane && !document.querySelector('script[src$="output-pane.js"]') && document.querySelectorAll('link[href$="ui/output-pane.css"]').length === 1, 'Output pane loads as a module with one stylesheet');
+			const { OutputPane } = await import(${JSON.stringify('../' + manifest['study/ui/output-pane.js'].file)});
+			check(!window.OutputPane && !document.querySelector('script[src$="output-pane.js"]') && document.querySelectorAll('link[href*="/output-pane-"][href$=".css"]').length === 1, 'Output pane loads as a module with one stylesheet');
 			const output = document.querySelector('#output-pane');
 			s._outputPane.addError('Output error', 'err');
 			check(output.offsetHeight > 0, 'Output error opens the pane through the host callback');
@@ -91,8 +93,8 @@ app.whenReady().then(async () => {
 				standalone.remove();
 			}
 			const menu = document.querySelector('.side-menu');
-			const { Splitter } = await import('./ui/splitter.js');
-			check(document.querySelectorAll('link[href$="ui/splitter.css"]').length === 1, 'Splitter loads its own stylesheet once');
+			const { Splitter } = await import(${JSON.stringify('../' + manifest['study/ui/splitter.js'].file)});
+			check(document.querySelectorAll('link[href*="/splitter-"][href$=".css"]').length === 1, 'Splitter loads its own stylesheet once');
 			const handle = document.querySelector('#handle');
 			handle.click();
 			check(output.offsetHeight === 100 && document.querySelector('#editor').offsetHeight + 40 + 8 + output.offsetHeight === document.body.offsetHeight, 'Splitter handle opens output and resizes the editor');
@@ -136,7 +138,7 @@ app.whenReady().then(async () => {
 				host.remove();
 			}
 			const toolbar = document.querySelector('.toolbar');
-			check(!!document.querySelector('link[href="study.css"]') && !document.querySelector('link[href*="study.min.css"]'), 'Study loads the plain CSS beside its HTML');
+			check(!!document.querySelector('link[href*="/study-"][href$=".css"]'), 'Study loads its Vite-built stylesheet');
 			toolbar.style.transition = 'none';
 			document.documentElement.style.setProperty('--color-window', 'rgb(12, 34, 56)');
 			try {
@@ -147,8 +149,8 @@ app.whenReady().then(async () => {
 				toolbar.style.removeProperty('transition');
 			}
 			check(!window.SideMenu && !window.Toolbar && !document.querySelector('script[src$="side-menu.js"], script[src$="toolbar.js"]'), 'Menu and toolbar are loaded as modules');
-			await Promise.all([import('./ui/side-menu.js'), import('./ui/toolbar.js')]);
-			check(document.querySelectorAll('link[href$="ui/side-menu.css"]').length === 1 && document.querySelectorAll('link[href$="ui/toolbar.css"]').length === 1, 'Menu and toolbar styles load only once');
+			await Promise.all([import(${JSON.stringify('../' + manifest['study/ui/side-menu.js'].file)}), import(${JSON.stringify('../' + manifest['study/ui/toolbar.js'].file)})]);
+			check(document.querySelectorAll('link[href*="/side-menu-"][href$=".css"]').length === 1 && document.querySelectorAll('link[href*="/toolbar-"][href$=".css"]').length === 1, 'Menu and toolbar styles load only once');
 			check([...toolbar.querySelectorAll('[data-cmd]')].map(btn => btn.dataset.cmd).join(',') === 'menu,save,saveCopy,undo,copy,paste,tileWin,run' && toolbar.querySelectorAll('.filler').length === 2, 'JSON toolbar preserves button order and spacing');
 			check(getComputedStyle(toolbar).height === '40px' && getComputedStyle(toolbar.querySelector('.btn')).width === '64px', 'Standalone toolbar CSS preserves dimensions');
 			const menuButton = toolbar.querySelector('[data-cmd="menu"]');
@@ -188,7 +190,7 @@ app.whenReady().then(async () => {
 			const checkedItem = menu.querySelector('[data-cmd="toggleSoftWrap"]');
 			const wasChecked = checkedItem.classList.contains('checked');
 			checkedItem.classList.add('checked');
-			check(getComputedStyle(checkedItem, '::before').backgroundImage.endsWith('/study/res/icon-check.svg")'), 'Host check icon resolves from the host stylesheet');
+			check(getComputedStyle(checkedItem, '::before').backgroundImage.includes('/assets/icon-check-'), 'Host check icon resolves from the host stylesheet');
 			checkedItem.classList.toggle('checked', wasChecked);
 			check(menu.querySelectorAll('.caption').length === 5, 'JSON menu creates all sections');
 			check(menu.querySelector('[data-cmd="save"]').firstChild.textContent === s._res.menu.save, 'Menu label defaults to command key');
@@ -267,7 +269,7 @@ app.whenReady().then(async () => {
 			const promptCancel = s._dialogBox.showPromptWithOption('Name', 'info', '', '', 'Option');
 			document.querySelector('.swal2-cancel').click();
 			check((await promptCancel).isDismissed && !e.getState().disabled, 'Prompt cancellation restores editor');
-			check(document.querySelectorAll('link[href$="sweetalert2.min.css"]').length === 1 && document.querySelectorAll('link[href$="ui/dialog-box.css"]').length === 1, 'Dialog styles are loaded only once');
+			check(document.querySelectorAll('link[href*="/sweetalert2.min-"][href$=".css"]').length === 1 && document.querySelectorAll('link[href*="/dialog-box-"][href$=".css"]').length === 1, 'Dialog styles are loaded only once');
 			s._initDocument(null, 'exported', null, null, false, [], 'function exported() { return 3; }');
 			check(!e.getState().canUndo && !s._isModified, 'Document replacement resets modified state and history');
 			s._dialogBox.showPromptWithOption = async () => ({ value: ['Example', false] });

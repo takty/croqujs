@@ -19,7 +19,7 @@
 		"Splitter collapses output below its minimum height",
 		"Splitter responds to container resizing",
 		"Splitter destroy removes listeners and observer",
-		"Study loads the plain CSS beside its HTML",
+		"Study loads its Vite-built stylesheet",
 		"Shared CSS custom properties update both toolbar and menu",
 		"Menu and toolbar are loaded as modules",
 		"Menu and toolbar styles load only once",

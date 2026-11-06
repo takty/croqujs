@@ -5,13 +5,14 @@
  * @version 2026-11-01
  */
 
-import Swal from '../../lib/sweetalert2/sweetalert2.esm.min.js';
+import Swal from 'sweetalert2';
+import sweetAlertStyle from 'sweetalert2/dist/sweetalert2.min.css?url';
 
-function loadStyle(path) {
+function loadStyle(url) {
 	return new Promise((resolve, reject) => {
 		const link = document.createElement('link');
 		link.rel = 'stylesheet';
-		link.href = new URL(path, import.meta.url).href;
+		link.href = url;
 		link.onload = resolve;
 		link.onerror = () => reject(new Error('Failed to load dialog stylesheet: ' + link.href));
 		document.head.appendChild(link);
@@ -20,8 +21,8 @@ function loadStyle(path) {
 
 // Module initialization loads each stylesheet once, before any dialog is shown.
 await Promise.all([
-	loadStyle('../../lib/sweetalert2/sweetalert2.min.css'),
-	loadStyle('./dialog-box.css'),
+	loadStyle(sweetAlertStyle),
+	loadStyle(new URL('./dialog-box.css', import.meta.url).href),
 ]);
 
 export class DialogBox {
