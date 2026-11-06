@@ -13,6 +13,11 @@ export class BrowserFileSystem extends FileSystemBase {
 		this.#root = root;
 	}
 
+	/** Return a structured-cloneable handle for worker access. */
+	getDirectoryHandle() {
+		return this.#root;
+	}
+
 	get name() {
 		return this.#root.name;
 

@@ -9,7 +9,7 @@ import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
 import { NodeFileSystem } from './lib/fs-node.js';
 import { Backup } from './backup.js';
 import { NodeExporter } from './exporter-node.js';
-import { UrlProvider, LibraryError } from './url-provider.js';
+import { NodeUrlProvider, LibraryError } from './url-provider-node.js';
 
 const FS = new NodeFileSystem();
 const __dirname = FS.moduleDirectory(import.meta.url);
@@ -36,7 +36,7 @@ export class SessionServer {
 
 		this._backup      = new Backup(FS);
 		this._exporter    = new NodeExporter(FS, FS.joinPath(__dirname, './lib/injection.js'));
-		this._urlProvider = urlProvider ?? new UrlProvider(FS, id, this._exporter);
+		this._urlProvider = urlProvider ?? new NodeUrlProvider(FS, id, this._exporter);
 		this._codeCache   = '';
 
 		ipcMain.on('notifyServer_' + this._id, async (ev, msg, ...args) => {

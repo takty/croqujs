@@ -36,7 +36,7 @@ export class NodeExporter extends ExporterCore {
 		return [true, this._fs.joinPath(dirPath, content.entryPath)];
 	}
 
-	/** Save runtime content in the temporary directory owned by UrlProvider. */
+	/** Save runtime content in the temporary directory owned by NodeUrlProvider. */
 	async exportForExecution(codeText, filePath, dirPath) {
 		return this.exportAsWebPage(codeText, filePath, dirPath, true);
 	}

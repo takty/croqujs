@@ -6,9 +6,9 @@ const vm = require('node:vm');
 const { test, before } = require('node:test');
 
 // Load the built app so missing packaged parser dependencies fail this test.
-let Exporter, NodeFileSystem;
+let NodeExporter, NodeFileSystem;
 before(async () => {
-	({ Exporter } = await import('../app/exporter.js'));
+	({ NodeExporter } = await import('../app/exporter-node.js'));
 	({ NodeFileSystem } = await import('../app/lib/fs-node.js'));
 });
 
@@ -16,7 +16,7 @@ test('built exporter resolves and parses a local @use library', async () => {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'croqujs-exporter-'));
 	try {
 		fs.writeFileSync(path.join(directory, 'helpers.js'), 'function twice(value) { return value * 2; }');
-		const exporter = new Exporter(new NodeFileSystem(), path.join(__dirname, '../app/lib/injection.js'));
+		const exporter = new NodeExporter(new NodeFileSystem(), path.join(__dirname, '../app/lib/injection.js'));
 		const [success, output] = await exporter.exportAsWebPage(
 			'// @use helpers as HELPERS\nconsole.log(HELPERS.twice(3));',
 			path.join(directory, 'main.js'), directory,
@@ -38,7 +38,7 @@ test('built exporter copies nested dependencies and runtime injection', async ()
 		fs.writeFileSync(path.join(directory, 'nested', 'helper.js'), 'const message = "日本語";\n');
 		const outputDir = path.join(directory, 'output');
 		fs.mkdirSync(outputDir);
-		const exporter = new Exporter(new NodeFileSystem(), path.join(__dirname, '../app/lib/injection.js'));
+		const exporter = new NodeExporter(new NodeFileSystem(), path.join(__dirname, '../app/lib/injection.js'));
 		const [success, output] = await exporter.exportAsWebPage(
 			'// @need nested/helper.js\nconsole.log(message);',
 			path.join(directory, 'main.js'), outputDir, true,

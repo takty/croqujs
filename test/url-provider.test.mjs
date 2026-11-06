@@ -3,15 +3,15 @@ import * as fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { Exporter } from '../app/exporter.js';
+import { NodeExporter } from '../app/exporter-node.js';
 import { NodeFileSystem } from '../app/lib/fs-node.js';
-import { LibraryError, UrlProvider } from '../app/url-provider.js';
+import { LibraryError, NodeUrlProvider } from '../app/url-provider-node.js';
 
 test('issued URLs locate the injected program and expire independently per session', async () => {
 	const files = new NodeFileSystem();
 	const injection = fileURLToPath(new URL('../app/lib/injection.js', import.meta.url));
-	const first = new UrlProvider(files, 1, new Exporter(files, injection));
-	const second = new UrlProvider(files, 2, new Exporter(files, injection));
+	const first = new NodeUrlProvider(files, 1, new NodeExporter(files, injection));
+	const second = new NodeUrlProvider(files, 2, new NodeExporter(files, injection));
 	const text = 'console.log("first");';
 	try {
 		const url = new URL(await first.createUrl(text, null));
@@ -68,7 +68,7 @@ test('async generation cleans up on failure and allows a subsequent request', as
 		},
 		userCodeOffset() { return 12; },
 	};
-	const provider = new UrlProvider(files, 7, exporter);
+	const provider = new NodeUrlProvider(files, 7, exporter);
 	await assert.rejects(provider.createUrl('bad', null), /export failed/);
 	assert.equal(await provider.createUrl('ok', null), 'file:///temp-2/index.html#7,12');
 	await provider.dispose();

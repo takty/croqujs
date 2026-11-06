@@ -7,7 +7,6 @@ import vm from 'node:vm';
 import { ExporterCore } from '../app/exporter-core.js';
 import { BrowserExporter } from '../app/exporter-browser.js';
 import { NodeExporter } from '../app/exporter-node.js';
-import { Exporter } from '../app/exporter.js';
 import { FileSystemBase } from '../app/lib/fs-common.js';
 import { NodeFileSystem } from '../app/lib/fs-node.js';
 
@@ -17,6 +16,10 @@ class ReadOnlyFiles extends FileSystemBase {
 	constructor(entries = []) {
 		super();
 		this.files = new Map(entries);
+	}
+
+	async isFile(relative) {
+		return this.files.has(relative);
 	}
 
 	async readTextOrNull(relative) {
@@ -40,11 +43,13 @@ test('browser runtime returns transferable content using only reads', async () =
 	const [success, content] = await exporter.exportForExecution(code, 'project/main.js');
 	assert.equal(success, true);
 	assert.deepEqual(structuredClone(content), content);
-	assert.deepEqual([...content.files.keys()], ['lib/injection.js', 'helpers.lib.js', 'nested/raw.js', 'index.html']);
+	assert.deepEqual([...content.files.keys()], ['helpers.lib.js', 'index.html']);
 	const html = content.files.get(content.entryPath);
 	assert.match(html, /src="https:\/\/example.com\/lib.js"/);
 	assert.match(html, /src="nested\/raw.js"/);
-	assert.equal(content.files.get('nested/raw.js'), 'const value = 3;\n');
+	assert.equal(content.sources.get('nested/raw.js'), 'project/nested/raw.js');
+	assert.equal(content.sources.get('lib/injection.js'), 'lib/injection.js');
+	assert.equal(content.sourceDirectory, 'project');
 	assert.equal(content.userCodeOffset, html.indexOf('// @use'));
 	assert.equal(exporter.userCodeOffset(), content.userCodeOffset);
 	const context = {};
@@ -66,6 +71,21 @@ test('explicit content excludes runtime hooks and generates a usable library', a
 	vm.runInNewContext(library, context);
 	assert.equal(context.BUNDLE.run(), 6);
 	assert.equal(context.BUNDLE.HELPERS.twice(5), 10);
+});
+
+test('browser runtime does not preload static source bytes', async () => {
+	const files = new ReadOnlyFiles(entries);
+	const read = files.readTextOrNull.bind(files);
+	files.readTextOrNull = async path => {
+		assert.equal(path, 'project/helpers.js');
+		return read(path);
+	};
+	const exporter = new BrowserExporter(files);
+	assert.equal(await exporter.checkLibraryReadable(code, 'project/main.js'), true);
+	const [success, page] = await exporter.exportForExecution(code, 'project/main.js');
+	assert.equal(success, true);
+	assert.equal(page.files.has('lib/injection.js'), false);
+	assert.equal(page.files.has('nested/raw.js'), false);
 });
 
 test('missing dependencies and injection retain failure paths', async () => {
@@ -90,8 +110,7 @@ test('offset follows the actual title length and each result keeps its own offse
 	}
 });
 
-test('Node saves the same content, preserves the old entry point, and separates runtime from export', async t => {
-	assert.equal(Exporter, NodeExporter);
+test('Node saves the same content, separates runtime from export', async t => {
 	const root = await fs.mkdtemp(path.join(os.tmpdir(), 'croqujs-content-'));
 	t.after(() => fs.rm(root, { recursive: true, force: true }));
 	const files = new NodeFileSystem(root);

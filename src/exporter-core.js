@@ -116,20 +116,24 @@ export class ExporterCore {
 		return [true, libCode];
 	}
 
-	/** Return [true, { files: Map<relativePath, text>, entryPath, userCodeOffset }] or [false, missingPath]. */
-	async createWebPage(codeText, filePath, injection = false) {
+	/** Return generated files, or source mappings for static files when deferStaticFiles is enabled. */
+	async createWebPage(codeText, filePath, injection = false, { deferStaticFiles = false } = {}) {
 		const files = new Map();
+		const sources = new Map();
 		const lines = codeText.split('\n');
 		const decs = this._extractUseDeclarations(lines), libs = [];
 		const pushTag = (src) => { libs.push('<script src="' + src + '"></script>'); };
 		let title = 'Croqujs';
 
 		if (injection) {
-			const content = await this._fs.readTextOrNull(this._injectionPath);
-			if (content === null) {
-				return [false, this._injectionPath];
+			if (deferStaticFiles) {
+				if (!await this._isSourceFile(this._injectionPath)) return [false, this._injectionPath];
+				sources.set(INJECTION, this._injectionPath);
+			} else {
+				const content = await this._fs.readTextOrNull(this._injectionPath);
+				if (content === null) return [false, this._injectionPath];
+				files.set(INJECTION, content);
 			}
-			files.set(INJECTION, content);
 			pushTag(INJECTION);
 		}
 		if (filePath) {
@@ -153,11 +157,15 @@ export class ExporterCore {
 					let q = dec;
 					if (!p.startsWith('http')) {
 						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join('/');
-						const content = await this._fs.readTextOrNull(this._fs.joinPath(bp, p));
-						if (content === null) {
-							return [false, p];
+						const source = this._fs.joinPath(bp, p);
+						if (deferStaticFiles) {
+							if (!await this._isSourceFile(source)) return [false, p];
+							sources.set(q, source);
+						} else {
+							const content = await this._fs.readTextOrNull(source);
+							if (content === null) return [false, p];
+							files.set(q, content);
 						}
-						files.set(q, content);
 					}
 					pushTag(q);
 				}
@@ -176,10 +184,23 @@ export class ExporterCore {
 		this._userCodeOffset = head.length + libTagStr.length + HTML_HEAD2.length;
 
 		files.set('index.html', [head, libTagStr, HTML_HEAD2, lines.join(EXP_EOL), HTML_FOOT].join(''));
-		return [true, { files, entryPath: 'index.html', userCodeOffset: this._userCodeOffset }];
+		const result = { files, entryPath: 'index.html', userCodeOffset: this._userCodeOffset };
+		if (deferStaticFiles) {
+			result.sources = sources;
+			result.sourceDirectory = filePath ? this._fs.directoryName(filePath) : '';
+		}
+		return [true, result];
 	}
 
 	// -------------------------------------------------------------------------
+
+	async _isSourceFile(path) {
+		try {
+			return await this._fs.isFile(path);
+		} catch {
+			return false;
+		}
+	}
 
 	_extractUseDeclarations(lines) {
 		const USE = '@use', NEED = '@need', IMPORT = '@import', AS = 'as', EXT = '.js';

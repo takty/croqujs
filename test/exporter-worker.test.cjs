@@ -32,7 +32,7 @@ self.addEventListener('fetch', event => {
 			html: content.files.get(content.entryPath),
 			library: content.files.get('helper.lib.js'),
 			offset: content.userCodeOffset,
-			injection: content.files.has('lib/injection.js'),
+			injection: content.sources?.has('lib/injection.js') ?? false,
 			written: await files.exists('index.html'),
 		});
 	})());

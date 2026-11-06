@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import vm from 'node:vm';
 import { Backup } from '../app/backup.js';
-import { Exporter } from '../app/exporter.js';
+import { NodeExporter } from '../app/exporter-node.js';
 import { NodeFileSystem } from '../app/lib/fs-node.js';
 import { BrowserFileSystem } from '../app/lib/fs-browser.js';
 import { directoryHandle } from './fs-handles.mjs';
@@ -19,7 +19,7 @@ for (const [label, create] of [
 		t.after(() => native.rm(root, { recursive: true, force: true }));
 		const files = create(root);
 		const backup = new Backup(files);
-		const exporter = new Exporter(files);
+		const exporter = new NodeExporter(files);
 		assert.equal(backup._fs, files);
 		assert.equal(exporter._fs, files);
 		await files.writeText('main.js', 'old\r\n');
@@ -55,7 +55,7 @@ for (const [label, create] of [
 		assert.deepEqual(await exporter.copyLibraryOfTemplate('// @need helper.js', 'main.js', 'copies'), [true]);
 		assert.equal(await files.readText('copies/helper.js'), await files.readText('helper.js'));
 		assert.deepEqual(await exporter.exportAsWebPage('// @need missing.js', 'main.js', 'output'), [false, 'missing.js']);
-		const missingInjection = new Exporter(files, 'absent-injection.js');
+		const missingInjection = new NodeExporter(files, 'absent-injection.js');
 		assert.deepEqual(await missingInjection.exportAsWebPage('', null, 'output', true), [false, 'absent-injection.js']);
 	});
 }
