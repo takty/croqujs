@@ -39,5 +39,6 @@ test('renderer bundles select only the session implementation for their build ta
 		}
 		assert.ok(sources.some(source => source.endsWith('/' + included)), directory);
 		assert.ok(!sources.some(source => source.endsWith('/' + excluded)), directory);
+		assert.equal(sources.some(source => source.endsWith('/open-project-dialog.js')), directory === 'dist-web');
 	}
 });

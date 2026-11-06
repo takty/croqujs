@@ -5,7 +5,7 @@ const { test } = require('node:test');
 
 async function checkRenderer() {
 	const { BrowserWindow } = require('electron');
-	const window = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true } });
+	const window = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, partition: 'web-integration-' + process.pid } });
 	window.webContents.setWindowOpenHandler(() => ({ action: 'allow', overrideBrowserWindowOptions: { show: false } }));
 	const errors = [];
 	window.webContents.on('console-message', event => {
@@ -73,6 +73,105 @@ async function checkRenderer() {
 		const nextField = await reopened;
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 44', nextField.webContents);
 		nextField.destroy();
+		// Replace only native picker UI; use real directory/file handles and worker reads.
+		await evaluate(`(async () => {
+			const storage = await navigator.storage.getDirectory();
+			window.projectRoots = [];
+			window.projectScripts = [];
+			for (const value of [101, 202]) {
+				const root = await storage.getDirectoryHandle('project-' + value, { create: true });
+				const test = await root.getDirectoryHandle('test', { create: true });
+				for (const [directory, name, code] of [[root, 'support.js', 'window.libraryReady = true;'], [test, 'local.js', 'window.localReady = true;']]) {
+					const dependency = await (await directory.getFileHandle(name, { create: true })).createWritable();
+					await dependency.write(code);
+					await dependency.close();
+				}
+				const script = await test.getFileHandle('main.js', { create: true });
+				let writer = await script.createWritable();
+				await writer.write('// @need ../support ./local\\nfetch("../data.json").then(r => r.json()).then(data => { if (!window.libraryReady || !window.localReady) throw new Error("Dependency missing"); window.result = data.value; });');
+				await writer.close();
+				writer = await (await root.getFileHandle('data.json', { create: true })).createWritable();
+				await writer.write(JSON.stringify({ value }));
+				await writer.close();
+				projectRoots.push(root);
+				projectScripts.push(script);
+			}
+			window.rootChoice = 0;
+			window.scriptChoice = 0;
+			window.cancelPicker = false;
+			window.showDirectoryPicker = async options => {
+				if (options.mode !== 'read') throw new Error('Expected read-only root access');
+				if (cancelPicker) throw new DOMException('Cancelled', 'AbortError');
+				return projectRoots[rootChoice];
+			};
+			window.showOpenFilePicker = async options => {
+				if (!options.startIn) throw new Error('Expected root as picker starting directory');
+				if (cancelPicker) throw new DOMException('Cancelled', 'AbortError');
+				return [projectScripts[scriptChoice]];
+			};
+		})()`);
+		const openDialog = async () => {
+			await evaluate('document.querySelector("[data-cmd=open]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+			await waitFor('!!document.querySelector("dialog[open], .swal2-confirm")');
+			if (await evaluate('!!document.querySelector(".swal2-confirm")')) await evaluate('document.querySelector(".swal2-confirm").click()');
+			await waitFor('!!document.querySelector("dialog[open]")');
+		};
+		const choose = action => evaluate(`document.querySelector('dialog [data-action="${action}"]').click()`);
+		await openDialog();
+		assert.equal(await evaluate('document.querySelector("dialog [data-action=file]").disabled'), true);
+		await evaluate('window.dispatchEvent(new KeyboardEvent("keydown", { key: "n", ctrlKey: true, metaKey: true, bubbles: true }))');
+		assert.equal(await evaluate('!!document.querySelector(".swal2-popup")'), false);
+		await choose('cancel');
+		await waitFor('!document.querySelector("dialog")');
+		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("run-44")'), true);
+		await openDialog();
+		await choose('root');
+		await waitFor('!document.querySelector("dialog [data-action=file]").disabled');
+		await evaluate('scriptChoice = 1');
+		await choose('file');
+		await waitFor('!!document.querySelector("dialog [role=alert]").textContent');
+		assert.equal(await evaluate('document.querySelector("dialog [data-action=open]").disabled'), true);
+		await evaluate('scriptChoice = 0');
+		await choose('file');
+		await waitFor('!document.querySelector("dialog [data-action=open]").disabled');
+		await evaluate('cancelPicker = true');
+		await choose('root');
+		await waitFor('!document.querySelector("dialog [data-action=open]").disabled');
+		assert.equal(await evaluate('document.querySelector("dialog [data-value=file]").textContent'), 'test/main.js');
+		await evaluate('cancelPicker = false');
+		await evaluate('(async () => (await projectRoots[0].getDirectoryHandle("test")).removeEntry("main.js"))()');
+		await choose('open');
+		await waitFor('!!document.querySelector("dialog [role=alert]").textContent');
+		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("run-44")'), true);
+		await evaluate(`(async () => {
+			const directory = await projectRoots[0].getDirectoryHandle('test');
+			projectScripts[0] = await directory.getFileHandle('main.js', { create: true });
+			const writer = await projectScripts[0].createWritable();
+			await writer.write('// @need ../support ./local\\nfetch("../data.json").then(r => r.json()).then(data => { if (!window.libraryReady || !window.localReady) throw new Error("Dependency missing"); window.result = data.value; });');
+			await writer.close();
+		})()`);
+		await choose('open');
+		await waitFor('!document.querySelector("dialog") && document.title.includes("main.js")');
+		const projectOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
+		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		const projectField = await projectOpened;
+		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 101', projectField.webContents);
+		assert.match(await projectField.webContents.executeJavaScript('document.querySelector("iframe").src'), /\/test\/#/);
+		await openDialog();
+		assert.equal(await evaluate('document.querySelector("dialog [data-value=root]").textContent'), 'project-101');
+		await choose('file');
+		await waitFor('!document.querySelector("dialog [data-action=open]").disabled');
+		await evaluate('rootChoice = 1; scriptChoice = 1');
+		await choose('root');
+		await waitFor('document.querySelector("dialog [data-value=root]").textContent === "project-202"');
+		assert.equal(await evaluate('document.querySelector("dialog [data-action=open]").disabled'), true);
+		await choose('file');
+		await waitFor('!document.querySelector("dialog [data-action=open]").disabled');
+		await choose('open');
+		await waitFor('!document.querySelector("dialog")');
+		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 202', projectField.webContents);
+		projectField.destroy();
 		assert.deepEqual(errors, []);
 	} finally {
 		for (const view of BrowserWindow.getAllWindows()) view.destroy();

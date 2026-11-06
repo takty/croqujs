@@ -97,6 +97,7 @@ export class Study {
 			onCommand: (cmd, close) => this.executeCommand(cmd, close),
 			onClose: () => this._editor.focus(),
 			shouldHandleShortcut: (e) => {
+				if (document.querySelector('dialog[open]')) return false;
 				// Leave copying text in the output pane to the browser on Mac.
 				const isMac = navigator.platform.toLowerCase().indexOf('mac') !== -1;
 				const isCopy = e.metaKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'c';
@@ -243,6 +244,7 @@ export class Study {
 
 	_configUpdated(cfg) {
 		this._lang = cfg.language;
+		document.documentElement.lang = this._lang;
 
 		this._editor.setSettings({
 			lineWrapping       : cfg.softWrap,

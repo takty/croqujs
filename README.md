@@ -76,12 +76,20 @@ Closing Field manually allows it to be reopened on the next Run. Study assigns
 an independent session ID to each page instance. Allow pop-ups for the site;
 Field is opened directly from the Run action, before asynchronous generation.
 
-SessionLocal initializes an empty editable document and supports New and Run.
-Opening, dropping, saving, exporting, execution without a window, and closing
-through the menu still display an unsupported-operation message. Use browser
-controls to close the page. Edits are not saved persistently. The session accepts
-an optional `{ files, filePath }` project context for future file-picker wiring;
-the current UI runs unsaved code without requesting filesystem access.
+SessionLocal supports New, Open, and Run. Open displays a minimal web dialog:
+choose a root directory first, then choose a `.js` file inside it, and confirm
+with Open. The buttons invoke browser-native pickers with read access. The
+selected root and root-relative script path are shown; files outside the root
+are rejected. Changing the root clears the script selection. Cancelling leaves
+the current document and execution context unchanged. The root is reused as the
+initial selection on the next Open, but is not persisted across page reloads.
+
+Running `test/main.js` uses the chosen root for assets such as `../data.json`.
+Switching projects releases the old execution URL before creating a new provider.
+New clears the current file path while retaining the root for the next Open.
+Dropping, saving, exporting, execution without a window, and closing through the
+menu still display an unsupported-operation message. Use browser controls to
+close the page. Edits are not saved persistently.
 
 `vite-web-resources.mjs` serves the prebuilt editor and version JSON during
 development and emits the editor, licenses, and Study resources during the web
@@ -90,9 +98,12 @@ its path helper, and the generated classic injection script. The editor's worker
 and relative URLs are preserved.
 
 After `yarn build:web`, run `node --test test/web-integration.test.cjs` to check
-initialization, editing, execution output, Field reuse, Stop, reopening, and New
+initialization, editing, execution output, Field reuse, Stop, reopening, New,
+project selection, cancellation, outside-root rejection, and project switching
 through both Vite servers and a subdirectory deployment
-in an isolated Chromium renderer without Electron IPC or a preload.
+in an isolated Chromium renderer without Electron IPC or a preload. Picker
+buttons use substituted picker functions in this test, with real OPFS directory
+and file handles; native OS picker interactions are not automated.
 
 The editor is provided by `github:takty/croq-mirror#main`. `yarn.lock` pins the
 resolved commit. No sibling checkout or local editor build is required.

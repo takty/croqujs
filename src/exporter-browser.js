@@ -6,6 +6,7 @@
  */
 
 import { ExporterCore } from './exporter-core.js';
+import { splitPath } from './lib/fs-common.js';
 
 /** Generates content without writes, DOM access, or Node dependencies. */
 export class BrowserExporter extends ExporterCore {
@@ -26,9 +27,27 @@ export class BrowserExporter extends ExporterCore {
 		for (const declaration of this._extractUseDeclarations(codeStr.split('\n'))) {
 			const path = Array.isArray(declaration) ? declaration[0] : declaration;
 			if (path.startsWith('http')) continue;
-			if (base === null || !await this._isSourceFile(this._fs.joinPath(base, path))) return path;
+			if (base === null || !await this._isSourceFile(this._resolveDependency(base, path))) return path;
 		}
 		return true;
+	}
+
+	/** Resolve declarations against the script directory without leaving the selected root. */
+	_resolveDependency(base, relative) {
+		const parts = splitPath(base);
+		if (relative.startsWith('/')) throw new TypeError('Dependency paths must be relative: ' + relative);
+		for (const part of relative.split('/')) {
+			if (part === '.' || part === '') continue;
+			if (part === '..') {
+				if (!parts.length) throw new TypeError('Dependency path escapes the selected root: ' + relative);
+				parts.pop();
+			} else {
+				parts.push(...splitPath(part, false));
+			}
+		}
+		const path = parts.join('/');
+		splitPath(path, false);
+		return path;
 	}
 
 	/** Return runtime files for a browser or Service Worker to serve. */
@@ -39,9 +58,9 @@ export class BrowserExporter extends ExporterCore {
 		if (!success) return [false, content];
 		const directory = filePath ? this._fs.directoryName(filePath) : '';
 		const relocate = entries => new Map([...entries].map(([name, value]) => [this._fs.joinPath(directory, name), value]));
-		content.files = relocate(content.files);
-		content.sources = relocate(content.sources);
-		content.entryPath = this._fs.joinPath(directory, content.entryPath);
+		content.files           = relocate(content.files);
+		content.sources         = relocate(content.sources);
+		content.entryPath       = this._fs.joinPath(directory, content.entryPath);
 		content.sourceDirectory = '';
 		return [true, content];
 	}

@@ -9,6 +9,8 @@ import { BrowserExporter } from '../exporter-browser.js';
 import { BrowserUrlProvider } from '../url-provider-browser.js';
 import { FileSystemBase } from '../lib/fs-common.js';
 import { Lsc } from '../lib/lsc.js';
+import { BrowserFileSystem } from '../lib/fs-browser.js';
+import { showOpenProjectDialog } from './ui/open-project-dialog.js';
 
 export class SessionLocal {
 
@@ -21,6 +23,7 @@ export class SessionLocal {
 	#openError = null;
 	#files;
 	#filePath;
+	#opening = null;
 
 	constructor(id, { files = new FileSystemBase(), filePath = null } = {}) {
 		this.#id = id;
@@ -100,15 +103,37 @@ export class SessionLocal {
 		return this.doNew();
 	}
 
-	doNew() {
+	async doNew() {
 		this.onStudyProgramClosed();
+		await this.#cleanup;
+		this.#provider = null;
+		this.#filePath = null;
 		return ['init', [null, '', '', '', false, [], '']];
 	}
 
 	doUnmaximize() { return ['nop']; }
 
 	// File commands will be connected to the browser adapters later.
-	doOpen() { return this.#unsupported(); }
+	async doOpen() {
+		if (this.#opening) return ['nop'];
+		this.#opening = showOpenProjectDialog({
+			root: this.#files.getDirectoryHandle?.() ?? null,
+			open: async (root, filePath) => {
+				const files = new BrowserFileSystem(root);
+				const text = await files.readText(filePath);
+				const definitions = await new BrowserExporter(files).loadDefJsons(text, filePath);
+				this.onStudyProgramClosed();
+				await this.#cleanup;
+				this.#provider = null;
+				this.#files = files;
+				this.#filePath = filePath;
+				return ['init', [filePath, files.baseName(filePath, '.js'), files.baseName(filePath),
+					files.directoryName(filePath), false, definitions, text]];
+			},
+		});
+		try { return await this.#opening ?? ['nop']; }
+		finally { this.#opening = null; }
+	}
 	doClose() { return this.#unsupported(); }
 	doFileDropped() { return this.#unsupported(); }
 	doSave() { return this.#unsupported(); }

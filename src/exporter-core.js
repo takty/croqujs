@@ -40,7 +40,7 @@ export class ExporterCore {
 			} else {
 				let cont = null;
 				if (bp !== null) {
-					cont = await this._fs.readTextOrNull(this._fs.joinPath(bp, p));
+					cont = await this._fs.readTextOrNull(this._resolveDependency(bp, p));
 				}
 				if (cont === null) {
 					return p;  // Error
@@ -64,7 +64,7 @@ export class ExporterCore {
 				if (bp === null) {
 					continue;
 				}
-				const path = fs.joinPath(bp, p);
+				const path = this._resolveDependency(bp, p);
 				const cont = await fs.readTextOrNull(path);
 				if (cont === null) {
 					continue;  // Error
@@ -102,7 +102,7 @@ export class ExporterCore {
 				if (!Array.isArray(dec)) {
 					continue;
 				}
-				const libPath = this._fs.joinPath(bp, dec[0]), libNs = dec[1];
+				const libPath = this._resolveDependency(bp, dec[0]), libNs = dec[1];
 				const libCode = await this._readAsLibraryCode(libPath, libNs, 1);
 				if (libCode === false) {
 					return [false, dec[0]];
@@ -147,8 +147,9 @@ export class ExporterCore {
 					if (p.startsWith('http')) {
 						return [false, p];
 					}
-					const destFn  = this._fs.baseName(p, this._fs.extension(p)) + '.lib.js';
-					const content = await this._readAsLibraryCode(this._fs.joinPath(bp, p), dec[1]);
+					const source = this._resolveDependency(bp, p);
+					const destFn  = this._fs.baseName(source, this._fs.extension(source)) + '.lib.js';
+					const content = await this._readAsLibraryCode(source, dec[1]);
 					if (content === false) {
 						return [false, p];
 					}
@@ -158,8 +159,8 @@ export class ExporterCore {
 					const p = dec;
 					let q = dec;
 					if (!p.startsWith('http')) {
-						q = q.split(/\/|\\/).map(e => { return e === '..' ? '_' : e; }).join('/');
-						const source = this._fs.joinPath(bp, p);
+						q = q.split(/\/|\\/).filter(e => e !== '.' && e !== '').map(e => { return e === '..' ? '_' : e; }).join('/');
+						const source = this._resolveDependency(bp, p);
 						if (deferStaticFiles) {
 							if (!await this._isSourceFile(source)) return [false, p];
 							sources.set(q, source);
@@ -195,6 +196,10 @@ export class ExporterCore {
 	}
 
 	// -------------------------------------------------------------------------
+
+	_resolveDependency(base, relative) {
+		return this._fs.joinPath(base, relative);
+	}
 
 	async _isSourceFile(path) {
 		try {

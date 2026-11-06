@@ -36,6 +36,30 @@ const entries = [
 ];
 const code = '// @use helpers as HELPERS\n// @need nested/raw.js\n// @import https://example.com/lib.js\nfunction run() { return HELPERS.twice(3); }';
 
+test('browser dependencies resolve dot segments inside the project root', async () => {
+	const files = new ReadOnlyFiles([
+		['dist/library.js', 'function twice(x) { return x * 2; }'],
+		['dist/def/library.json', '{"name":"library"}'],
+		['sample/local.js', 'window.local = true;'],
+	]);
+	const exporter = new BrowserExporter(files, undefined, '// hooks');
+	const text = '// @need ../dist/library ./local\n// @use ../dist/library as LIB\nconsole.log(LIB.twice(2));';
+	assert.equal(await exporter.checkLibraryReadable(text, 'sample/sample1.js'), true);
+	assert.deepEqual(await exporter.loadDefJsons(text, 'sample/sample1.js'), ['{"name":"library"}', '{"name":"library"}']);
+	const [ok, content] = await exporter.exportForExecution(text, 'sample/sample1.js');
+	assert.equal(ok, true);
+	assert.equal(content.entryPath, 'sample/index.html');
+	assert.equal(content.sources.get('sample/_/dist/library.js'), 'dist/library.js');
+	assert.equal(content.sources.get('sample/local.js'), 'sample/local.js');
+	assert.ok(content.files.has('sample/library.lib.js'));
+	for (const relative of ['../../outside', '/absolute', '../C:/outside', '..\\outside']) {
+		const invalid = '// @need ' + relative;
+		await assert.rejects(exporter.loadDefJsons(invalid, 'sample/sample1.js'), TypeError);
+		await assert.rejects(exporter.checkLibraryReadable(invalid, 'sample/sample1.js'), TypeError);
+		await assert.rejects(exporter.exportForExecution(invalid, 'sample/sample1.js'), TypeError);
+	}
+});
+
 test('browser runtime returns transferable content using only reads', async () => {
 	const exporter = new BrowserExporter(new ReadOnlyFiles(entries));
 	assert.equal(await exporter.checkLibraryReadable(code, 'project/main.js'), true);

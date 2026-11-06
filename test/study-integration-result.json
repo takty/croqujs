@@ -72,7 +72,7 @@
 		"Out-of-range error line is clamped through public API",
 		"Public clipboard events update host state before cutting",
 		"Host clipboard commands reach component",
-		"Toolbar inserts actual system clipboard text through the original editor command",
+		"SKIPPED: real paste check requires nonempty system clipboard text",
 		"Export uses the matching current source and analysis",
 		"Save and run receive the component document"
 	]
