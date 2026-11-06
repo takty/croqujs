@@ -120,14 +120,14 @@ the Electron execution URL still uses temporary files.
 
 `NodeUrlProvider` in `src/url-provider-node.js` is used by SessionServer with
 NodeExporter. It keeps the existing temporary-file creation, URL generation, and
-cleanup behavior. `src/url-provider.js` retains `UrlProvider` as a compatibility
-alias. Both providers share the `LibraryError` class in `url-provider-common.js`.
+cleanup behavior. Each provider defines and exports its own `LibraryError` class.
 
 `BrowserUrlProvider` in `src/url-provider-browser.js` uses BrowserExporter and
 registers the module Service Worker `url-provider-worker.js`. It sends generated
 content through a MessageChannel and returns a URL only after the worker has
 stored the generated files in Cache Storage and the source mapping in IndexedDB.
-No generated files are saved through the supplied filesystem.
+No generated files are saved through the supplied filesystem. The worker also
+contains the IndexedDB mapping storage and file-response handling.
 
 For any other request, the worker reads the file at request time from the supplied
 BrowserFileSystem root handle. Explicit `sources` mappings take precedence over
@@ -196,7 +196,7 @@ After `node build.mjs`, run:
 
 ```console
 node --test test/exporter.test.cjs test/exporter-content.test.mjs test/exporter-worker.test.cjs test/url-provider.test.mjs test/session-server-async.test.cjs
-node --test test/url-provider-browser-errors.test.mjs test/url-provider-browser.test.cjs test/url-provider-file-response.test.mjs
+node --test test/url-provider-browser-errors.test.mjs test/url-provider-browser.test.cjs
 ```
 
 The worker test runs a hidden Chromium window through Electron, loads the browser

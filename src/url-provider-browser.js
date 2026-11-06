@@ -5,8 +5,7 @@
  * @version 2026-11-06
  */
 
-import { LibraryError } from './url-provider-common.js';
-export { LibraryError } from './url-provider-common.js';
+export class LibraryError extends Error {}
 
 const MESSAGE_TYPE = 'croqujs-execution';
 const TIMEOUT = 30000;

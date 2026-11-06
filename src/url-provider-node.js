@@ -5,8 +5,7 @@
  * @version 2026-11-06
  */
 
-import { LibraryError } from './url-provider-common.js';
-export { LibraryError } from './url-provider-common.js';
+export class LibraryError extends Error {}
 
 /** Issues program URLs for one session. A URL is valid until replacement or disposal. */
 export class NodeUrlProvider {

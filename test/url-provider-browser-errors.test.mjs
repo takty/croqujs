@@ -1,13 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { BrowserUrlProvider, LibraryError } from '../app/url-provider-browser.js';
-import { NodeUrlProvider } from '../app/url-provider-node.js';
-import { UrlProvider, LibraryError as LegacyLibraryError } from '../app/url-provider.js';
-
-test('Node compatibility entry and browser errors share the same error class', () => {
-	assert.equal(UrlProvider, NodeUrlProvider);
-	assert.equal(LegacyLibraryError, LibraryError);
-});
 
 test('unreadable libraries fail before browser registration or generation', async () => {
 	const provider = new BrowserUrlProvider(1, {

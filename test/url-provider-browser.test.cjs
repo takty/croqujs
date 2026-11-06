@@ -55,7 +55,7 @@ async function checkProvider() {
 			const secondUrl = await second.createUrl('window.result = 99;', null);
 			let missing;
 			try { await first.createUrl('// @need missing.js', 'main.js'); }
-			catch (error) { missing = error instanceof (await import('/app/url-provider-common.js')).LibraryError; }
+			catch (error) { missing = error instanceof (await import('/app/url-provider-browser.js')).LibraryError; }
 			window.originalUrl = firstUrl;
 			return { firstUrl, secondUrl, missing, outputWritten: await files.exists('index.html'), controller: !!navigator.serviceWorker.controller };
 		})()`);
@@ -106,6 +106,25 @@ async function checkProvider() {
 		assert.equal(staticFiles.rangeStatus, 206);
 		assert.deepEqual(staticFiles.image, [2, 3]);
 		assert.equal(staticFiles.invalid, 400);
+		const responses = await execution.webContents.executeJavaScript(`(async () => {
+			const head = await fetch('data.bin', { method: 'HEAD' });
+			const ranges = [];
+			for (const value of ['bytes=1-2', 'bytes=2-', 'bytes=-2', 'bytes=0-100',
+				'bytes=4-', 'bytes=3-1', 'bytes=-0', 'bytes=-', 'bytes=0-1,2-3', 'bytes=999999999999999999-']) {
+				const response = await fetch('data.bin', { headers: { Range: value } });
+				ranges.push([response.status, response.headers.get('Content-Range'),
+					[...new Uint8Array(await response.arrayBuffer())]]);
+			}
+			return { head: [head.headers.get('Content-Length'), head.headers.get('Cache-Control'), await head.text()], ranges };
+		})()`);
+		assert.deepEqual(responses.head, ['4', 'no-store', '']);
+		assert.deepEqual(responses.ranges.slice(0, 4), [
+			[206, 'bytes 1-2/4', [128, 255]],
+			[206, 'bytes 2-3/4', [255, 10]],
+			[206, 'bytes 2-3/4', [255, 10]],
+			[206, 'bytes 0-3/4', [0, 128, 255, 10]],
+		]);
+		for (const response of responses.ranges.slice(4)) assert.deepEqual(response, [416, 'bytes */4', []]);
 		await host.webContents.executeJavaScript(`(async () => {
 			await files.writeText('project/data.json', '{"value":2}');
 			await files.writeText('project/new.txt', 'created after execution started');
