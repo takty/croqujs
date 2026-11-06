@@ -43,17 +43,17 @@ test('browser runtime returns transferable content using only reads', async () =
 	const [success, content] = await exporter.exportForExecution(code, 'project/main.js');
 	assert.equal(success, true);
 	assert.deepEqual(structuredClone(content), content);
-	assert.deepEqual([...content.files.keys()], ['helpers.lib.js', 'index.html']);
+	assert.deepEqual([...content.files.keys()], ['project/helpers.lib.js', 'project/index.html']);
 	const html = content.files.get(content.entryPath);
 	assert.match(html, /src="https:\/\/example.com\/lib.js"/);
 	assert.match(html, /src="nested\/raw.js"/);
-	assert.equal(content.sources.get('nested/raw.js'), 'project/nested/raw.js');
-	assert.equal(content.sources.get('lib/injection.js'), 'lib/injection.js');
-	assert.equal(content.sourceDirectory, 'project');
+	assert.equal(content.sources.get('project/nested/raw.js'), 'project/nested/raw.js');
+	assert.equal(content.sources.get('project/lib/injection.js'), 'lib/injection.js');
+	assert.equal(content.sourceDirectory, '');
 	assert.equal(content.userCodeOffset, html.indexOf('// @use'));
 	assert.equal(exporter.userCodeOffset(), content.userCodeOffset);
 	const context = {};
-	vm.runInNewContext(content.files.get('helpers.lib.js'), context);
+	vm.runInNewContext(content.files.get('project/helpers.lib.js'), context);
 	assert.equal(context.HELPERS.twice(4), 8);
 });
 
@@ -122,7 +122,7 @@ test('Node saves the same content, separates runtime from export', async t => {
 	const [success, page] = await new BrowserExporter(new ReadOnlyFiles(entries)).exportForExecution(code, 'project/main.js');
 	assert.equal(success, true);
 	assert.deepEqual(await exporter.exportForExecution(code, 'project/main.js', 'runtime'), [true, 'runtime/index.html']);
-	for (const [relative, text] of page.files) assert.equal(await files.readText('runtime/' + relative), text);
+	for (const [relative, text] of page.files) assert.equal(await files.readText('runtime/' + relative.slice('project/'.length)), text);
 	assert.deepEqual(await exporter.exportAsWebPage(code, 'project/main.js', 'saved'), [true, 'saved/index.html']);
 	assert.equal(await files.exists('saved/lib/injection.js'), false);
 	assert.deepEqual(await exporter.exportAsLibrary(code, 'project/bundle.js', 'BUNDLE', { fnNames: ['run'] }, true), [true, 'project/bundle.js']);

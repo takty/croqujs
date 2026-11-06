@@ -1,3 +1,5 @@
+import { installInjection } from './src/lib/injection.js';
+import { Lsc } from './src/lib/lsc.js';
 import path from 'node:path';
 import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -18,6 +20,7 @@ export function webResources() {
 	}
 	const ready = (async () => {
 		await collect(path.join(root, 'study/res'), 'res/');
+		for (const name of ['url-provider-worker.js', 'lib/fs-common.js', 'lib/injection.js']) files.set(name, path.join(root, name));
 		for (const name of ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css']) {
 			files.set('lib/croq-mirror/dist/' + name, path.join(editor, name));
 			if (name.endsWith('.js')) files.set('lib/croq-mirror/dist/' + name + '.map', path.join(editor, name + '.map'));
@@ -28,6 +31,7 @@ export function webResources() {
 		files.set('lib/sweetalert2/LICENSE', fileURLToPath(new URL('../LICENSE', import.meta.resolve('sweetalert2'))));
 	})();
 	async function contents(name) {
+		if (name === 'lib/injection.js') return `(${installInjection})(${Lsc});\n`;
 		const source = await readFile(files.get(name));
 		if (name !== 'res/resource.json') return source;
 		const { version } = await metadata;

@@ -45,6 +45,7 @@ async function checkProvider() {
 			await files.writeText('project/helper.js', 'function twice(x) { return x * 2; }');
 			await files.writeText('project/nested/raw.js', 'window.rawValue = 7;');
 			window.files = files;
+			await files.writeText('root.txt', 'root asset');
 			await files.writeText('project/data.json', '{"value":1}');
 			await files.writeFile('project/data.bin', new Uint8Array([0, 128, 255, 10]));
 			await files.writeText('project/image.svg', '<svg xmlns="http://www.w3.org/2000/svg" width="2" height="3"></svg>');
@@ -62,6 +63,7 @@ async function checkProvider() {
 		assert.equal(urls.missing, true);
 		assert.equal(urls.outputWritten, false);
 		assert.equal(urls.controller, false); // The provider's worker does not take over the host page.
+		assert.match(new URL(urls.firstUrl).pathname, /\/__croqujs_run__\/[0-9a-f-]+\/project\/$/);
 		assert.notEqual(new URL('.', urls.firstUrl).href, new URL('.', urls.secondUrl).href);
 		await execution.loadURL(urls.firstUrl);
 		const loaded = await execution.webContents.executeJavaScript(`(async () => {
@@ -86,18 +88,20 @@ async function checkProvider() {
 
 
 		const staticFiles = await execution.webContents.executeJavaScript(`(async () => {
+			const root = await (await fetch('../root.txt')).text();
 			const data = await fetch('data.json');
 			const binary = await fetch('data.bin');
 			const range = await fetch('data.bin', { headers: { Range: 'bytes=1-2' } });
 			const image = new Image();
 			image.src = 'image.svg';
 			await image.decode();
-			return { json: await data.json(), jsonType: data.headers.get('Content-Type'),
+			return { root, json: await data.json(), jsonType: data.headers.get('Content-Type'),
 				cacheControl: data.headers.get('Cache-Control'), bytes: [...new Uint8Array(await binary.arrayBuffer())],
 				range: [...new Uint8Array(await range.arrayBuffer())], rangeStatus: range.status,
 				image: [image.naturalWidth, image.naturalHeight],
 				invalid: (await fetch('%2e%2e%2fdata.json')).status };
 		})()`);
+		assert.equal(staticFiles.root, 'root asset');
 		assert.deepEqual(staticFiles.json, { value: 1 });
 		assert.equal(staticFiles.jsonType, 'application/json; charset=utf-8');
 		assert.equal(staticFiles.cacheControl, 'no-store');

@@ -4,10 +4,10 @@ import { test } from 'node:test';
 
 test('web output resolves local assets and includes versioned resources without Electron files', async () => {
 	const root = new URL('../dist-web/', import.meta.url);
-	for (const entry of ['index.html']) {
+	for (const entry of ['index.html', 'field/index.html']) {
 		const url = new URL(entry, root);
 		const html = await readFile(url, 'utf8');
-		assert.match(html, /id="editor"/);
+		if (entry === 'index.html') assert.match(html, /id="editor"/);
 		assert.doesNotMatch(html, /http-equiv="refresh"/);
 		for (const [, relative] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
 			await access(new URL(relative, url));

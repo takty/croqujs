@@ -111,7 +111,7 @@ async function putContent(cacheName, runId, content, directoryHandle = null) {
 		await caches.delete(cacheName);
 		throw error;
 	}
-	return entryUrl;
+	return entryUrl.endsWith('/index.html') ? entryUrl.slice(0, -'index.html'.length) : entryUrl;
 }
 
 async function readContent(request, url, runId) {
@@ -120,6 +120,7 @@ async function readContent(request, url, runId) {
 	}
 	url.search = '';
 	url.hash = '';
+	if (url.pathname.endsWith('/')) url.pathname += 'index.html';
 	try {
 		const cacheName = CACHE_PREFIX + self.registration.scope + runId;
 		const run = await accessRun('get', cacheName);

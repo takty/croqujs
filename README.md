@@ -59,9 +59,9 @@ node test/run-study-integration.mjs ./run-focus-integration.cjs
 | `yarn build:web` | Build the browser application in `dist-web/` |
 | `yarn preview:web` | Serve the built `dist-web/` application with Vite |
 
-Use the URL printed by Vite (`/index.html`). This is the Study page itself,
+Use the URL printed by Vite (`/`). This is the Study page itself,
 not a redirect. Copy the contents of `dist-web/` into any web-server directory
-(for example `hoge/`) and open `hoge/index.html`; asset URLs are relative to it. Development serves source files directly and supports Vite's
+(for example `hoge/`) and open `hoge/` (or `hoge/index.html`); asset URLs are relative to it. Development serves source files directly and supports Vite's
 CSS updates and page reloads. No Electron build or preload is required.
 The build clears `dist-web/`, which is ignored by Git. Use HTTP through the dev
 or preview server rather than opening the HTML as a local file.
@@ -69,18 +69,29 @@ or preview server rather than opening the HTML as a local file.
 Study imports `#session`, resolved by Vite to `session-client.js` for the app
 build and `session-local.js` for `--mode web`. Both expose `Session`, while
 retaining the names `SessionClient` and `SessionLocal` respectively.
-The web build includes only Study; execution and the Field window are not wired
-up yet. SessionLocal initializes an empty editable document and supports New.
-Opening, dropping, saving, exporting, running, and closing through the menu
-currently display an unsupported-operation message and do not discard edits.
-Use the browser's tab controls to close the page. Edits are not saved persistently.
+The web build includes Study and Field. Run opens `field/#<sessionId>` once,
+waits for Field to acknowledge readiness, and replaces its iframe on each run.
+Stop removes the iframe and releases the execution URL while leaving Field open.
+Closing Field manually allows it to be reopened on the next Run. Study assigns
+an independent session ID to each page instance. Allow pop-ups for the site;
+Field is opened directly from the Run action, before asynchronous generation.
+
+SessionLocal initializes an empty editable document and supports New and Run.
+Opening, dropping, saving, exporting, execution without a window, and closing
+through the menu still display an unsupported-operation message. Use browser
+controls to close the page. Edits are not saved persistently. The session accepts
+an optional `{ files, filePath }` project context for future file-picker wiring;
+the current UI runs unsaved code without requesting filesystem access.
 
 `vite-web-resources.mjs` serves the prebuilt editor and version JSON during
 development and emits the editor, licenses, and Study resources during the web
-build. The editor's worker and relative URLs are preserved.
+build. It also serves/emits the execution Service Worker at a stable root URL,
+its path helper, and the generated classic injection script. The editor's worker
+and relative URLs are preserved.
 
 After `yarn build:web`, run `node --test test/web-integration.test.cjs` to check
-initialization, editing, unsupported saving, and New through both Vite servers and a subdirectory deployment
+initialization, editing, execution output, Field reuse, Stop, reopening, and New
+through both Vite servers and a subdirectory deployment
 in an isolated Chromium renderer without Electron IPC or a preload.
 
 The editor is provided by `github:takty/croq-mirror#main`. `yarn.lock` pins the
@@ -162,7 +173,7 @@ contains the IndexedDB mapping storage and file-response handling.
 
 For any other request, the worker reads the file at request time from the supplied
 BrowserFileSystem root handle. Explicit `sources` mappings take precedence over
-the default source-directory-relative lookup. There is no file-list enumeration:
+the default project-root-relative lookup. There is no file-list enumeration:
 files created after execution starts can also be read. Ordinary JS, images, audio,
 JSON, and other project assets are never added to Cache Storage. Each response
 uses a fresh File snapshot and `Cache-Control: no-store`, so subsequent requests
@@ -187,7 +198,12 @@ await provider.dispose();
 The optional third constructor argument specifies the worker script URL (relative
 to the provider module, or absolute). Its sibling `__croqujs_run__/` directory is
 reserved as the worker scope. URLs have the form
-`__croqujs_run__/<unique-run-id>/index.html#<session-id>,<code-offset>`.
+`__croqujs_run__/<unique-run-id>/<source-directory>/#<session-id>,<code-offset>`.
+The run directory corresponds to the project root: running `test/main.js`
+produces `test/index.html` internally, served by the trailing-slash URL `test/`.
+Thus `./data.json` refers to `test/data.json` and `../images/a.png` refers to the
+project's `images/a.png`. Explicit `index.html` requests also work. Generated
+files take precedence over source files at the same URL.
 The worker controls execution pages, not the host editor. Use the returned URL
 for an iframe or window navigation; a fetch from an uncontrolled host page does
 not use this worker. The scope must not overlap a more specific worker intended

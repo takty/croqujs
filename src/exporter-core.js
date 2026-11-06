@@ -117,7 +117,7 @@ export class ExporterCore {
 	}
 
 	/** Return generated files, or source mappings for static files when deferStaticFiles is enabled. */
-	async createWebPage(codeText, filePath, injection = false, { deferStaticFiles = false } = {}) {
+	async createWebPage(codeText, filePath, injection = false, { deferStaticFiles = false, injectionContent = null } = {}) {
 		const files = new Map();
 		const sources = new Map();
 		const lines = codeText.split('\n');
@@ -126,7 +126,9 @@ export class ExporterCore {
 		let title = 'Croqujs';
 
 		if (injection) {
-			if (deferStaticFiles) {
+			if (injectionContent !== null) {
+				files.set(INJECTION, injectionContent);
+			} else if (deferStaticFiles) {
 				if (!await this._isSourceFile(this._injectionPath)) return [false, this._injectionPath];
 				sources.set(INJECTION, this._injectionPath);
 			} else {

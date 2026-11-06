@@ -21,7 +21,7 @@ import './study.css';
 export class Study {
 
 	constructor() {
-		this._id = window.location.hash;
+		this._id = import.meta.env.MODE === 'web' ? crypto.randomUUID() : window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
 		this._session = new Session(this._id);
 		this._lsc = new Lsc('#study_' + this._id);
@@ -407,6 +407,7 @@ export class Study {
 	// -------------------------------------------------------------------------
 
 	executeCommand(cmd, close = true) {
+		if (cmd === 'run') this._session.prepareRun?.();
 		if (close) this._sideMenu.close();
 		this._editor.setLineSelectionMode(false);
 

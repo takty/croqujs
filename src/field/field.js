@@ -27,6 +27,11 @@ class Field {
 			}
 		});
 		window.addEventListener('keydown', (e) => this.onKeyDown(e));
+		window.addEventListener('message', event => {
+			if (event.origin !== location.origin || event.source !== window.opener) return;
+			if (event.data?.type !== 'croqujs-field-ping' || event.data.id !== this._id) return;
+			event.source.postMessage({ type: 'croqujs-field-ready', id: this._id }, event.origin);
+		});
 		this.initializeFullscreenPoller();
 	}
 

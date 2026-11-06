@@ -13,16 +13,20 @@ export default defineConfig(({ mode }) => {
 		publicDir: false,
 		cacheDir: fileURLToPath(new URL('./node_modules/.vite/', import.meta.url)),
 		resolve: {
-			alias: { '#session': path.join(root, 'study', web ? 'session-local.js' : 'session-client.js') },
+			alias: {
+				'./acorn/acorn.mjs': fileURLToPath(import.meta.resolve('acorn')),
+				'./acorn/walk.mjs': fileURLToPath(import.meta.resolve('acorn-walk')),
+				'#session': path.join(root, 'study', web ? 'session-local.js' : 'session-client.js'),
+			},
 		},
-		server: { open: web ? '/index.html' : '/study/study.html' },
-		preview: { open: web ? '/index.html' : '/study/study.html' },
+		server: { open: web ? '/' : '/study/study.html' },
+		preview: { open: web ? '/' : '/study/study.html' },
 		plugins: [{
 			name: 'croqujs-editor-stylesheet',
 			transformIndexHtml: {
 				order: 'post',
 				handler(_html, context) {
-					if (!context.filename.endsWith(web ? 'index.html' : 'study.html')) return;
+					if (path.resolve(context.filename) !== path.join(root, web ? 'index.html' : 'study/study.html')) return;
 					// Keep the editor's prebuilt bundle and its relative worker/assets together.
 					return [{ tag: 'link', attrs: { rel: 'stylesheet', href: (web ? './' : '../') + 'lib/croq-mirror/dist/croq-mirror.min.css' }, injectTo: 'head' }];
 				},
@@ -37,7 +41,7 @@ export default defineConfig(({ mode }) => {
 			sourcemap: true,
 			manifest: true,
 			rolldownOptions: {
-				input: web ? { index: path.join(root, 'index.html') } : {
+				input: web ? { index: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') } : {
 					study: path.join(root, 'study/study.html'),
 					field: path.join(root, 'field/field.html'),
 					// Preserve the existing module entry used by integration tools.

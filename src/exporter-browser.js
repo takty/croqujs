@@ -10,9 +10,14 @@ import { ExporterCore } from './exporter-core.js';
 /** Generates content without writes, DOM access, or Node dependencies. */
 export class BrowserExporter extends ExporterCore {
 
+	constructor(fs, injectionPath, injectionContent = null) {
+		super(fs, injectionPath);
+		this._injectionContent = injectionContent;
+	}
+
 	/** Share the root handle, not the adapter instance, with the execution worker. */
 	getDirectoryHandle() {
-		return this._fs.getDirectoryHandle();
+		return this._fs.getDirectoryHandle?.() ?? null;
 	}
 
 	/** Check local file metadata without preloading static content. */
@@ -28,7 +33,17 @@ export class BrowserExporter extends ExporterCore {
 
 	/** Return runtime files for a browser or Service Worker to serve. */
 	async exportForExecution(codeText, filePath) {
-		return this.createWebPage(codeText, filePath, true, { deferStaticFiles: true });
+		const [success, content] = await this.createWebPage(codeText, filePath, true, {
+			deferStaticFiles: true, injectionContent: this._injectionContent,
+		});
+		if (!success) return [false, content];
+		const directory = filePath ? this._fs.directoryName(filePath) : '';
+		const relocate = entries => new Map([...entries].map(([name, value]) => [this._fs.joinPath(directory, name), value]));
+		content.files = relocate(content.files);
+		content.sources = relocate(content.sources);
+		content.entryPath = this._fs.joinPath(directory, content.entryPath);
+		content.sourceDirectory = '';
+		return [true, content];
 	}
 
 }
