@@ -20,14 +20,14 @@ export default defineConfig(({ mode }) => {
 				'#session': path.join(root, 'session', web ? 'session-local.js' : 'session-client.js'),
 			},
 		},
-		server: { open: web ? '/' : '/study/study.html' },
-		preview: { open: web ? '/' : '/study/study.html' },
+		server: { open: web ? '/' : '/study/index.html' },
+		preview: { open: web ? '/' : '/study/index.html' },
 		plugins: [{
 			name: 'croqujs-editor-stylesheet',
 			transformIndexHtml: {
 				order: 'post',
 				handler(_html, context) {
-					if (path.resolve(context.filename) !== path.join(root, web ? 'index.html' : 'study/study.html')) return;
+					if (path.resolve(context.filename) !== path.join(root, web ? 'index.html' : 'study/index.html')) return;
 					// Keep the editor's prebuilt bundle and its relative worker/assets together.
 					return [{ tag: 'link', attrs: { rel: 'stylesheet', href: (web ? './' : '../') + 'lib/croq-mirror/dist/croq-mirror.min.css' }, injectTo: 'head' }];
 				},
@@ -43,14 +43,14 @@ export default defineConfig(({ mode }) => {
 			manifest: true,
 			rolldownOptions: {
 				input: web ? { index: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') } : {
-					study: path.join(root, 'study/study.html'),
+					study: path.join(root, 'study/index.html'),
 					field: path.join(root, 'field/index.html'),
-					// Preserve the existing module entry used by integration tools.
-					'study/study': path.join(root, 'study/study.js'),
+					// Expose the renderer module for integration tools.
+					'study/main': path.join(root, 'study/main.js'),
 				},
 				preserveEntrySignatures: 'strict',
 				output: {
-					entryFileNames: chunk => chunk.name === 'study/study' ? '[name].js' : 'assets/[name]-[hash].js',
+					entryFileNames: chunk => chunk.name === 'study/main' ? '[name].js' : 'assets/[name]-[hash].js',
 				},
 			},
 		},

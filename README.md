@@ -73,6 +73,8 @@ or preview server rather than opening the HTML as a local file.
 Study imports `#session`, resolved by Vite to `session-client.js` for the app
 build and `session-local.js` for `--mode web`. Both expose `Session`, while
 retaining the names `SessionClient` and `SessionLocal` respectively.
+Both builds use `src/study/index.html`. The web plugin generates its root
+`index.html` entry in memory and serves the same HTML during development.
 The web build includes Study and Field. Run opens `field/#<sessionId>` once,
 waits for Field to acknowledge readiness, and replaces its iframe on each run.
 Stop removes the iframe and releases the execution URL while leaving Field open.

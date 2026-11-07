@@ -10,11 +10,11 @@ test('Study bundles UI styles into one stylesheet separate from Field', async ()
 	const styles = async entry => {
 		const url = new URL(entry, app);
 		const html = await readFile(url, 'utf8');
-		if (entry === 'study/study.html') assert.match(html, /croq-mirror\.min\.css/);
+		if (entry === 'study/index.html') assert.match(html, /croq-mirror\.min\.css/);
 		return [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
 			.map(([, href]) => new URL(href, url)).filter(url => url.pathname.includes('/assets/'));
 	};
-	const study = await styles('study/study.html');
+	const study = await styles('study/index.html');
 	const field = await styles('field/index.html');
 	assert.equal(study.length, 1);
 	assert.equal(field.length, 1);
@@ -26,11 +26,11 @@ test('Study bundles UI styles into one stylesheet separate from Field', async ()
 });
 
 test('both renderer HTML entries resolve to complete local Vite asset graphs', async () => {
-	for (const entry of ['study/study.html', 'field/index.html']) {
+	for (const entry of ['study/index.html', 'field/index.html']) {
 		assert.equal(manifest[entry].isEntry, true);
 		const url = new URL(entry, app);
 		const html = await readFile(url, 'utf8');
-		if (entry === 'study/study.html') assert.match(html, /croq-mirror\.min\.css/);
+		if (entry === 'study/index.html') assert.match(html, /croq-mirror\.min\.css/);
 		assert.match(html, /<script type="module"[^>]+src="\.\.\/assets\//);
 		for (const [, relative] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
 			assert.equal(relative.startsWith('/'), false, relative);

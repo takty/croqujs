@@ -61,8 +61,8 @@ export class SessionServer {
 
 	async _createStudyWindow() {
 		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, enableDeprecatedPaste: true, preload: `${appDir}/electron/preload.js` } });
-		await allowPaste(this._studyWin.webContents, `${appDir}/study/study.html`);
-		this._studyWin.loadURL(`file://${appDir}/study/study.html#${this._id}`);
+		await allowPaste(this._studyWin.webContents, `${appDir}/study/index.html`);
+		this._studyWin.loadURL(`file://${appDir}/study/index.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();

@@ -60,7 +60,7 @@ async function copyMain() {
 		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => {
 			if (relPath.startsWith('node_modules' + path.sep)) return false;
 			if (relPath.startsWith('study' + path.sep) || relPath.startsWith('field' + path.sep)) return false;
-			return !VERSION_PATHS.includes(relPath) && relPath !== 'index.html'
+			return !VERSION_PATHS.includes(relPath)
 				&& relPath !== path.join('execution', 'injection.js')
 				&& relPath !== path.join('session', 'session-client.js')
 				&& relPath !== path.join('session', 'session-local.js');

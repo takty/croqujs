@@ -3,7 +3,7 @@ exports.withStudyInstance = html => {
 	const bootstrap = /<script\b(?=[^>]*type="module")[^>]*>[\s\S]*?<\/script>/g;
 	if ([...html.matchAll(bootstrap)].length !== 1) throw new Error('Expected one Vite renderer bootstrap');
 	return html.replace(bootstrap, `<script type="module">
-		import { Study } from './study.js';
+		import { Study } from './main.js';
 		window.addEventListener('DOMContentLoaded', () => { window.study = new Study(); });
 	</script>`);
 };

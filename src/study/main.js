@@ -5,9 +5,8 @@
  * @version 2026-11-03
  */
 
-import { loadJSON, minmax } from './util.js';
-import { Config } from './config.js';
-import { ErrorTranslator } from './error-translator.js';
+import { Config } from '../lib/config.js';
+import { ErrorTranslator } from '../lib/error-translator.js';
 import { Session } from '#session';
 import { Lsc } from '../lib/lsc.js';
 import { WinState } from '../lib/winstate.js';
@@ -16,7 +15,21 @@ import { Toolbar } from './ui/toolbar.js';
 import { DialogBox } from './ui/dialog-box.js';
 import { OutputPane } from './ui/output-pane.js';
 import { Splitter } from './ui/splitter.js';
-import './study.css';
+import './style.css';
+
+async function loadJSON(fileNames) {
+	const fs = fileNames.map((url) => {
+		return fetch(url);
+	});
+	const ret = [];
+	for (let f of fs) {
+		const r = await f;
+		ret.push(await r.json());
+	}
+	return ret;
+}
+
+const minmax = (val, min, max) => Math.min(max, Math.max(min, val));
 
 export class Study {
 
