@@ -17,7 +17,7 @@ test('web output resolves local assets and includes versioned resources without 
 	const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 	assert.ok(resource.includes(version + '-web'));
 	assert.doesNotMatch(resource, /%VERSION/);
-	for (const file of ['main.js', 'preload.js', 'session-server.js', 'field/field.html', 'study/study.html']) {
+	for (const file of ['electron/main.js', 'electron/preload.js', 'session/session-server.js', 'field/field.html', 'study/study.html']) {
 		await assert.rejects(access(new URL(file, root)), { code: 'ENOENT' });
 	}
 	for (const file of ['analysis-worker.min.js', 'croq-mirror.min.js', 'croq-mirror.min.css']) {

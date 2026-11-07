@@ -1,4 +1,4 @@
-import { installInjection } from './src/lib/injection.js';
+import { installInjection } from './src/execution/injection.js';
 import { Lsc } from './src/lib/lsc.js';
 import path from 'node:path';
 import { readFile, readdir } from 'node:fs/promises';
@@ -21,7 +21,9 @@ export function webResources() {
 	const ready = (async () => {
 		await collect(path.join(root, 'study/res'), 'res/',
 			name => !/^res\/icon-.*\.svg$/.test(name) && !/\.(woff|ttf)$/.test(name));
-		for (const name of ['url-provider-worker.js', 'lib/fs-common.js', 'lib/injection.js']) files.set(name, path.join(root, name));
+		for (const name of ['execution/url-provider-worker.js', 'fs/fs-common.js']) files.set(name, path.join(root, name));
+		files.set('url-provider-worker.js', null);
+		files.set('lib/injection.js', null);
 		for (const name of ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css']) {
 			files.set('lib/croq-mirror/dist/' + name, path.join(editor, name));
 			if (name.endsWith('.js')) files.set('lib/croq-mirror/dist/' + name + '.map', path.join(editor, name + '.map'));
@@ -33,6 +35,8 @@ export function webResources() {
 	})();
 	async function contents(name) {
 		if (name === 'lib/injection.js') return `(${installInjection})(${Lsc});\n`;
+		// Keep the registration URL and execution scope at the site root.
+		if (name === 'url-provider-worker.js') return "import './execution/url-provider-worker.js';\n";
 		const source = await readFile(files.get(name));
 		if (name !== 'res/resource.json') return source;
 		const { version } = await metadata;

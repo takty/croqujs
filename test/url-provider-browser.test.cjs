@@ -35,9 +35,9 @@ async function checkProvider() {
 	try {
 		await host.loadURL(`http://127.0.0.1:${server.address().port}/`);
 		const urls = await host.webContents.executeJavaScript(`(async () => {
-			const { BrowserUrlProvider } = await import('/app/url-provider-browser.js');
-			const { BrowserExporter } = await import('/app/exporter-browser.js');
-			const { BrowserFileSystem } = await import('/app/lib/fs-browser.js');
+			const { BrowserUrlProvider } = await import('/app/execution/url-provider-browser.js');
+			const { BrowserExporter } = await import('/app/project/exporter-browser.js');
+			const { BrowserFileSystem } = await import('/app/fs/fs-browser.js');
 			const files = new BrowserFileSystem(await navigator.storage.getDirectory());
 			await files.makeDirectory('lib', { recursive: true });
 			await files.makeDirectory('project/nested', { recursive: true });
@@ -56,7 +56,7 @@ async function checkProvider() {
 			const secondUrl = await second.createUrl('window.result = 99;', null);
 			let missing;
 			try { await first.createUrl('// @need missing.js', 'main.js'); }
-			catch (error) { missing = error instanceof (await import('/app/url-provider-browser.js')).LibraryError; }
+			catch (error) { missing = error instanceof (await import('/app/execution/url-provider-browser.js')).LibraryError; }
 			window.originalUrl = firstUrl;
 			return { firstUrl, secondUrl, missing, outputWritten: await files.exists('index.html'), controller: !!navigator.serviceWorker.controller };
 		})()`);
@@ -172,7 +172,7 @@ async function checkProvider() {
 		assert.equal(await execution.webContents.executeJavaScript('window.result'), 99);
 
 		const failures = await host.webContents.executeJavaScript(`(async () => {
-			const { BrowserUrlProvider } = await import('/app/url-provider-browser.js');
+			const { BrowserUrlProvider } = await import('/app/execution/url-provider-browser.js');
 			const invalid = new BrowserUrlProvider(3, {
 				async checkLibraryReadable() { return true; },
 				async exportForExecution() { return [true, { files: new Map([['../escape.html', 'bad']]), entryPath: '../escape.html', userCodeOffset: 0 }]; },

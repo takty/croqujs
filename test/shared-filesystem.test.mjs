@@ -4,10 +4,10 @@ import * as native from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import vm from 'node:vm';
-import { Backup } from '../app/backup.js';
-import { NodeExporter } from '../app/exporter-node.js';
-import { NodeFileSystem } from '../app/lib/fs-node.js';
-import { BrowserFileSystem } from '../app/lib/fs-browser.js';
+import { Backup } from '../app/project/backup.js';
+import { NodeExporter } from '../app/project/exporter-node.js';
+import { NodeFileSystem } from '../app/fs/fs-node.js';
+import { BrowserFileSystem } from '../app/fs/fs-browser.js';
 import { directoryHandle } from './fs-handles.mjs';
 
 for (const [label, create] of [

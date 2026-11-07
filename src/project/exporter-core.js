@@ -5,7 +5,7 @@
  * @version 2026-11-06
  */
 
-import { analyze } from './lib/extractor.js';
+import { analyze } from './extractor.js';
 
 const IS_MODULE = false;
 

@@ -1,8 +1,8 @@
 import { app } from 'electron';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import '../app/main.js';
-import { SessionServer } from '../app/session-server.js';
+import '../app/electron/main.js';
+import { SessionServer } from '../app/session/session-server.js';
 
 let initialized = false;
 const doReady = SessionServer.prototype.doReady;

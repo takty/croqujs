@@ -1,4 +1,4 @@
-import { splitPath } from '../../lib/fs-common.js';
+import { splitPath } from '../../fs/fs-common.js';
 import './project-dialog.css';
 
 /** Select a project root and a script without changing the current document on cancellation. */

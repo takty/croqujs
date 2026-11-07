@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BrowserUrlProvider, LibraryError } from '../app/url-provider-browser.js';
+import { BrowserUrlProvider, LibraryError } from '../app/execution/url-provider-browser.js';
 
 test('unreadable libraries fail before browser registration or generation', async () => {
 	const provider = new BrowserUrlProvider(1, {

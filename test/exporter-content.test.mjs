@@ -4,11 +4,11 @@ import * as fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
-import { ExporterCore } from '../app/exporter-core.js';
-import { BrowserExporter } from '../app/exporter-browser.js';
-import { NodeExporter } from '../app/exporter-node.js';
-import { FileSystemBase } from '../app/lib/fs-common.js';
-import { NodeFileSystem } from '../app/lib/fs-node.js';
+import { ExporterCore } from '../app/project/exporter-core.js';
+import { BrowserExporter } from '../app/project/exporter-browser.js';
+import { NodeExporter } from '../app/project/exporter-node.js';
+import { FileSystemBase } from '../app/fs/fs-common.js';
+import { NodeFileSystem } from '../app/fs/fs-node.js';
 
 // Deliberately exposes no filesystem write, copy, or directory creation methods.
 class ReadOnlyFiles extends FileSystemBase {

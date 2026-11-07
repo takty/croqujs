@@ -14,10 +14,10 @@ export default defineConfig(({ mode }) => {
 		cacheDir: fileURLToPath(new URL('./node_modules/.vite/', import.meta.url)),
 		resolve: {
 			alias: {
-				'./lib/jssha/sha256.mjs': fileURLToPath(import.meta.resolve('jssha/sha256')),
-				'./acorn/acorn.mjs': fileURLToPath(import.meta.resolve('acorn')),
-				'./acorn/walk.mjs': fileURLToPath(import.meta.resolve('acorn-walk')),
-				'#session': path.join(root, 'study', web ? 'session-local.js' : 'session-client.js'),
+				'../lib/jssha/sha256.mjs': fileURLToPath(import.meta.resolve('jssha/sha256')),
+				'../lib/acorn/acorn.mjs': fileURLToPath(import.meta.resolve('acorn')),
+				'../lib/acorn/walk.mjs': fileURLToPath(import.meta.resolve('acorn-walk')),
+				'#session': path.join(root, 'session', web ? 'session-local.js' : 'session-client.js'),
 			},
 		},
 		server: { open: web ? '/' : '/study/study.html' },

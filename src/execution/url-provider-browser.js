@@ -19,7 +19,7 @@ export class BrowserUrlProvider {
 	#registration = null;
 	#runId = null;
 
-	constructor(sessionId, exporter, workerUrl = new URL(/* @vite-ignore */ './url-provider-worker.js', import.meta.url)) {
+	constructor(sessionId, exporter, workerUrl = new URL(/* @vite-ignore */ '../url-provider-worker.js', import.meta.url)) {
 		this.#sessionId = sessionId;
 		this.#exporter  = exporter;
 		this.#workerUrl = new URL(workerUrl, import.meta.url);

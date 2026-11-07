@@ -7,7 +7,7 @@ const { spawnSync } = require('node:child_process');
 const { test } = require('node:test');
 
 async function checkSession() {
-	const { SessionServer } = await import('../app/session-server.js');
+	const { SessionServer } = await import('../app/session/session-server.js');
 	const { ipcMain } = require('electron');
 	const createWindow = SessionServer.prototype._createStudyWindow;
 	SessionServer.prototype._createStudyWindow = async function () {};

@@ -6,13 +6,13 @@
  */
 
 import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
-import { NodeFileSystem } from './lib/fs-node.js';
-import { Backup } from './backup.js';
-import { NodeExporter } from './exporter-node.js';
-import { NodeUrlProvider, LibraryError } from './url-provider-node.js';
+import { NodeFileSystem } from '../fs/fs-node.js';
+import { Backup } from '../project/backup.js';
+import { NodeExporter } from '../project/exporter-node.js';
+import { NodeUrlProvider, LibraryError } from '../execution/url-provider-node.js';
 
 const FS = new NodeFileSystem();
-const __dirname = FS.moduleDirectory(import.meta.url);
+const appDir = FS.moduleDirectory(new URL('../package.json', import.meta.url));
 
 const DEFAULT_EXT = '.js';
 const FILE_FILTERS = [
@@ -35,7 +35,7 @@ export class SessionServer {
 		this._modificationVersion = 0;
 
 		this._backup      = new Backup(FS);
-		this._exporter    = new NodeExporter(FS, FS.joinPath(__dirname, './lib/injection.js'));
+		this._exporter    = new NodeExporter(FS, FS.joinPath(appDir, './lib/injection.js'));
 		this._urlProvider = urlProvider ?? new NodeUrlProvider(FS, id, this._exporter);
 		this._codeCache   = '';
 
@@ -60,16 +60,16 @@ export class SessionServer {
 	}
 
 	async _createStudyWindow() {
-		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, enableDeprecatedPaste: true, preload: `${__dirname}/preload.js` } });
-		await allowPaste(this._studyWin.webContents, `${__dirname}/study/study.html`);
-		this._studyWin.loadURL(`file://${__dirname}/study/study.html#${this._id}`);
+		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, enableDeprecatedPaste: true, preload: `${appDir}/electron/preload.js` } });
+		await allowPaste(this._studyWin.webContents, `${appDir}/study/study.html`);
+		this._studyWin.loadURL(`file://${appDir}/study/study.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();
 			this._studyWin.webContents.send('windowClose');
 		});
 		this._studyWin.webContents.setWindowOpenHandler(({ url }) => {
-			if (!url.startsWith(`file://${__dirname}/`)) {
+			if (!url.startsWith(`file://${appDir}/`)) {
 				shell.openExternal(url);
 				return { action: 'deny' };
 			}
@@ -83,7 +83,7 @@ export class SessionServer {
 			this._fieldWin.once('ready-to-show', resolve);
 			this._fieldWin.on('closed', () => { this._fieldWin = null; });
 			this._fieldWin.setMenu(null);
-			this._fieldWin.loadURL(`file://${__dirname}/field/index.html#${this._id}`);
+			this._fieldWin.loadURL(`file://${appDir}/field/index.html#${this._id}`);
 		});
 	}
 

@@ -3,7 +3,7 @@
 	"version": "5.0.0",
 	"description": "The Playground for JavaScript",
 	"productName": "Croqujs",
-	"main": "main.js",
+	"main": "electron/main.js",
 	"type": "module",
 	"author": "Takuto Yanagida",
 	"license": "MIT",

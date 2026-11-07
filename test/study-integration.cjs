@@ -18,7 +18,7 @@ let created = false;
 
 app.whenReady().then(async () => {
 	try {
-		const { allowPaste } = await import('../app/session-server.js');
+		const { allowPaste } = await import('../app/session/session-server.js');
 		const html = await readFile(path.join(ROOT, 'app/study/study.html'), 'utf8');
 		await writeFile(HTML, withStudyInstance(html), { flag: 'wx' });
 		created = true;
@@ -37,7 +37,7 @@ app.whenReady().then(async () => {
 				contextIsolation: true,
 				enableDeprecatedPaste: true,
 				nodeIntegration: false,
-				preload: path.join(ROOT, 'app/preload.js'),
+				preload: path.join(ROOT, 'app/electron/preload.js'),
 			},
 		});
 		await allowPaste(window.webContents, HTML);

@@ -6,7 +6,7 @@
  */
 
 import { ExporterCore } from './exporter-core.js';
-import { splitPath } from './lib/fs-common.js';
+import { splitPath } from '../fs/fs-common.js';
 
 /** Generates content without writes, DOM access, or Node dependencies. */
 export class BrowserExporter extends ExporterCore {

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import builder from 'electron-builder';
 import { build as buildRenderer } from 'vite';
 import { Lsc } from './src/lib/lsc.js';
-import { installInjection } from './src/lib/injection.js';
+import { installInjection } from './src/execution/injection.js';
 
 import {
 	copyFilesFiltered,
@@ -60,7 +60,10 @@ async function copyMain() {
 		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => {
 			if (relPath.startsWith('node_modules' + path.sep)) return false;
 			if (relPath.startsWith('study' + path.sep) || relPath.startsWith('field' + path.sep)) return false;
-			return !VERSION_PATHS.includes(relPath) && relPath !== 'index.html' && relPath !== path.join('lib', 'injection.js');
+			return !VERSION_PATHS.includes(relPath) && relPath !== 'index.html'
+				&& relPath !== path.join('execution', 'injection.js')
+				&& relPath !== path.join('session', 'session-client.js')
+				&& relPath !== path.join('session', 'session-local.js');
 		}),
 		copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
 			const name = path.basename(relPath);
@@ -69,6 +72,8 @@ async function copyMain() {
 	]);
 	// A classic script must install the console and error hooks before user code runs.
 	await writeFileIfChanged(path.join(APP_DIR, 'lib/injection.js'), `(${installInjection})(${Lsc});\n`);
+	// The registration URL determines the scope of execution pages.
+	await writeFileIfChanged(path.join(APP_DIR, 'url-provider-worker.js'), "import './execution/url-provider-worker.js';\n");
 }
 
 async function copyPackageFiles(name, srcDir, dstDir, filter = () => true) {

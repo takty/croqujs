@@ -3,7 +3,7 @@
 	"version": "6.0.0",
 	"description": "The Playground for JavaScript",
 	"productName": "Croqujs",
-	"main": "app/main.js",
+	"main": "app/electron/main.js",
 	"author": "Takuto Yanagida",
 	"license": "MIT",
 	"homepage": "https://github.com/takty/croqujs#readme",

@@ -3,9 +3,9 @@ import * as fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { NodeExporter } from '../app/exporter-node.js';
-import { NodeFileSystem } from '../app/lib/fs-node.js';
-import { LibraryError, NodeUrlProvider } from '../app/url-provider-node.js';
+import { NodeExporter } from '../app/project/exporter-node.js';
+import { NodeFileSystem } from '../app/fs/fs-node.js';
+import { LibraryError, NodeUrlProvider } from '../app/execution/url-provider-node.js';
 
 test('issued URLs locate the injected program and expire independently per session', async () => {
 	const files = new NodeFileSystem();

@@ -5,13 +5,13 @@
  * @version 2026-11-07
  */
 
-import { Backup } from '../backup.js';
-import { BrowserExporter } from '../exporter-browser.js';
-import { BrowserUrlProvider } from '../url-provider-browser.js';
-import { FileSystemBase } from '../lib/fs-common.js';
+import { Backup } from '../project/backup.js';
+import { BrowserExporter } from '../project/exporter-browser.js';
+import { BrowserUrlProvider } from '../execution/url-provider-browser.js';
+import { FileSystemBase } from '../fs/fs-common.js';
 import { Lsc } from '../lib/lsc.js';
-import { BrowserFileSystem } from '../lib/fs-browser.js';
-import { showOpenProjectDialog, showSaveProjectDialog } from './ui/project-dialog.js';
+import { BrowserFileSystem } from '../fs/fs-browser.js';
+import { showOpenProjectDialog, showSaveProjectDialog } from '../study/ui/project-dialog.js';
 
 export class SessionLocal {
 

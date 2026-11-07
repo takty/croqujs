@@ -9,8 +9,8 @@ const { test } = require('node:test');
 async function checkWorker() {
 	const { BrowserWindow } = require('electron');
 	const worker = `
-import { BrowserExporter } from '/app/exporter-browser.js';
-import { BrowserFileSystem } from '/app/lib/fs-browser.js';
+import { BrowserExporter } from '/app/project/exporter-browser.js';
+import { BrowserFileSystem } from '/app/fs/fs-browser.js';
 self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', event => {

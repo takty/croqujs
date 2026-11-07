@@ -6,9 +6,9 @@
  */
 
 import { app } from 'electron';
-import { NodeFileSystem } from './lib/fs-node.js';
+import { NodeFileSystem } from '../fs/fs-node.js';
 import PROC from 'node:process';
-import { SessionServer } from './session-server.js';
+import { SessionServer } from '../session/session-server.js';
 
 const FS = new NodeFileSystem();
 

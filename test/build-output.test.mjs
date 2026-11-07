@@ -47,7 +47,7 @@ test('both renderer HTML entries resolve to complete local Vite asset graphs', a
 });
 
 test('main, preload, runtime injection, and copied editor worker survive renderer assembly', async () => {
-	for (const file of ['main.js', 'preload.js']) {
+	for (const file of ['electron/main.js', 'electron/preload.js']) {
 		assert.equal(await readFile(new URL(file, app), 'utf8'), await readFile(new URL('../src/' + file, import.meta.url), 'utf8'));
 	}
 	new vm.Script(await readFile(new URL('lib/injection.js', app), 'utf8'));

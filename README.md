@@ -27,8 +27,9 @@ Do not store source or user files in `app/`.
 Vite builds the Study and Field HTML entries from `src/`, with relative asset
 URLs for Electron's `file:` pages. Bundled JS, CSS, fonts, and the output-pane
 worker are emitted under `app/assets/`. `app/.vite/manifest.json` records their
-paths. The main process, CommonJS preload, exporters, execution URL providers,
-and classic `lib/injection.js` retain their existing paths and formats.
+paths. The main process and CommonJS preload are under `app/electron/`.
+The generated classic `lib/injection.js` and the Service Worker registration
+script `url-provider-worker.js` keep their runtime paths.
 There is no Vite development server or HMR in the Electron launch command yet.
 
 Study statically imports its UI components and their CSS. Vite combines the
@@ -142,7 +143,7 @@ After building, run `node test/run-study-integration.mjs` to check the Electron
 integration, and `node --test test/exporter.test.cjs` to check library exports.
 
 Local file and path operations use `NodeFileSystem` in
-`src/lib/fs-node.js`. The main process and SessionServer create instances;
+`src/fs/fs-node.js`. The main process and SessionServer create instances;
 Backup and Exporter receive a filesystem instance from their callers.
 File operations are asynchronous. File dialogs remain in SessionServer;
 backup naming and generated content remain in their callers.
@@ -151,11 +152,11 @@ to check file operations, backups, and exports.
 
 ## Export generation and saving
 
-- `src/exporter-core.js` (`ExporterCore`) reads dependencies, analyzes and wraps
+- `src/project/exporter-core.js` (`ExporterCore`) reads dependencies, analyzes and wraps
   libraries, loads editor definitions, and generates HTML without writing files.
-- `src/exporter-node.js` (`NodeExporter`) saves generated content and copies
+- `src/project/exporter-node.js` (`NodeExporter`) saves generated content and copies
   template libraries through the supplied filesystem.
-- `src/exporter-browser.js` (`BrowserExporter`) returns generated content for a
+- `src/project/exporter-browser.js` (`BrowserExporter`) returns generated content for a
   browser or Service Worker without Node or DOM dependencies.
 
 `createWebPage(code, sourcePath, injection = false)` returns
@@ -197,11 +198,11 @@ the Electron execution URL still uses temporary files.
 
 ## Execution URL providers
 
-`NodeUrlProvider` in `src/url-provider-node.js` is used by SessionServer with
+`NodeUrlProvider` in `src/execution/url-provider-node.js` is used by SessionServer with
 NodeExporter. It keeps the existing temporary-file creation, URL generation, and
 cleanup behavior. Each provider defines and exports its own `LibraryError` class.
 
-`BrowserUrlProvider` in `src/url-provider-browser.js` uses BrowserExporter and
+`BrowserUrlProvider` in `src/execution/url-provider-browser.js` uses BrowserExporter and
 registers the module Service Worker `url-provider-worker.js`. It sends generated
 content through a MessageChannel and returns a URL only after the worker has
 stored the generated files in Cache Storage and the source mapping in IndexedDB.
@@ -219,8 +220,8 @@ requests for media are supported. Unknown file types use application/octet-strea
 unless the File supplies a MIME type.
 
 ```js
-import { BrowserExporter } from './exporter-browser.js';
-import { BrowserUrlProvider } from './url-provider-browser.js';
+import { BrowserExporter } from './project/exporter-browser.js';
+import { BrowserUrlProvider } from './execution/url-provider-browser.js';
 
 // files is a BrowserFileSystem containing the source files and built injection script.
 const exporter = new BrowserExporter(files, 'lib/injection.js');

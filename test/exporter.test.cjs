@@ -8,8 +8,8 @@ const { test, before } = require('node:test');
 // Load the built app so missing packaged parser dependencies fail this test.
 let NodeExporter, NodeFileSystem;
 before(async () => {
-	({ NodeExporter } = await import('../app/exporter-node.js'));
-	({ NodeFileSystem } = await import('../app/lib/fs-node.js'));
+	({ NodeExporter } = await import('../app/project/exporter-node.js'));
+	({ NodeFileSystem } = await import('../app/fs/fs-node.js'));
 });
 
 test('built exporter resolves and parses a local @use library', async () => {

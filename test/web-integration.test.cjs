@@ -219,8 +219,8 @@ async function checkRenderer() {
 			})()`);
 			assert.deepEqual(translations, [['スクリプトを開く', 'キャンセル'], ['スクリプトを保存', 'キャンセル'], ['Open script', 'Cancel'], ['Save script', 'Cancel']]);
 			const saved = await evaluate(`(async () => {
-				const { SessionLocal } = await import('/study/session-local.js');
-				const { BrowserFileSystem } = await import('/lib/fs-browser.js');
+				const { SessionLocal } = await import('/session/session-local.js');
+				const { BrowserFileSystem } = await import('/fs/fs-browser.js');
 				const resources = await (await fetch('/res/lang.en.json')).json();
 				const makeSession = (id, options) => {
 					const session = new SessionLocal(id, options);
@@ -369,7 +369,7 @@ async function checkRenderer() {
 			assert.equal(saved.folderRoot, 'saving-second');
 			assert.equal(saved.folderDrop[1][0], 'renamed.js');
 			const result = await evaluate(`(async () => {
-				const { SessionLocal } = await import('/study/session-local.js');
+				const { SessionLocal } = await import('/session/session-local.js');
 				window.beforeCloseHandler = window.onbeforeunload;
 				return new SessionLocal('close-test').doClose();
 			})()`);
@@ -382,7 +382,7 @@ async function checkRenderer() {
 			const childStudy = await childOpened;
 			await waitFor('!!document.querySelector(".CodeMirror") && document.title.includes(" — Croqujs")', childStudy.webContents);
 			const childClosed = new Promise(resolve => childStudy.once('closed', resolve));
-			await childStudy.webContents.executeJavaScript(`import('/study/session-local.js').then(({ SessionLocal }) => { new SessionLocal('close-test-child').doClose(); }); void 0`);
+			await childStudy.webContents.executeJavaScript(`import('/session/session-local.js').then(({ SessionLocal }) => { new SessionLocal('close-test-child').doClose(); }); void 0`);
 			await childClosed;
 		}
 		assert.deepEqual(errors, []);
