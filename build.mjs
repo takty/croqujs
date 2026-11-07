@@ -1,58 +1,21 @@
-import { execFile } from 'node:child_process';
 import { open, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
-import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 import builder from 'electron-builder';
 import { build as buildRenderer } from 'vite';
-import { Lsc } from './src/lib/lsc.js';
-import { installInjection } from './src/execution/injection.js';
 
 import {
 	copyFilesFiltered,
-	processFiles,
 	writeFileIfChanged,
 } from './tasks.mjs';
-
-const execFileAsync = promisify(execFile);
 
 const SRC_DIR      = './src';
 const APP_DIR      = './app';
 const ICON_SRC_DIR = './res/icon';
 const APP_RES_DIR  = path.join(APP_DIR, 'res');
 
-const VERSION_PATHS = [
-	'package.json',
-	path.join('study', 'res/resource.json'),
-];
-
 const packageJson = JSON.parse(await readFile('./package.json', 'utf8'));
-
-async function getBranchName() {
-	try {
-		const { stdout } = await execFileAsync('git', ['branch', '--show-current']);
-		return stdout.trim();
-	} catch {
-		return '';
-	}
-}
-
-function getDateStamp() {
-	const now = new Date();
-	return [now.getFullYear() % 100, now.getMonth() + 1, now.getDate()].map(n => String(n).padStart(2, '0')).join('');
-}
-
-async function getVersionInfo() {
-	const version = packageJson.version;
-	const isDev   = await getBranchName() === 'develop';
-
-	return {
-		version,
-		major: version.split('.')[0],
-		full : `${version}-${isDev ? '[dev]' : ''}${getDateStamp()}`,
-	};
-}
 
 async function buildMain() {
 	for (const [name, format] of [['main', 'es'], ['preload', 'cjs']]) {
@@ -78,23 +41,12 @@ async function buildMain() {
 		const name = path.basename(relPath);
 		return path.dirname(relPath) === '.' && (name.startsWith('icon.') || name === 'icon-mac.png');
 	});
-	// A classic script must install the console and error hooks before user code runs.
-	await writeFileIfChanged(path.join(APP_DIR, 'lib/injection.js'), `(${installInjection})(${Lsc});\n`);
 }
 
 async function updateVersion() {
-	const { version, major, full } = await getVersionInfo();
-
-	await processFiles(SRC_DIR, APP_DIR, (_srcPath, relPath) => VERSION_PATHS.includes(relPath), (source, srcPath) => {
-		const relPath = path.relative(SRC_DIR, srcPath);
-
-		if (relPath === 'package.json') {
-			const json = JSON.parse(source);
-			json.version = version;
-			return `${JSON.stringify(json, null, '\t')}\n`;
-		}
-		return source.replaceAll('%VERSION%', version).replaceAll('%VERSION_MAJOR%', major).replaceAll('%VERSION_FULL%', full);
-	});
+	const json = JSON.parse(await readFile(path.join(SRC_DIR, 'package.json'), 'utf8'));
+	json.version = packageJson.version;
+	await writeFileIfChanged(path.join(APP_DIR, 'package.json'), `${JSON.stringify(json, null, '\t')}\n`);
 }
 
 async function build() {
@@ -103,9 +55,6 @@ async function build() {
 	if (appDir !== expected) throw new Error('Run build.mjs from the project directory');
 	await rm(appDir, { recursive: true, force: true });
 	await buildMain();
-	// These paths are constructed at runtime and must retain their original names.
-	await copyFilesFiltered(path.join(SRC_DIR, 'study/res'), path.join(APP_DIR, 'study/res'),
-		(_srcPath, relPath) => !/^icon-.*\.svg$/.test(relPath) && !/\.(woff|ttf)$/.test(relPath));
 	await updateVersion();
 	await buildRenderer({ configFile: './vite.config.mjs', mode: 'app' });
 }

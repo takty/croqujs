@@ -9,7 +9,7 @@ import { LibraryError, NodeUrlProvider } from '../src/execution/url-provider-nod
 
 test('issued URLs locate the injected program and expire independently per session', async () => {
 	const files = new NodeFileSystem();
-	const injection = fileURLToPath(new URL('../app/lib/injection.js', import.meta.url));
+	const injection = fileURLToPath(new URL('../app/assets/injection.js', import.meta.url));
 	const first = new NodeUrlProvider(files, 1, new NodeExporter(files, injection));
 	const second = new NodeUrlProvider(files, 2, new NodeExporter(files, injection));
 	const text = 'console.log("first");';

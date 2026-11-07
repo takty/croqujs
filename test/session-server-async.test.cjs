@@ -23,7 +23,7 @@ async function checkSession() {
 			const output = fileURLToPath(response[1]);
 			assert.match(await fs.readFile(output, 'utf8'), /<script src="lib\/injection\.js"><\/script>/);
 			assert.equal(await fs.readFile(path.join(path.dirname(output), 'lib/injection.js'), 'utf8'),
-				await fs.readFile(path.join(__dirname, '../app/lib/injection.js'), 'utf8'));
+				await fs.readFile(path.join(__dirname, '../app/assets/injection.js'), 'utf8'));
 		} finally {
 			await shared._urlProvider.dispose();
 		}

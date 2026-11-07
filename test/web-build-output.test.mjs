@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { access, readFile, readdir } from 'node:fs/promises';
 import { test } from 'node:test';
+import vm from 'node:vm';
 
 test('web output resolves local assets and includes versioned resources without Electron files', async () => {
 	const root = new URL('../dist-web/', import.meta.url);
@@ -44,7 +45,7 @@ test('web pages keep their own scripts and styles with one shared helper bundle'
 	assert.ok(!studyMap.sources.some(source => source.endsWith('/field/main.js')));
 	assert.ok(!fieldMap.sources.some(source => source.endsWith('/study/main.js')));
 	const files = (await readdir(root, { recursive: true })).filter(name => name.endsWith('.js'));
-	assert.equal(files.filter(name => !name.includes('worker')).length, 4);
+	assert.equal(files.filter(name => !name.includes('worker') && !name.endsWith('injection.js')).length, 4);
 	for (const file of files) {
 		const relative = file.replaceAll('\\', '/');
 		assert.ok(relative.startsWith('assets/'), file);
@@ -86,7 +87,7 @@ test('renderer bundles select only the session implementation for their build ta
 });
 
 test('Study icons are embedded rather than copied as separate assets', async () => {
-	for (const [directory, resourcePath] of [['app', 'study/res/'], ['dist-web', 'res/']]) {
+	for (const [directory, resourcePath] of [['app', 'res/'], ['dist-web', 'res/']]) {
 		const root = new URL('../' + directory + '/', import.meta.url);
 		assert.ok(!(await readdir(new URL(resourcePath, root))).some(name => /^icon-.*\.svg$/.test(name)));
 		const assets = new URL('assets/', root);
@@ -97,4 +98,24 @@ test('Study icons are embedded rather than copied as separate assets', async () 
 		const styles = await Promise.all(names.filter(name => name.endsWith('.css')).map(name => readFile(new URL(name, assets), 'utf8')));
 		assert.ok(styles.some(text => /--side-menu-check:url\(["']?data:image\/svg\+xml/.test(text)));
 	}
+});
+
+
+test('both builds ship identical standalone hooks without embedding them in UI bundles', async () => {
+	const hooks = [];
+	for (const directory of ['app', 'dist-web']) {
+		const root = new URL('../' + directory + '/', import.meta.url);
+		const source = await readFile(new URL('assets/injection.js', root), 'utf8');
+		new vm.Script(source);
+		assert.match(source, /function installInjection/);
+		hooks.push(source);
+		await access(new URL('index.html', root));
+		await assert.rejects(access(new URL('study/', root)), { code: 'ENOENT' });
+		await assert.rejects(access(new URL('lib/', root)), { code: 'ENOENT' });
+		for (const name of await readdir(new URL('assets/', root))) {
+			if (!name.endsWith('.js') || name === 'injection.js') continue;
+			assert.doesNotMatch(await readFile(new URL('assets/' + name, root), 'utf8'), /function installInjection|createPseudoConsole/);
+		}
+	}
+	assert.equal(hooks[0], hooks[1]);
 });

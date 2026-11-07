@@ -44,6 +44,21 @@ async function checkRenderer() {
 		await waitFor('!!document.querySelector(".swal2-confirm")');
 		await evaluate('document.querySelector(".swal2-confirm").click()');
 		await waitFor('!document.querySelector(".CodeMirror-code").textContent.includes("webExample")');
+		// The first failed hook request must stop execution, then allow a retry.
+		await evaluate(`window.hookRequests = 0;
+			const originalFetch = window.fetch.bind(window);
+			window.fetch = (input, ...args) => {
+				if (new URL(input, document.baseURI).pathname.endsWith('/assets/injection.js')) {
+					if (++window.hookRequests === 1) return Promise.resolve(new Response('', { status: 503 }));
+				}
+				return originalFetch(input, ...args);
+			}; void 0;`);
+		await evaluate('document.querySelector("[data-cmd=runWithoutWindow]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		await waitFor('!!document.querySelector(".swal2-confirm")');
+		assert.equal(await evaluate('document.querySelector(".swal2-popup").textContent.includes("HTTP 503")'), true);
+		assert.equal(await evaluate('!!document.querySelector("iframe[data-croqujs-execution]")'), false);
+		await evaluate('document.querySelector(".swal2-confirm").click()');
+		await waitFor('!document.querySelector(".swal2-confirm")');
 		const runHidden = async value => {
 			await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = ${value}; console.log("hidden-${value}");')`);
 			await evaluate('document.querySelector("[data-cmd=runWithoutWindow]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
@@ -392,6 +407,7 @@ async function checkRenderer() {
 			await childStudy.webContents.executeJavaScript(`import('/session/session-local.js').then(({ SessionLocal }) => { new SessionLocal('close-test-child').doClose(); }); void 0`);
 			await childClosed;
 		}
+		assert.equal(await evaluate('window.hookRequests'), 2);
 		assert.deepEqual(errors, []);
 	} finally {
 		for (const view of BrowserWindow.getAllWindows()) view.destroy();

@@ -8,7 +8,7 @@ const path = require('node:path');
 const { withStudyInstance } = require('./renderer-html.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
-const HTML = path.join(ROOT, 'app/study/study.integration.html');
+const HTML = path.join(ROOT, 'app/study.integration.html');
 app.setPath('userData', path.join(ROOT, 'test/.profiles/study-integration'));
 app.commandLine.appendSwitch('disable-gpu');
 
@@ -19,7 +19,7 @@ let created = false;
 app.whenReady().then(async () => {
 	try {
 		const { allowPaste } = await (await import('./session-module.mjs')).loadSessionModule();
-		const html = await readFile(path.join(ROOT, 'app/study/index.html'), 'utf8');
+		const html = await readFile(path.join(ROOT, 'app/index.html'), 'utf8');
 		await writeFile(HTML, await withStudyInstance(html), { flag: 'wx' });
 		created = true;
 		ipcMain.on('notifyServer_integration', (_event, method) => { calls.push({ method }); });
@@ -54,7 +54,7 @@ app.whenReady().then(async () => {
 			const OutputPane = s._outputPane.constructor;
 			const styleUrls = () => [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => link.href);
 			const initialStyles = styleUrls();
-			check(initialStyles.filter(url => url.includes('/assets/')).length === 1, 'Study and all UI components share one bundled stylesheet');
+			check(initialStyles.filter(url => url.includes('/assets/') && !url.endsWith('/croq-mirror.min.css')).length === 1, 'Study and all UI components share one bundled stylesheet');
 			const output = document.querySelector('#output-pane');
 			s._outputPane.addError('Output error', 'err');
 			check(output.offsetHeight > 0, 'Output error opens the pane through the host callback');
@@ -187,7 +187,7 @@ app.whenReady().then(async () => {
 			const checkedItem = menu.querySelector('[data-cmd="toggleSoftWrap"]');
 			const wasChecked = checkedItem.classList.contains('checked');
 			checkedItem.classList.add('checked');
-			check(getComputedStyle(checkedItem, '::before').backgroundImage.includes('/assets/icon-check-'), 'Host check icon resolves from the host stylesheet');
+			check(getComputedStyle(checkedItem, '::before').backgroundImage.includes('data:image/svg+xml'), 'Host check icon resolves from the host stylesheet');
 			checkedItem.classList.toggle('checked', wasChecked);
 			check(menu.querySelectorAll('.caption').length === 5, 'JSON menu creates all sections');
 			check(menu.querySelector('[data-cmd="save"]').firstChild.textContent === s._res.menu.save, 'Menu label defaults to command key');

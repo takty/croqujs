@@ -4,7 +4,7 @@ The Playground for JavaScript
 
 ```console
 yarn install
-yarn dev
+yarn dev:app
 ```
 
 ## Electron build
@@ -16,20 +16,17 @@ yarn dev
 | `yarn dev:app` | Build `app/`, then launch Electron |
 | `node build.mjs --dir` | Build `app/`, then create an unpacked application in `dist-app/` |
 
-The existing `start`, `build`, `dev`, and `exec` commands remain available.
-`build` still creates distribution packages. Existing `dist/` output
-is left untouched, and new packages go to `dist-app/`.
-
 Run commands from the repository root. `build.mjs` clears only the generated
 `app/` directory before assembling it, so stale hashed bundles cannot accumulate.
 Do not store source or user files in `app/`.
 
-Vite builds the Study and Field HTML entries from `src/`, with relative asset
+Both outputs place Study at `index.html`, Field at `field/index.html`, and
+runtime JSON under `res/`. Vite builds the HTML entries from `src/`, with relative asset
 URLs for Electron's `file:` pages. Bundled JS, CSS, fonts, the output-pane worker,
 and the editor analysis worker are emitted under `app/assets/`. `app/.vite/manifest.json` records their
 paths. The main process and its Node dependencies are bundled into
 `app/electron/main.js`; the CommonJS preload is `app/electron/preload.js`.
-The generated classic `lib/injection.js` provides the execution hooks.
+The generated classic `assets/injection.js` provides the execution hooks.
 There is no Vite development server or HMR in the Electron launch command yet.
 
 Study statically imports its UI components and their CSS. Vite combines the
@@ -40,7 +37,7 @@ its own stylesheet, and the prebuilt croq-mirror stylesheet remains separate.
 Study icons are imported with `?inline` through a shared icon map and displayed
 in the existing `<img>` elements; the check mark is embedded in CSS. Original
 SVGs remain in the source tree, but are not copied as separate Study assets.
-Runtime-selected language JSON keeps its paths under `study/res/`;
+Runtime-selected language JSON keeps its paths under `res/`;
 version information is inserted into `resource.json` and `package.json`.
 Both builds bundle SweetAlert2 into Study and croq-mirror into a separate
 `assets/croq-mirror-*.js` file. The editor is imported
@@ -76,11 +73,15 @@ or preview server rather than opening the HTML as a local file.
 Study imports `#session`, resolved by Vite to `session-client.js` for the app
 build and `session-local.js` for `--mode web`. Both expose `Session`, while
 retaining the names `SessionClient` and `SessionLocal` respectively.
-Both builds use `src/study/index.html`. The web plugin generates its root
+Both builds use `src/study/index.html`. The shared application resource plugin generates the root
 `index.html` entry in memory and serves the same HTML during development.
 The production web build has separate JavaScript and CSS bundles for Study and
 Field, with one small shared JavaScript bundle and a separate croq-mirror bundle.
-Study includes the execution hooks as script text. The
+Both builds emit standalone execution hooks at `assets/injection.js`.
+The web session passes their URL to BrowserExporter, which fetches them on first
+execution and reuses successful results by URL;
+failed requests are reported and can be retried on the next execution.
+Execution pages still reference their own `lib/injection.js`. The
 output-pane worker, editor analysis worker, and execution Service Worker are
 separate JavaScript files. The Service Worker includes its filesystem helpers.
 All JavaScript files are emitted under `assets/`; web execution pages use
@@ -191,7 +192,7 @@ is checked without preloading its bytes. Explicit `createWebPage` exports and
 NodeExporter continue to collect the content needed for saving.
 Pass a readable injection script path to the constructor when it is not available
 as `lib/injection.js` in the supplied filesystem. Use the built classic injection
-script from `app/lib/injection.js`, not the ES module source. The Node exporter
+script from `app/assets/injection.js`, not the ES module source. The Node exporter
 and parser dependencies are included in `app/electron/main.js`. Tests and other
 build tools can import the individual modules from `src/`.
 
@@ -237,6 +238,8 @@ import { BrowserUrlProvider } from './src/execution/url-provider-browser.js';
 
 // files is a BrowserFileSystem containing the source files and built injection script.
 const exporter = new BrowserExporter(files, 'lib/injection.js');
+// For hosted hooks, pass a URL instead of a filesystem path:
+// const exporter = new BrowserExporter(files, new URL('assets/injection.js', document.baseURI));
 const provider = new BrowserUrlProvider(sessionId, exporter);
 const url = await provider.createUrl(editorText, sourcePath);
 executionFrame.src = url;

@@ -5,8 +5,8 @@ const { withStudyInstance } = require('./renderer-html.cjs');
 const { pathToFileURL } = require('node:url');
 
 const root = path.resolve(__dirname, '..');
-const html = path.join(root, 'app/study/study.focus-test.html');
-const program = path.join(root, 'app/study/program.focus-test.html');
+const html = path.join(root, 'app/study.focus-test.html');
+const program = path.join(root, 'app/program.focus-test.html');
 app.setPath('userData', path.join(__dirname, '.profiles/run-focus'));
 app.commandLine.appendSwitch('disable-gpu');
 const created = [];
@@ -25,9 +25,9 @@ async function until(predicate, message) {
 app.whenReady().then(async () => {
 	try {
 		const { SessionServer } = await (await import('./session-module.mjs')).loadSessionModule();
-		await writeFile(html, await withStudyInstance(await readFile(path.join(root, 'app/study/index.html'), 'utf8')), { flag: 'wx' });
+		await writeFile(html, await withStudyInstance(await readFile(path.join(root, 'app/index.html'), 'utf8')), { flag: 'wx' });
 		created.push(html);
-		const programHTML = '<!doctype html><body><script src="../lib/injection.js"></script><script>'
+		const programHTML = '<!doctype html><body><script src="assets/injection.js"></script><script>'
 			+ 'document.body.dataset.ran = location.hash.split(",")[2]; console.log("LSC run " + document.body.dataset.ran);'
 			+ '</script></body>';
 		await writeFile(program, programHTML, { flag: 'wx' });

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
+import { applicationResources } from './vite-application-resources.mjs';
 import { webResources } from './vite-web-resources.mjs';
 import { rendererResources } from './vite-renderer-resources.mjs';
 
@@ -19,21 +20,21 @@ export default defineConfig(({ mode }) => {
 			},
 		},
 		server: {
-			open: web ? '/' : '/study/index.html',
+			open: '/',
 			fs: { allow: [root, fileURLToPath(new URL('./', import.meta.resolve('croq-mirror')))] },
 		},
-		preview: { open: web ? '/' : '/study/index.html' },
+		preview: { open: '/' },
 		plugins: [{
 			name: 'croqujs-editor-stylesheet',
 			transformIndexHtml: {
 				order: 'post',
 				handler(_html, context) {
-					if (path.resolve(context.filename) !== path.join(root, web ? 'index.html' : 'study/index.html')) return;
-					const href = (web ? './' : '../') + 'assets/croq-mirror.min.css';
+					if (path.resolve(context.filename) !== path.join(root, 'index.html')) return;
+					const href = './assets/croq-mirror.min.css';
 					return [{ tag: 'link', attrs: { rel: 'stylesheet', href }, injectTo: 'head' }];
 				},
 			},
-		}, rendererResources(), ...(web ? [webResources()] : [])],
+		}, rendererResources(), applicationResources({ web }), ...(web ? [webResources()] : [])],
 		build: {
 			outDir: fileURLToPath(new URL(web ? './dist-web/' : './app/', import.meta.url)),
 			// build.mjs cleans once, then installs the main process and runtime files.
@@ -43,10 +44,7 @@ export default defineConfig(({ mode }) => {
 			sourcemap: true,
 			manifest: true,
 			rolldownOptions: {
-				input: web ? { study: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') } : {
-					study: path.join(root, 'study/index.html'),
-					field: path.join(root, 'field/index.html'),
-				},
+				input: { study: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') },
 				preserveEntrySignatures: 'strict',
 				output: {
 					codeSplitting: {

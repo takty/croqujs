@@ -8,11 +8,29 @@
 import { ExporterCore } from './exporter-core.js';
 import { splitPath } from '../fs/fs-common.js';
 
+// Share successful requests across exporters, keeping different URLs independent.
+const injectionRequests = new Map();
+function loadInjection(url) {
+	const key = url.href;
+	if (!injectionRequests.has(key)) {
+		const request = fetch(key)
+			.then(response => {
+				if (!response.ok) throw new Error(`Could not load execution hooks: HTTP ${response.status}`);
+				return response.text();
+			})
+			.catch(error => { injectionRequests.delete(key); throw error; });
+		injectionRequests.set(key, request);
+	}
+	return injectionRequests.get(key);
+}
+
 /** Generates content without writes, DOM access, or Node dependencies. */
 export class BrowserExporter extends ExporterCore {
 
+	/** A URL loads hosted hooks; a string names a file in the supplied filesystem. */
 	constructor(fs, injectionPath, injectionContent = null) {
-		super(fs, injectionPath);
+		super(fs, injectionPath instanceof URL ? undefined : injectionPath);
+		this._injectionUrl = injectionPath instanceof URL ? new URL(injectionPath.href) : null;
 		this._injectionContent = injectionContent;
 	}
 
@@ -53,7 +71,8 @@ export class BrowserExporter extends ExporterCore {
 	/** Return runtime files for a browser or Service Worker to serve. */
 	async exportForExecution(codeText, filePath) {
 		const [success, content] = await this.createWebPage(codeText, filePath, true, {
-			deferStaticFiles: true, injectionContent: this._injectionContent,
+			deferStaticFiles: true,
+			injectionContent: this._injectionUrl ? await loadInjection(this._injectionUrl) : this._injectionContent,
 		});
 		if (!success) return [false, content];
 		const directory = filePath ? this._fs.directoryName(filePath) : '';

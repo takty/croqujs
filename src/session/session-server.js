@@ -35,7 +35,7 @@ export class SessionServer {
 		this._modificationVersion = 0;
 
 		this._backup      = new Backup(FS);
-		this._exporter    = new NodeExporter(FS, FS.joinPath(appDir, './lib/injection.js'));
+		this._exporter    = new NodeExporter(FS, FS.joinPath(appDir, './assets/injection.js'));
 		this._urlProvider = urlProvider ?? new NodeUrlProvider(FS, id, this._exporter);
 		this._codeCache   = '';
 
@@ -61,8 +61,8 @@ export class SessionServer {
 
 	async _createStudyWindow() {
 		this._studyWin = new BrowserWindow({ show: false, webPreferences: { contextIsolation: true, nodeIntegration: false, enableDeprecatedPaste: true, preload: `${appDir}/electron/preload.js` } });
-		await allowPaste(this._studyWin.webContents, `${appDir}/study/index.html`);
-		this._studyWin.loadURL(`file://${appDir}/study/index.html#${this._id}`);
+		await allowPaste(this._studyWin.webContents, `${appDir}/index.html`);
+		this._studyWin.loadURL(`file://${appDir}/index.html#${this._id}`);
 		this._studyWin.setMenu(null);
 		this._studyWin.on('close', (e) => {
 			e.preventDefault();

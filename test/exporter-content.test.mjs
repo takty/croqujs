@@ -171,3 +171,32 @@ test('filesystem write errors propagate to the caller', async () => {
 	await assert.rejects(exporter.exportAsWebPage('', null, 'output'), error => error === failure);
 	await assert.rejects(exporter.exportAsLibrary('', 'output.js', 'OUT', { fnNames: [] }), error => error === failure);
 });
+
+
+test('hosted hooks load lazily, retry failures, and share successful requests by URL', async t => {
+	const requests = [];
+	t.mock.method(globalThis, 'fetch', async url => {
+		requests.push(url);
+		if (requests.length === 1) return new Response('', { status: 503 });
+		return new Response('// hooks from ' + url);
+	});
+	const url = new URL('https://example.test/app/assets/injection.js');
+	const first = new BrowserExporter(new ReadOnlyFiles(), url);
+	const second = new BrowserExporter(new ReadOnlyFiles(), url);
+	await first.createWebPage('', null);
+	assert.equal(requests.length, 0);
+	await assert.rejects(first.exportForExecution('', null), /HTTP 503/);
+	const results = await Promise.all([first.exportForExecution('', null), second.exportForExecution('', null)]);
+	assert.equal(requests.length, 2);
+	for (const [success, content] of results) {
+		assert.equal(success, true);
+		assert.equal(content.files.get('lib/injection.js'), '// hooks from ' + url.href);
+		assert.match(content.files.get(content.entryPath), /<script src="lib\/injection\.js"><\/script>/);
+	}
+	await first.exportForExecution('', null);
+	assert.equal(requests.length, 2);
+	const otherUrl = new URL('https://example.test/other/assets/injection.js');
+	const [, other] = await new BrowserExporter(new ReadOnlyFiles(), otherUrl).exportForExecution('', null);
+	assert.equal(other.files.get('lib/injection.js'), '// hooks from ' + otherUrl.href);
+	assert.equal(requests.length, 3);
+});

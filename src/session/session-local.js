@@ -12,7 +12,6 @@ import { FileSystemBase } from '../fs/fs-common.js';
 import { Lsc } from '../lib/lsc.js';
 import { BrowserFileSystem } from '../fs/fs-browser.js';
 import { showOpenProjectDialog, showSaveProjectDialog } from '../study/ui/project-dialog.js';
-import injectionContent from '#execution-hooks';
 
 export class SessionLocal {
 
@@ -83,7 +82,7 @@ export class SessionLocal {
 
 	async #getProvider() {
 		if (this.#provider) return this.#provider;
-		const exporter = new BrowserExporter(this.#files, undefined, injectionContent);
+		const exporter = new BrowserExporter(this.#files, new URL('assets/injection.js', document.baseURI));
 		this.#provider = new BrowserUrlProvider(this.#id, exporter, new URL('assets/url-provider-worker.js', document.baseURI));
 		return this.#provider;
 	}
