@@ -39,6 +39,20 @@ test('renderer bundles select only the session implementation for their build ta
 		}
 		assert.ok(sources.some(source => source.endsWith('/' + included)), directory);
 		assert.ok(!sources.some(source => source.endsWith('/' + excluded)), directory);
-		assert.equal(sources.some(source => source.endsWith('/open-project-dialog.js')), directory === 'dist-web');
+		assert.equal(sources.some(source => source.endsWith('/project-dialog.js')), directory === 'dist-web');
+	}
+});
+
+test('Study icons are embedded rather than copied as separate assets', async () => {
+	for (const [directory, resourcePath] of [['app', 'study/res/'], ['dist-web', 'res/']]) {
+		const root = new URL('../' + directory + '/', import.meta.url);
+		assert.ok(!(await readdir(new URL(resourcePath, root))).some(name => /^icon-.*\.svg$/.test(name)));
+		const assets = new URL('assets/', root);
+		const names = await readdir(assets);
+		assert.ok(!names.some(name => /^icon-.*\.svg$/.test(name)));
+		const scripts = await Promise.all(names.filter(name => name.endsWith('.js')).map(name => readFile(new URL(name, assets), 'utf8')));
+		assert.ok(scripts.some(text => text.includes('data:image/svg+xml')));
+		const styles = await Promise.all(names.filter(name => name.endsWith('.css')).map(name => readFile(new URL(name, assets), 'utf8')));
+		assert.ok(styles.some(text => /--side-menu-check:url\(["']?data:image\/svg\+xml/.test(text)));
 	}
 });

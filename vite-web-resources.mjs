@@ -19,7 +19,7 @@ export function webResources() {
 		}
 	}
 	const ready = (async () => {
-		await collect(path.join(root, 'study/res'), 'res/');
+		await collect(path.join(root, 'study/res'), 'res/', name => !/^res\/icon-.*\.svg$/.test(name));
 		for (const name of ['url-provider-worker.js', 'lib/fs-common.js', 'lib/injection.js']) files.set(name, path.join(root, name));
 		for (const name of ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css']) {
 			files.set('lib/croq-mirror/dist/' + name, path.join(editor, name));

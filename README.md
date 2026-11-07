@@ -36,7 +36,10 @@ Study, component, and SweetAlert2 styles into one stylesheet linked from the
 built HTML; components do not insert stylesheet links at runtime. Field keeps
 its own stylesheet, and the prebuilt croq-mirror stylesheet remains separate.
 
-Runtime-selected language JSON and icons keep their paths under `study/res/`;
+Study icons are imported with `?inline` through a shared icon map and displayed
+in the existing `<img>` elements; the check mark is embedded in CSS. Original
+SVGs remain in the source tree, but are not copied as separate Study assets.
+Runtime-selected language JSON keeps its paths under `study/res/`;
 version information is inserted into `resource.json` and `package.json`.
 SweetAlert2 is bundled by Vite, while the already-built croq-mirror distribution
 is copied intact to preserve its worker and asset URLs. `electron-builder`
@@ -87,9 +90,32 @@ initial selection on the next Open, but is not persisted across page reloads.
 Running `test/main.js` uses the chosen root for assets such as `../data.json`.
 Switching projects releases the old execution URL before creating a new provider.
 New clears the current file path while retaining the root for the next Open.
-Dropping, saving, exporting, execution without a window, and closing through the
-menu still display an unsupported-operation message. Use browser controls to
-close the page. Edits are not saved persistently.
+Run Without Window executes in a hidden iframe inside Study and requires no
+pop-up. Normal Run and Run Without Window replace each other's execution;
+Stop removes the running document and releases its URL. An already-open Field
+stays open but empty during hidden execution, because browser pages cannot hide
+another browser window. Hidden frames are subject to browser scheduling limits.
+
+SessionLocal's Close operation closes a Study opened by script when the browser permits it; otherwise it
+asks the user to close the tab using browser controls and retains the document.
+The window-layout command exits document fullscreen where supported; OS window
+maximization and developer-tool controls remain browser responsibilities.
+For an opened document, Save overwrites its file and refreshes library definitions.
+Explicit exports write `<script>.export/` or `<library>.lib.js` beside the script,
+without execution hooks. These commands request write permission for the root.
+The shared backup implementation preserves overwritten content in `.<script>.backup/`.
+Edited code at execution or the Close command, and execution error logs, are backed
+up only when root write permission is already granted; automatic backups never
+prompt for permission. Browser tab closure does not guarantee a backup.
+Open and Save share the same project dialog. Untitled Save, Save As, and Save Copy
+choose a root only when none is available, then use the browser's native save picker.
+Destinations must stay inside that root. Save As changes the document path; Save Copy
+keeps the current path and modified state. Both dialogs allow selecting a different
+root; saving a copy in another root leaves the current document's root unchanged.
+Dropped scripts inside the current root open directly. Otherwise, the project dialog
+retains the dropped file while asking for a containing root. Dropped directories become
+root candidates, with a script chosen in the same dialog. Cancellation keeps the current
+document. The browser must support `getAsFileSystemHandle()` for dropping files.
 
 `vite-web-resources.mjs` serves the prebuilt editor and version JSON during
 development and emits the editor, licenses, and Study resources during the web

@@ -127,7 +127,8 @@ async function build() {
 	await copyLibraries();
 	await copyCroqMirror();
 	// These paths are constructed at runtime and must retain their original names.
-	await copyFilesFiltered(path.join(SRC_DIR, 'study/res'), path.join(APP_DIR, 'study/res'));
+	await copyFilesFiltered(path.join(SRC_DIR, 'study/res'), path.join(APP_DIR, 'study/res'),
+		(_srcPath, relPath) => !/^icon-.*\.svg$/.test(relPath));
 	await updateVersion();
 	await buildRenderer({ configFile: './vite.config.mjs', mode: 'app' });
 }

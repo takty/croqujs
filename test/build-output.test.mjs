@@ -64,7 +64,7 @@ test('runtime-selected resources keep their paths and contain the build version'
 	const resource = await readFile(new URL('study/res/resource.json', app), 'utf8');
 	assert.ok(resource.includes(metadata.version));
 	assert.doesNotMatch(resource, /%VERSION/);
-	for (const file of ['lang.en.json', 'lang.ja.json', 'menu.json', 'toolbar.json', 'icon-play.svg']) {
+	for (const file of ['lang.en.json', 'lang.ja.json', 'menu.json', 'toolbar.json']) {
 		await access(new URL('study/res/' + file, app));
 	}
 });

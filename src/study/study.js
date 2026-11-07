@@ -85,6 +85,7 @@ export class Study {
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
 		this._res.menu.version = this._res.version;
+		this._session.setResources?.(this._res);
 		await this._initEditor();
 
 		this._toolbar    = new Toolbar(this._res, rets[3], {
@@ -513,7 +514,11 @@ export class Study {
 
 	async _onFileDropped(e) {
 		e.preventDefault();
-		if (e.dataTransfer.files.length > 0) {
+		if (this._session.getDroppedFile) {
+			if (![...e.dataTransfer.items].some(item => item.kind === 'file')) return;
+			const handle = this._session.getDroppedFile(e.dataTransfer);
+			this._handleOpening(this._res.msg.confirmOpen, () => this._session.doFileDropped(handle));
+		} else if (e.dataTransfer.files.length > 0) {
 			const filePath = this._session.getPathForFile(e.dataTransfer.files[0]);
 			this._handleOpening(this._res.msg.confirmOpen, () => this._session.doFileDropped(filePath));
 		}
