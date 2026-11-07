@@ -77,7 +77,7 @@
 	--side-menu-disabled   : var(--L-Gray);
 
 	/* Relative URLs in custom properties resolve where they are used (ui/side-menu.css). */
-	--side-menu-check: url('res/icon-check.svg');
+	--side-menu-check: url('res/icon-check.svg?inline');
 }
 
 @font-face {

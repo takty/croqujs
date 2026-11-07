@@ -5,6 +5,7 @@
  * @version 2026-11-01
  */
 
+import { icons } from './icons.js';
 import './side-menu.css';
 
 export class SideMenu {
@@ -110,7 +111,7 @@ export class SideMenu {
 		const icon = mi.dataset.icon;
 		if (icon) {
 			const img = document.createElement('img');
-			img.src = 'res/icon-' + icon + '.svg';
+			img.src = icons[icon];
 			mi.appendChild(img);
 		}
 	}

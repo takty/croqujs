@@ -5,6 +5,7 @@
  * @version 2026-11-01
  */
 
+import { icons } from './icons.js';
 import './toolbar.css';
 
 export class Toolbar {
@@ -63,7 +64,7 @@ export class Toolbar {
 		const icon = btn.dataset.icon;
 		if (icon) {
 			const img = document.createElement('img');
-			img.src = 'res/icon-' + icon + '.svg';
+			img.src = icons[icon];
 			btn.appendChild(img);
 		}
 	}
