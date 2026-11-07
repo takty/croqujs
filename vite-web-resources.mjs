@@ -19,7 +19,8 @@ export function webResources() {
 		}
 	}
 	const ready = (async () => {
-		await collect(path.join(root, 'study/res'), 'res/', name => !/^res\/icon-.*\.svg$/.test(name));
+		await collect(path.join(root, 'study/res'), 'res/',
+			name => !/^res\/icon-.*\.svg$/.test(name) && !/\.(woff|ttf)$/.test(name));
 		for (const name of ['url-provider-worker.js', 'lib/fs-common.js', 'lib/injection.js']) files.set(name, path.join(root, name));
 		for (const name of ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css']) {
 			files.set('lib/croq-mirror/dist/' + name, path.join(editor, name));
@@ -46,7 +47,7 @@ export function webResources() {
 				const name = new URL(request.url, 'http://localhost').pathname.slice(1);
 				if (!files.has(name)) return next();
 				try {
-					const types = { '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.woff': 'font/woff', '.ttf': 'font/ttf' };
+					const types = { '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml' };
 					response.setHeader('Content-Type', types[path.extname(name)] ?? 'application/octet-stream');
 					response.end(await contents(name));
 				} catch (error) {

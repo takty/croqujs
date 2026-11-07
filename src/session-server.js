@@ -83,7 +83,7 @@ export class SessionServer {
 			this._fieldWin.once('ready-to-show', resolve);
 			this._fieldWin.on('closed', () => { this._fieldWin = null; });
 			this._fieldWin.setMenu(null);
-			this._fieldWin.loadURL(`file://${__dirname}/field/field.html#${this._id}`);
+			this._fieldWin.loadURL(`file://${__dirname}/field/index.html#${this._id}`);
 		});
 	}
 

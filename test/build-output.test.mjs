@@ -15,7 +15,7 @@ test('Study bundles UI styles into one stylesheet separate from Field', async ()
 			.map(([, href]) => new URL(href, url)).filter(url => url.pathname.includes('/assets/'));
 	};
 	const study = await styles('study/study.html');
-	const field = await styles('field/field.html');
+	const field = await styles('field/index.html');
 	assert.equal(study.length, 1);
 	assert.equal(field.length, 1);
 	assert.notEqual(study[0].href, field[0].href);
@@ -26,7 +26,7 @@ test('Study bundles UI styles into one stylesheet separate from Field', async ()
 });
 
 test('both renderer HTML entries resolve to complete local Vite asset graphs', async () => {
-	for (const entry of ['study/study.html', 'field/field.html']) {
+	for (const entry of ['study/study.html', 'field/index.html']) {
 		assert.equal(manifest[entry].isEntry, true);
 		const url = new URL(entry, app);
 		const html = await readFile(url, 'utf8');

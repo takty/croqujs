@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
 			rolldownOptions: {
 				input: web ? { index: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') } : {
 					study: path.join(root, 'study/study.html'),
-					field: path.join(root, 'field/field.html'),
+					field: path.join(root, 'field/index.html'),
 					// Preserve the existing module entry used by integration tools.
 					'study/study': path.join(root, 'study/study.js'),
 				},
