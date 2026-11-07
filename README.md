@@ -25,8 +25,8 @@ Run commands from the repository root. `build.mjs` clears only the generated
 Do not store source or user files in `app/`.
 
 Vite builds the Study and Field HTML entries from `src/`, with relative asset
-URLs for Electron's `file:` pages. Bundled JS, CSS, fonts, and the output-pane
-worker are emitted under `app/assets/`. `app/.vite/manifest.json` records their
+URLs for Electron's `file:` pages. Bundled JS, CSS, fonts, the output-pane worker,
+and the editor analysis worker are emitted under `app/assets/`. `app/.vite/manifest.json` records their
 paths. The main process and CommonJS preload are under `app/electron/`.
 The generated classic `lib/injection.js` and the Service Worker registration
 script `url-provider-worker.js` keep their runtime paths.
@@ -42,9 +42,11 @@ in the existing `<img>` elements; the check mark is embedded in CSS. Original
 SVGs remain in the source tree, but are not copied as separate Study assets.
 Runtime-selected language JSON keeps its paths under `study/res/`;
 version information is inserted into `resource.json` and `package.json`.
-SweetAlert2 is bundled by Vite, while the already-built croq-mirror distribution
-is copied intact to preserve its worker and asset URLs. `electron-builder`
-continues to create the Electron distribution packages.
+Both builds bundle SweetAlert2 and croq-mirror into Study. The editor is imported
+statically with `import { createEditor } from 'croq-mirror'`. `vite-renderer-resources.mjs` serves
+and emits the editor stylesheet and dependency licenses under `assets/` and
+`assets/licenses/`. The app retains `study/main.js` as an exported entry for
+integration tools. `electron-builder` creates the Electron distribution packages.
 
 Build and renderer validation:
 
@@ -75,6 +77,15 @@ build and `session-local.js` for `--mode web`. Both expose `Session`, while
 retaining the names `SessionClient` and `SessionLocal` respectively.
 Both builds use `src/study/index.html`. The web plugin generates its root
 `index.html` entry in memory and serves the same HTML during development.
+The production web build has separate JavaScript and CSS bundles for Study and
+Field, with one small shared JavaScript bundle. Study includes croq-mirror and
+the execution hooks as script text. The
+output-pane worker, editor analysis worker, and execution Service Worker are
+separate JavaScript files. The Service Worker includes its filesystem helpers.
+All JavaScript files are emitted under `assets/`; web execution pages use
+the Service Worker's `assets/__croqujs_run__/` scope.
+The editor stylesheet is `assets/croq-mirror.min.css`, and dependency licenses
+are collected under `assets/licenses/`.
 The web build includes Study and Field. Run opens `field/#<sessionId>` once,
 waits for Field to acknowledge readiness, and replaces its iframe on each run.
 Stop removes the iframe and releases the execution URL while leaving Field open.
@@ -120,11 +131,9 @@ retains the dropped file while asking for a containing root. Dropped directories
 root candidates, with a script chosen in the same dialog. Cancellation keeps the current
 document. The browser must support `getAsFileSystemHandle()` for dropping files.
 
-`vite-web-resources.mjs` serves the prebuilt editor and version JSON during
-development and emits the editor, licenses, and Study resources during the web
-build. It also serves/emits the execution Service Worker at a stable root URL,
-its path helper, and the generated classic injection script. The editor's worker
-and relative URLs are preserved.
+`vite-web-resources.mjs` serves and emits the versioned Study resources. It also
+provides the root HTML entry, embeds execution hooks as script text, and bundles
+the execution Service Worker with its filesystem helpers under `assets/`.
 
 After `yarn build:web`, run `node --test test/web-integration.test.cjs` to check
 initialization, editing, execution output, Field reuse, Stop, reopening, New,
@@ -137,9 +146,8 @@ and file handles; native OS picker interactions are not automated.
 The editor is provided by `github:takty/croq-mirror#main`. `yarn.lock` pins the
 resolved commit. No sibling checkout or local editor build is required.
 
-The build copies the committed editor bundles from the dependency's `docs/`
-directory into `app/lib/croq-mirror/dist/`, including its worker, styles, fonts,
-cursors, source maps, and licenses. It excludes the example page and its scripts.
+Both builds use the committed editor bundle from the dependency's `dist/`
+directory. Vite includes it in Study and emits its analysis worker separately.
 
 After building, run `node test/run-study-integration.mjs` to check the Electron
 integration, and `node --test test/exporter.test.cjs` to check library exports.

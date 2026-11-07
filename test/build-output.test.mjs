@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, readFile } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import { test } from 'node:test';
 import vm from 'node:vm';
 
@@ -12,7 +12,7 @@ test('Study bundles UI styles into one stylesheet separate from Field', async ()
 		const html = await readFile(url, 'utf8');
 		if (entry === 'study/index.html') assert.match(html, /croq-mirror\.min\.css/);
 		return [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
-			.map(([, href]) => new URL(href, url)).filter(url => url.pathname.includes('/assets/'));
+			.map(([, href]) => new URL(href, url)).filter(url => url.pathname.includes('/assets/') && !url.pathname.endsWith('/croq-mirror.min.css'));
 	};
 	const study = await styles('study/index.html');
 	const field = await styles('field/index.html');
@@ -46,15 +46,17 @@ test('both renderer HTML entries resolve to complete local Vite asset graphs', a
 	}
 });
 
-test('main, preload, runtime injection, and copied editor worker survive renderer assembly', async () => {
+test('main, preload, runtime injection, and bundled editor worker survive renderer assembly', async () => {
 	for (const file of ['electron/main.js', 'electron/preload.js']) {
 		assert.equal(await readFile(new URL(file, app), 'utf8'), await readFile(new URL('../src/' + file, import.meta.url), 'utf8'));
 	}
 	new vm.Script(await readFile(new URL('lib/injection.js', app), 'utf8'));
-	for (const file of ['lib/croq-mirror/dist/croq-mirror.min.js', 'lib/croq-mirror/dist/analysis-worker.min.js',
-		'lib/acorn/acorn.mjs', 'lib/acorn/walk.mjs', 'lib/jssha/sha256.mjs']) {
+	for (const file of ['assets/croq-mirror.min.css', 'assets/licenses/croq-mirror-LICENSE',
+		'assets/licenses/jssha-LICENSE', 'lib/acorn/acorn.mjs', 'lib/acorn/walk.mjs', 'lib/jssha/sha256.mjs']) {
 		await access(new URL(file, app));
 	}
+	assert.ok((await readdir(new URL('assets/', app))).some(name => /^analysis-worker.*\.js$/.test(name)));
+	await assert.rejects(access(new URL('lib/croq-mirror/', app)), { code: 'ENOENT' });
 });
 
 test('runtime-selected resources keep their paths and contain the build version', async () => {

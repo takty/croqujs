@@ -12,6 +12,7 @@ import { FileSystemBase } from '../fs/fs-common.js';
 import { Lsc } from '../lib/lsc.js';
 import { BrowserFileSystem } from '../fs/fs-browser.js';
 import { showOpenProjectDialog, showSaveProjectDialog } from '../study/ui/project-dialog.js';
+import injectionContent from '#execution-hooks';
 
 export class SessionLocal {
 
@@ -82,13 +83,10 @@ export class SessionLocal {
 
 	async #getProvider() {
 		if (this.#provider) return this.#provider;
-		const response = await fetch(new URL('lib/injection.js', document.baseURI));
-		if (!response.ok) throw new Error('Could not load execution hooks.');
-		const exporter = new BrowserExporter(this.#files, undefined, await response.text());
-		this.#provider = new BrowserUrlProvider(this.#id, exporter, new URL('url-provider-worker.js', document.baseURI));
+		const exporter = new BrowserExporter(this.#files, undefined, injectionContent);
+		this.#provider = new BrowserUrlProvider(this.#id, exporter, new URL('assets/url-provider-worker.js', document.baseURI));
 		return this.#provider;
 	}
-
 
 	addWindowCloseListener() {
 		// Study handles unsaved changes through beforeunload in the browser.

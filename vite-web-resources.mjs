@@ -3,7 +3,7 @@ import { Lsc } from './src/lib/lsc.js';
 import path from 'node:path';
 import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { normalizePath } from 'vite';
+import { build, normalizePath } from 'vite';
 
 // Runtime-selected resources keep the same URLs in development and production.
 export function webResources() {
@@ -12,7 +12,8 @@ export function webResources() {
 	// Generate the web entry in memory from the shared Study HTML.
 	const entry = normalizePath(path.join(root, 'index.html'));
 	const template = normalizePath(path.join(root, 'study/index.html'));
-	const editor = fileURLToPath(new URL('../docs/', import.meta.resolve('croq-mirror')));
+	const hooksId = '\0croqujs-execution-hooks';
+	const hooks = `(${installInjection})(${Lsc});\n`;
 	const metadata = readFile(new URL('./package.json', import.meta.url), 'utf8').then(JSON.parse);
 	async function collect(directory, prefix, filter = () => true) {
 		for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -25,22 +26,8 @@ export function webResources() {
 	const ready = (async () => {
 		await collect(path.join(root, 'study/res'), 'res/',
 			name => !/^res\/icon-.*\.svg$/.test(name) && !/\.(woff|ttf)$/.test(name));
-		for (const name of ['execution/url-provider-worker.js', 'fs/fs-common.js']) files.set(name, path.join(root, name));
-		files.set('url-provider-worker.js', null);
-		files.set('lib/injection.js', null);
-		for (const name of ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css']) {
-			files.set('lib/croq-mirror/dist/' + name, path.join(editor, name));
-			if (name.endsWith('.js')) files.set('lib/croq-mirror/dist/' + name + '.map', path.join(editor, name + '.map'));
-		}
-		await collect(path.join(editor, 'licenses'), 'lib/croq-mirror/dist/licenses/');
-		await collect(path.join(editor, 'assets'), 'lib/croq-mirror/dist/assets/', name => name.endsWith('.svg'));
-		files.set('lib/croq-mirror/LICENSE', path.join(editor, '../LICENSE'));
-		files.set('lib/sweetalert2/LICENSE', fileURLToPath(new URL('../LICENSE', import.meta.resolve('sweetalert2'))));
 	})();
 	async function contents(name) {
-		if (name === 'lib/injection.js') return `(${installInjection})(${Lsc});\n`;
-		// Keep the registration URL and execution scope at the site root.
-		if (name === 'url-provider-worker.js') return "import './execution/url-provider-worker.js';\n";
 		const source = await readFile(files.get(name));
 		if (name !== 'res/resource.json') return source;
 		const { version } = await metadata;
@@ -52,8 +39,10 @@ export function webResources() {
 		enforce: 'pre',
 		resolveId(id) {
 			if (normalizePath(id) === entry) return entry;
+			if (id === '#execution-hooks') return hooksId;
 		},
 		async load(id) {
+			if (id === hooksId) return `export default ${JSON.stringify(hooks)};`;
 			if (id !== entry) return;
 			this.addWatchFile(template);
 			return readFile(template, 'utf8');
@@ -65,9 +54,16 @@ export function webResources() {
 		},
 		async configureServer(server) {
 			await ready;
+			files.set('execution/url-provider-worker.js', path.join(root, 'execution/url-provider-worker.js'));
+			files.set('fs/fs-common.js', path.join(root, 'fs/fs-common.js'));
 			server.watcher.add(template);
 			server.middlewares.use(async (request, response, next) => {
 				const name = new URL(request.url, 'http://localhost').pathname.slice(1);
+				if (name === 'assets/url-provider-worker.js') {
+					response.setHeader('Content-Type', 'text/javascript');
+					response.end("import '../execution/url-provider-worker.js';\n");
+					return;
+				}
 				if (name === '' || name === 'index.html') {
 					try {
 						const html = await server.transformIndexHtml('/index.html', await readFile(template, 'utf8'), request.url);
@@ -90,6 +86,20 @@ export function webResources() {
 		},
 		async generateBundle() {
 			await ready;
+			const [worker] = await build({
+				configFile: false,
+				publicDir: false,
+				logLevel: 'warn',
+				build: {
+					write: false,
+					minify: true,
+					sourcemap: true,
+					lib: { entry: path.join(root, 'execution/url-provider-worker.js'), formats: ['es'], fileName: () => 'url-provider-worker.js' },
+				},
+			});
+			for (const output of worker.output) {
+				this.emitFile({ type: 'asset', fileName: 'assets/' + output.fileName, source: output.type === 'chunk' ? output.code : output.source });
+			}
 			for (const name of files.keys()) {
 				this.emitFile({ type: 'asset', fileName: name, source: await contents(name) });
 			}

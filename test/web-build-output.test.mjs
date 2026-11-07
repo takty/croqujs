@@ -20,9 +20,37 @@ test('web output resolves local assets and includes versioned resources without 
 	for (const file of ['electron/main.js', 'electron/preload.js', 'session/session-server.js', 'field/field.html', 'study/index.html']) {
 		await assert.rejects(access(new URL(file, root)), { code: 'ENOENT' });
 	}
-	for (const file of ['analysis-worker.min.js', 'croq-mirror.min.js', 'croq-mirror.min.css']) {
-		await access(new URL('lib/croq-mirror/dist/' + file, root));
+	await access(new URL('assets/croq-mirror.min.css', root));
+	await assert.rejects(access(new URL('lib/', root)), { code: 'ENOENT' });
+});
+
+test('web pages keep their own scripts and styles with one shared helper bundle', async () => {
+	const root = new URL('../dist-web/', import.meta.url);
+	const scripts = [];
+	const styles = [];
+	for (const entry of ['index.html', 'field/index.html']) {
+		const url = new URL(entry, root);
+		const html = await readFile(url, 'utf8');
+		const modules = [...html.matchAll(/<script\b[^>]*src="([^"]+)"/g)];
+		assert.equal(modules.length, 1);
+		scripts.push(new URL(modules[0][1], url).href);
+		styles.push([...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
+			.map(([, href]) => new URL(href, url).href));
 	}
+	assert.notEqual(scripts[0], scripts[1]);
+	assert.ok(styles[0].every(href => !styles[1].includes(href)));
+	const studyMap = JSON.parse(await readFile(new URL(scripts[0] + '.map'), 'utf8'));
+	const fieldMap = JSON.parse(await readFile(new URL(scripts[1] + '.map'), 'utf8'));
+	assert.ok(!studyMap.sources.some(source => source.endsWith('/field/main.js')));
+	assert.ok(!fieldMap.sources.some(source => source.endsWith('/study/main.js')));
+	const files = (await readdir(root, { recursive: true })).filter(name => name.endsWith('.js'));
+	assert.equal(files.filter(name => !name.includes('worker')).length, 3);
+	for (const file of files) {
+		const relative = file.replaceAll('\\', '/');
+		assert.ok(relative.startsWith('assets/'), file);
+	}
+	assert.equal(files.filter(name => name.includes('worker')).length, 3);
+	await access(new URL('assets/url-provider-worker.js', root));
 });
 
 test('renderer bundles select only the session implementation for their build target', async () => {

@@ -60,6 +60,12 @@ async function checkRenderer() {
 			await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = ${value}; console.log("run-${value}");')`);
 			await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		};
+		await evaluate(`window.originalOpen = window.open;
+			window.open = (...args) => {
+				const popup = originalOpen(...args);
+				if (args[1]?.startsWith('croqujs-field-')) window.testField = popup;
+				return popup;
+			}; void 0;`);
 		const opened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await run(42);
 		const field = await opened;
@@ -89,6 +95,7 @@ async function checkRenderer() {
 		assert.equal(field.isDestroyed(), false);
 		await waitFor('(async () => (await caches.keys()).filter(name => name.startsWith("croqujs-execution-v1:")).length === 0)()');
 		field.destroy();
+		await waitFor('testField.closed');
 		const reopened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await run(44);
 		const nextField = await reopened;

@@ -15,6 +15,7 @@ import { Toolbar } from './ui/toolbar.js';
 import { DialogBox } from './ui/dialog-box.js';
 import { OutputPane } from './ui/output-pane.js';
 import { Splitter } from './ui/splitter.js';
+import { createEditor } from 'croq-mirror';
 import './style.css';
 
 async function loadJSON(fileNames) {
@@ -176,9 +177,6 @@ export class Study {
 	}
 
 	async _initEditor() {
-		const root = new URL(import.meta.env.MODE === 'web' ? './' : '../', document.baseURI);
-		const editorUrl = new URL('lib/croq-mirror/dist/croq-mirror.min.js', root);
-		const { createEditor } = await import(/* @vite-ignore */ editorUrl.href);
 		this._editor = await createEditor(document.querySelector('#editor'), {
 			language  : this._lang,
 			fontFamily: this._res.fontSet,

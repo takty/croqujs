@@ -969,7 +969,7 @@ __metadata:
 
 "croq-mirror@github:takty/croq-mirror#main":
   version: 0.1.0
-  resolution: "croq-mirror@https://github.com/takty/croq-mirror.git#commit=957d8ec5a9d3244740208e3d8cac97aa21f1ef73"
+  resolution: "croq-mirror@https://github.com/takty/croq-mirror.git#commit=adeb2e7ad16b644f3fda5e2d3ded2ff0b62a0ed7"
   dependencies:
     acorn: "npm:8.19.0"
     acorn-loose: "npm:8.5.2"
@@ -979,7 +979,7 @@ __metadata:
     jshint: "npm:2.13.6"
     jshint-ja-edu: "github:takty/jshint-ja-edu"
     tern: "npm:0.24.3"
-  checksum: 10c0/e2eb5122e451c826b37f88ba996926f092939c1a58a4d79e0bce656ffb518a6582dbf5d24c3c048687e5c591acd3585e63ccb36541845a9a854052eb7457828c
+  checksum: 10c0/a9c2e53fcf6848eb7ba3630f63c9653c6df2cde60f60d891b9ad3b224781c001b93ac4bda81bfd3bf3a711a49fa5acb43845aca1fe524ca01089a4ddbd618c9f
   languageName: node
   linkType: hard
 

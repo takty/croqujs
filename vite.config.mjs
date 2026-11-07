@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { webResources } from './vite-web-resources.mjs';
+import { rendererResources } from './vite-renderer-resources.mjs';
 
 const root = fileURLToPath(new URL('./src/', import.meta.url));
 
@@ -20,7 +21,10 @@ export default defineConfig(({ mode }) => {
 				'#session': path.join(root, 'session', web ? 'session-local.js' : 'session-client.js'),
 			},
 		},
-		server: { open: web ? '/' : '/study/index.html' },
+		server: {
+			open: web ? '/' : '/study/index.html',
+			fs: { allow: [root, fileURLToPath(new URL('./', import.meta.resolve('croq-mirror')))] },
+		},
 		preview: { open: web ? '/' : '/study/index.html' },
 		plugins: [{
 			name: 'croqujs-editor-stylesheet',
@@ -28,11 +32,11 @@ export default defineConfig(({ mode }) => {
 				order: 'post',
 				handler(_html, context) {
 					if (path.resolve(context.filename) !== path.join(root, web ? 'index.html' : 'study/index.html')) return;
-					// Keep the editor's prebuilt bundle and its relative worker/assets together.
-					return [{ tag: 'link', attrs: { rel: 'stylesheet', href: (web ? './' : '../') + 'lib/croq-mirror/dist/croq-mirror.min.css' }, injectTo: 'head' }];
+					const href = (web ? './' : '../') + 'assets/croq-mirror.min.css';
+					return [{ tag: 'link', attrs: { rel: 'stylesheet', href }, injectTo: 'head' }];
 				},
 			},
-		}, ...(web ? [webResources()] : [])],
+		}, rendererResources(), ...(web ? [webResources()] : [])],
 		build: {
 			outDir: fileURLToPath(new URL(web ? './dist-web/' : './app/', import.meta.url)),
 			// build.mjs cleans once, then installs the main process and runtime files.
@@ -42,7 +46,7 @@ export default defineConfig(({ mode }) => {
 			sourcemap: true,
 			manifest: true,
 			rolldownOptions: {
-				input: web ? { index: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') } : {
+				input: web ? { study: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') } : {
 					study: path.join(root, 'study/index.html'),
 					field: path.join(root, 'field/index.html'),
 					// Expose the renderer module for integration tools.

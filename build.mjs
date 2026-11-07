@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { access, copyFile, open, readFile, rm } from 'node:fs/promises';
+import { open, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
@@ -87,25 +87,6 @@ async function copyLibraries() {
 		copyPackageFiles('acorn-walk', 'dist', 'lib/acorn', (_srcPath, relPath) => relPath === 'walk.mjs'),
 		copyPackageFiles('jssha', 'dist', 'lib/jssha', (_srcPath, relPath) => relPath === 'sha256.mjs'),
 	]);
-	await copyFile(path.join(resolvePackageDir('jssha'), 'LICENSE'), path.join(APP_DIR, 'lib/jssha/LICENSE'));
-	await copyFilesFiltered(resolvePackageDir('sweetalert2'), path.join(APP_DIR, 'lib/sweetalert2'), (_srcPath, relPath) => relPath === 'LICENSE');
-}
-
-async function copyCroqMirror() {
-	// The Git dependency commits built distribution files under docs, not dist.
-	// Resolve the declared entry URL without loading the browser-only module.
-	const packageDir = fileURLToPath(new URL('../', import.meta.resolve('croq-mirror')));
-	const sourceDir  = path.join(packageDir, 'docs');
-	const targetDir  = path.resolve(APP_DIR, 'lib/croq-mirror');
-	const files      = ['croq-mirror.min.js', 'analysis-worker.min.js', 'croq-mirror.min.css'];
-	for (const file of files) await access(path.join(sourceDir, file));
-	await rm(targetDir, { recursive: true, force: true });
-	await copyFilesFiltered(sourceDir, path.join(targetDir, 'dist'), (_srcPath, relPath) => {
-		if (files.includes(relPath) || files.some(file => relPath === `${file}.map`)) return true;
-		if (relPath.startsWith(`licenses${path.sep}`)) return true;
-		return relPath.startsWith(`assets${path.sep}`) && path.extname(relPath) === '.svg';
-	});
-	await copyFile(path.join(packageDir, 'LICENSE'), path.join(targetDir, 'LICENSE'));
 }
 
 async function updateVersion() {
@@ -130,7 +111,6 @@ async function build() {
 	await rm(appDir, { recursive: true, force: true });
 	await copyMain();
 	await copyLibraries();
-	await copyCroqMirror();
 	// These paths are constructed at runtime and must retain their original names.
 	await copyFilesFiltered(path.join(SRC_DIR, 'study/res'), path.join(APP_DIR, 'study/res'),
 		(_srcPath, relPath) => !/^icon-.*\.svg$/.test(relPath) && !/\.(woff|ttf)$/.test(relPath));
