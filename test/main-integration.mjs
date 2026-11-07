@@ -1,19 +1,6 @@
 import { app } from 'electron';
 import { fileURLToPath } from 'node:url';
-import assert from 'node:assert/strict';
 import '../app/electron/main.js';
-import { SessionServer } from '../app/session/session-server.js';
-
-let initialized = false;
-const doReady = SessionServer.prototype.doReady;
-SessionServer.prototype.doReady = async function (...args) {
-	const result = await doReady.apply(this, args);
-	assert.equal(result[0], 'init');
-	assert.equal(result[1][0], fileURLToPath(import.meta.url));
-	assert.match(result[1][6], /SessionServer/);
-	initialized = result[0] === 'init';
-	return result;
-};
 
 app.setPath('userData', fileURLToPath(new URL('./.profiles/main-integration', import.meta.url)));
 app.commandLine.appendSwitch('disable-gpu');
@@ -29,8 +16,8 @@ app.on('browser-window-created', (_event, window) => {
 	window.webContents.once('did-finish-load', async () => {
 		try {
 			for (let i = 0; i < 100; i++) {
-				const ready = await window.webContents.executeJavaScript('!!window.ipc && !!document.querySelector(".CodeMirror")');
-				if (ready && initialized) {
+				const ready = await window.webContents.executeJavaScript('!!window.ipc && document.querySelector(".CodeMirror")?.CodeMirror.getValue().includes("Main process did not initialize the editor")');
+				if (ready) {
 					console.log('PASS: ESM main entry initializes the editor through preload and IPC');
 					clearTimeout(timeout);
 					app.exit(0);

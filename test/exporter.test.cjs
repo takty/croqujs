@@ -5,14 +5,14 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { test, before } = require('node:test');
 
-// Load the built app so missing packaged parser dependencies fail this test.
+// Exercise generation and dependency parsing through the exporter source API.
 let NodeExporter, NodeFileSystem;
 before(async () => {
-	({ NodeExporter } = await import('../app/project/exporter-node.js'));
-	({ NodeFileSystem } = await import('../app/fs/fs-node.js'));
+	({ NodeExporter } = await import('../src/project/exporter-node.js'));
+	({ NodeFileSystem } = await import('../src/fs/fs-node.js'));
 });
 
-test('built exporter resolves and parses a local @use library', async () => {
+test('Node exporter resolves and parses a local @use library', async () => {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'croqujs-exporter-'));
 	try {
 		fs.writeFileSync(path.join(directory, 'helpers.js'), 'function twice(value) { return value * 2; }');
@@ -31,7 +31,7 @@ test('built exporter resolves and parses a local @use library', async () => {
 	}
 });
 
-test('built exporter copies nested dependencies and runtime injection', async () => {
+test('Node exporter copies nested dependencies and runtime injection', async () => {
 	const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'croqujs-exporter-'));
 	try {
 		fs.mkdirSync(path.join(directory, 'nested'));

@@ -18,9 +18,9 @@ let created = false;
 
 app.whenReady().then(async () => {
 	try {
-		const { allowPaste } = await import('../app/session/session-server.js');
+		const { allowPaste } = await (await import('./session-module.mjs')).loadSessionModule();
 		const html = await readFile(path.join(ROOT, 'app/study/index.html'), 'utf8');
-		await writeFile(HTML, withStudyInstance(html), { flag: 'wx' });
+		await writeFile(HTML, await withStudyInstance(html), { flag: 'wx' });
 		created = true;
 		ipcMain.on('notifyServer_integration', (_event, method) => { calls.push({ method }); });
 		ipcMain.handle('callServer_integration', async (_event, method, ...args) => {

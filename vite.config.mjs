@@ -15,9 +15,6 @@ export default defineConfig(({ mode }) => {
 		cacheDir: fileURLToPath(new URL('./node_modules/.vite/', import.meta.url)),
 		resolve: {
 			alias: {
-				'../lib/jssha/sha256.mjs': fileURLToPath(import.meta.resolve('jssha/sha256')),
-				'../lib/acorn/acorn.mjs': fileURLToPath(import.meta.resolve('acorn')),
-				'../lib/acorn/walk.mjs': fileURLToPath(import.meta.resolve('acorn-walk')),
 				'#session': path.join(root, 'session', web ? 'session-local.js' : 'session-client.js'),
 			},
 		},
@@ -49,12 +46,13 @@ export default defineConfig(({ mode }) => {
 				input: web ? { study: path.join(root, 'index.html'), field: path.join(root, 'field/index.html') } : {
 					study: path.join(root, 'study/index.html'),
 					field: path.join(root, 'field/index.html'),
-					// Expose the renderer module for integration tools.
-					'study/main': path.join(root, 'study/main.js'),
 				},
 				preserveEntrySignatures: 'strict',
 				output: {
-					entryFileNames: chunk => chunk.name === 'study/main' ? '[name].js' : 'assets/[name]-[hash].js',
+					codeSplitting: {
+						groups: [{ name: 'croq-mirror', test: /[/\\]node_modules[/\\]croq-mirror[/\\]/ }],
+					},
+					entryFileNames: 'assets/[name]-[hash].js',
 				},
 			},
 		},

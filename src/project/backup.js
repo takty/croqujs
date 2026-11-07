@@ -5,7 +5,7 @@
  * @version 2026-11-03
  */
 
-import jsSHA from '../lib/jssha/sha256.mjs';
+import jsSHA from 'jssha/sha256';
 
 export class Backup {
 

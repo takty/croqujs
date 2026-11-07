@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const fs = require('node:fs/promises');
 const http = require('node:http');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -37,7 +36,8 @@ self.addEventListener('fetch', event => {
 		});
 	})());
 });`;
-	const appRoot = path.resolve(__dirname, '../app');
+	const { buildBrowserModules } = await import('./browser-modules.mjs');
+	const modules = await buildBrowserModules();
 	const server = http.createServer(async (request, response) => {
 		try {
 			const pathname = new URL(request.url, 'http://localhost').pathname;
@@ -48,10 +48,8 @@ self.addEventListener('fetch', event => {
 				response.setHeader('Content-Type', 'text/javascript');
 				response.end(worker);
 			} else if (pathname.startsWith('/app/')) {
-				const target = path.resolve(appRoot, pathname.slice(5));
-				if (!target.startsWith(appRoot + path.sep)) throw new Error('Invalid test path');
 				response.setHeader('Content-Type', 'text/javascript');
-				response.end(await fs.readFile(target));
+				response.end(modules.get(pathname.slice(5)));
 			} else {
 				response.writeHead(404).end();
 			}

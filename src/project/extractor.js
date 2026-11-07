@@ -5,8 +5,8 @@
  * @version 2026-11-01
  */
 
-import * as acorn from '../lib/acorn/acorn.mjs';
-import { base as walkBase } from '../lib/acorn/walk.mjs';
+import * as acorn from 'acorn';
+import { base as walkBase } from 'acorn-walk';
 
 export function analyze(code) {
 	function walk(node, visitors, base, state, override) {

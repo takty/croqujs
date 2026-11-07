@@ -12,7 +12,6 @@ import { installInjection } from './src/execution/injection.js';
 import {
 	copyFilesFiltered,
 	processFiles,
-	resolvePackageDir,
 	writeFileIfChanged,
 } from './tasks.mjs';
 
@@ -55,38 +54,32 @@ async function getVersionInfo() {
 	};
 }
 
-async function copyMain() {
-	await Promise.all([
-		copyFilesFiltered(SRC_DIR, APP_DIR, (_srcPath, relPath) => {
-			if (relPath.startsWith('node_modules' + path.sep)) return false;
-			if (relPath.startsWith('study' + path.sep) || relPath.startsWith('field' + path.sep)) return false;
-			return !VERSION_PATHS.includes(relPath)
-				&& relPath !== path.join('execution', 'injection.js')
-				&& relPath !== path.join('session', 'session-client.js')
-				&& relPath !== path.join('session', 'session-local.js');
-		}),
-		copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
-			const name = path.basename(relPath);
-			return path.dirname(relPath) === '.' && (name.startsWith('icon.') || name === 'icon-mac.png');
-		}),
-	]);
+async function buildMain() {
+	for (const [name, format] of [['main', 'es'], ['preload', 'cjs']]) {
+		await buildRenderer({
+			configFile: false,
+			publicDir: false,
+			logLevel: 'warn',
+			ssr: { noExternal: true, external: ['electron'] },
+			build: {
+				ssr: path.resolve(SRC_DIR, 'electron', name + '.js'),
+				outDir: path.join(APP_DIR, 'electron'),
+				emptyOutDir: false,
+				target: 'node22',
+				sourcemap: true,
+				rolldownOptions: {
+					external: ['electron', /^node:/],
+					output: { format, entryFileNames: name + '.js' },
+				},
+			},
+		});
+	}
+	await copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
+		const name = path.basename(relPath);
+		return path.dirname(relPath) === '.' && (name.startsWith('icon.') || name === 'icon-mac.png');
+	});
 	// A classic script must install the console and error hooks before user code runs.
 	await writeFileIfChanged(path.join(APP_DIR, 'lib/injection.js'), `(${installInjection})(${Lsc});\n`);
-	// The registration URL determines the scope of execution pages.
-	await writeFileIfChanged(path.join(APP_DIR, 'url-provider-worker.js'), "import './execution/url-provider-worker.js';\n");
-}
-
-async function copyPackageFiles(name, srcDir, dstDir, filter = () => true) {
-	const packageDir = resolvePackageDir(name);
-	await copyFilesFiltered(path.join(packageDir, srcDir), path.join(APP_DIR, dstDir), filter);
-}
-
-async function copyLibraries() {
-	await Promise.all([
-		copyPackageFiles('acorn', 'dist', 'lib/acorn', (_srcPath, relPath) => relPath === 'acorn.mjs'),
-		copyPackageFiles('acorn-walk', 'dist', 'lib/acorn', (_srcPath, relPath) => relPath === 'walk.mjs'),
-		copyPackageFiles('jssha', 'dist', 'lib/jssha', (_srcPath, relPath) => relPath === 'sha256.mjs'),
-	]);
 }
 
 async function updateVersion() {
@@ -109,8 +102,7 @@ async function build() {
 	const expected = fileURLToPath(new URL('./app', import.meta.url));
 	if (appDir !== expected) throw new Error('Run build.mjs from the project directory');
 	await rm(appDir, { recursive: true, force: true });
-	await copyMain();
-	await copyLibraries();
+	await buildMain();
 	// These paths are constructed at runtime and must retain their original names.
 	await copyFilesFiltered(path.join(SRC_DIR, 'study/res'), path.join(APP_DIR, 'study/res'),
 		(_srcPath, relPath) => !/^icon-.*\.svg$/.test(relPath) && !/\.(woff|ttf)$/.test(relPath));

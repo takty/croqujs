@@ -48,15 +48,26 @@ test('both renderer HTML entries resolve to complete local Vite asset graphs', a
 
 test('main, preload, runtime injection, and bundled editor worker survive renderer assembly', async () => {
 	for (const file of ['electron/main.js', 'electron/preload.js']) {
-		assert.equal(await readFile(new URL(file, app), 'utf8'), await readFile(new URL('../src/' + file, import.meta.url), 'utf8'));
+		await access(new URL(file, app));
 	}
+	new vm.Script(await readFile(new URL('electron/preload.js', app), 'utf8'));
 	new vm.Script(await readFile(new URL('lib/injection.js', app), 'utf8'));
 	for (const file of ['assets/croq-mirror.min.css', 'assets/licenses/croq-mirror-LICENSE',
-		'assets/licenses/jssha-LICENSE', 'lib/acorn/acorn.mjs', 'lib/acorn/walk.mjs', 'lib/jssha/sha256.mjs']) {
+		'assets/licenses/jssha-LICENSE']) {
 		await access(new URL(file, app));
 	}
 	assert.ok((await readdir(new URL('assets/', app))).some(name => /^analysis-worker.*\.js$/.test(name)));
 	await assert.rejects(access(new URL('lib/croq-mirror/', app)), { code: 'ENOENT' });
+});
+
+test('Electron output contains only bundled main, preload, and runtime hooks outside assets', async () => {
+	const files = (await readdir(app, { recursive: true })).map(name => name.replaceAll('\\', '/'));
+	assert.deepEqual(files.filter(name => name.endsWith('.js') && !name.startsWith('assets/')).sort(),
+		['electron/main.js', 'electron/preload.js', 'lib/injection.js']);
+	const map = JSON.parse(await readFile(new URL('electron/main.js.map', app), 'utf8'));
+	assert.ok(map.sources.some(name => name.endsWith('/session/session-server.js')));
+	assert.ok(map.sources.some(name => name.endsWith('/fs/fs-node.js')));
+	assert.ok(!map.sources.some(name => name.endsWith('/fs/fs-browser.js')));
 });
 
 test('runtime-selected resources keep their paths and contain the build version', async () => {

@@ -24,8 +24,8 @@ async function until(predicate, message) {
 
 app.whenReady().then(async () => {
 	try {
-		const { SessionServer } = await import('../app/session/session-server.js');
-		await writeFile(html, withStudyInstance(await readFile(path.join(root, 'app/study/index.html'), 'utf8')), { flag: 'wx' });
+		const { SessionServer } = await (await import('./session-module.mjs')).loadSessionModule();
+		await writeFile(html, await withStudyInstance(await readFile(path.join(root, 'app/study/index.html'), 'utf8')), { flag: 'wx' });
 		created.push(html);
 		const programHTML = '<!doctype html><body><script src="../lib/injection.js"></script><script>'
 			+ 'document.body.dataset.ran = location.hash.split(",")[2]; console.log("LSC run " + document.body.dataset.ran);'

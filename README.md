@@ -27,9 +27,9 @@ Do not store source or user files in `app/`.
 Vite builds the Study and Field HTML entries from `src/`, with relative asset
 URLs for Electron's `file:` pages. Bundled JS, CSS, fonts, the output-pane worker,
 and the editor analysis worker are emitted under `app/assets/`. `app/.vite/manifest.json` records their
-paths. The main process and CommonJS preload are under `app/electron/`.
-The generated classic `lib/injection.js` and the Service Worker registration
-script `url-provider-worker.js` keep their runtime paths.
+paths. The main process and its Node dependencies are bundled into
+`app/electron/main.js`; the CommonJS preload is `app/electron/preload.js`.
+The generated classic `lib/injection.js` provides the execution hooks.
 There is no Vite development server or HMR in the Electron launch command yet.
 
 Study statically imports its UI components and their CSS. Vite combines the
@@ -42,11 +42,12 @@ in the existing `<img>` elements; the check mark is embedded in CSS. Original
 SVGs remain in the source tree, but are not copied as separate Study assets.
 Runtime-selected language JSON keeps its paths under `study/res/`;
 version information is inserted into `resource.json` and `package.json`.
-Both builds bundle SweetAlert2 and croq-mirror into Study. The editor is imported
+Both builds bundle SweetAlert2 into Study and croq-mirror into a separate
+`assets/croq-mirror-*.js` file. The editor is imported
 statically with `import { createEditor } from 'croq-mirror'`. `vite-renderer-resources.mjs` serves
 and emits the editor stylesheet and dependency licenses under `assets/` and
-`assets/licenses/`. The app retains `study/main.js` as an exported entry for
-integration tools. `electron-builder` creates the Electron distribution packages.
+`assets/licenses/`. Integration tests build their exported modules separately
+under `test/.profiles/` or in memory. `electron-builder` creates the Electron distribution packages.
 
 Build and renderer validation:
 
@@ -78,8 +79,8 @@ retaining the names `SessionClient` and `SessionLocal` respectively.
 Both builds use `src/study/index.html`. The web plugin generates its root
 `index.html` entry in memory and serves the same HTML during development.
 The production web build has separate JavaScript and CSS bundles for Study and
-Field, with one small shared JavaScript bundle. Study includes croq-mirror and
-the execution hooks as script text. The
+Field, with one small shared JavaScript bundle and a separate croq-mirror bundle.
+Study includes the execution hooks as script text. The
 output-pane worker, editor analysis worker, and execution Service Worker are
 separate JavaScript files. The Service Worker includes its filesystem helpers.
 All JavaScript files are emitted under `assets/`; web execution pages use
@@ -147,7 +148,7 @@ The editor is provided by `github:takty/croq-mirror#main`. `yarn.lock` pins the
 resolved commit. No sibling checkout or local editor build is required.
 
 Both builds use the committed editor bundle from the dependency's `dist/`
-directory. Vite includes it in Study and emits its analysis worker separately.
+directory. Vite emits it as a separate editor bundle and emits its analysis worker separately.
 
 After building, run `node test/run-study-integration.mjs` to check the Electron
 integration, and `node --test test/exporter.test.cjs` to check library exports.
@@ -190,8 +191,9 @@ is checked without preloading its bytes. Explicit `createWebPage` exports and
 NodeExporter continue to collect the content needed for saving.
 Pass a readable injection script path to the constructor when it is not available
 as `lib/injection.js` in the supplied filesystem. Use the built classic injection
-script from `app/lib/injection.js`, not the ES module source. The build copies all
-three exporter modules and their parser dependencies into `app/`.
+script from `app/lib/injection.js`, not the ES module source. The Node exporter
+and parser dependencies are included in `app/electron/main.js`. Tests and other
+build tools can import the individual modules from `src/`.
 
 `NodeExporter.exportForExecution(code, sourcePath, directory)` saves runtime
 content in the temporary directory owned by `NodeUrlProvider`. SessionServer uses
@@ -230,8 +232,8 @@ requests for media are supported. Unknown file types use application/octet-strea
 unless the File supplies a MIME type.
 
 ```js
-import { BrowserExporter } from './project/exporter-browser.js';
-import { BrowserUrlProvider } from './execution/url-provider-browser.js';
+import { BrowserExporter } from './src/project/exporter-browser.js';
+import { BrowserUrlProvider } from './src/execution/url-provider-browser.js';
 
 // files is a BrowserFileSystem containing the source files and built injection script.
 const exporter = new BrowserExporter(files, 'lib/injection.js');
@@ -260,9 +262,9 @@ to control these execution pages.
 Serve the built modules with JavaScript content types over HTTPS or localhost;
 `file:` URLs are not supported. See the
 [ServiceWorkerContainer.register documentation](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register)
-for the registration and scope requirements. The build copies the provider and
-worker files into `app/` automatically. This adds a usable browser provider; it
-does not switch Electron's SessionServer to a browser runtime.
+for the registration and scope requirements. Bundle the browser modules and
+worker when using these source APIs independently. The web build includes the
+provider in Study and emits its worker under `assets/`.
 
 Await each operation on a provider before starting another. A successful
 replacement invalidates its previous URL; a failed generation or registration

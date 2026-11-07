@@ -44,13 +44,27 @@ test('web pages keep their own scripts and styles with one shared helper bundle'
 	assert.ok(!studyMap.sources.some(source => source.endsWith('/field/main.js')));
 	assert.ok(!fieldMap.sources.some(source => source.endsWith('/study/main.js')));
 	const files = (await readdir(root, { recursive: true })).filter(name => name.endsWith('.js'));
-	assert.equal(files.filter(name => !name.includes('worker')).length, 3);
+	assert.equal(files.filter(name => !name.includes('worker')).length, 4);
 	for (const file of files) {
 		const relative = file.replaceAll('\\', '/');
 		assert.ok(relative.startsWith('assets/'), file);
 	}
 	assert.equal(files.filter(name => name.includes('worker')).length, 3);
 	await access(new URL('assets/url-provider-worker.js', root));
+});
+
+test('both builds keep croq-mirror in a separate editor bundle', async () => {
+	for (const directory of ['app', 'dist-web']) {
+		const assets = new URL('../' + directory + '/assets/', import.meta.url);
+		const maps = (await readdir(assets)).filter(name => name.endsWith('.js.map'));
+		const editorMaps = maps.filter(name => /^croq-mirror-/.test(name));
+		assert.equal(editorMaps.length, 1, directory);
+		for (const name of maps.filter(name => !name.includes('worker'))) {
+			const map = JSON.parse(await readFile(new URL(name, assets), 'utf8'));
+			const hasEditor = map.sources.some(source => source.replaceAll('\\', '/').includes('/croq-mirror/'));
+			assert.equal(hasEditor, name === editorMaps[0], directory + '/' + name);
+		}
+	}
 });
 
 test('renderer bundles select only the session implementation for their build target', async () => {
