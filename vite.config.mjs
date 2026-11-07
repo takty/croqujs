@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => {
 	return {
 		root,
 		base: './',
-		publicDir: false,
+		publicDir: web
+			? fileURLToPath(new URL('./public-web/', import.meta.url))
+			: false,
 		cacheDir: fileURLToPath(new URL('./node_modules/.vite/', import.meta.url)),
 		resolve: {
 			alias: {

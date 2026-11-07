@@ -39,7 +39,7 @@ async function buildMain() {
 	}
 	await copyFilesFiltered(ICON_SRC_DIR, APP_RES_DIR, (_srcPath, relPath) => {
 		const name = path.basename(relPath);
-		return path.dirname(relPath) === '.' && (name.startsWith('icon.') || name === 'icon-mac.png');
+		return path.dirname(relPath) === '.' && ['icon-app.ico', 'icon-app-mac.png'].includes(name);
 	});
 }
 
@@ -79,7 +79,7 @@ async function packageApp() {
 					{ target: 'zip',  arch: ['x64'] },
 					{ target: 'nsis', arch: ['x64'] },
 				],
-				icon           : path.join(APP_RES_DIR, 'icon.ico'),
+				icon           : path.join(APP_RES_DIR, 'icon-app.ico'),
 				signtoolOptions: {
 					publisherName: 'Takuto Yanagida',
 				}
@@ -95,7 +95,7 @@ async function packageApp() {
 					{ target: 'zip', arch: ['arm64'] },
 					{ target: 'dmg', arch: ['arm64'] },
 				],
-				icon: path.join(APP_RES_DIR, 'icon-mac.png'),
+				icon: path.join(APP_RES_DIR, 'icon-app-mac.png'),
 			},
 		},
 	});
