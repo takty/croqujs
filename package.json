@@ -23,11 +23,12 @@
 		"acorn": "8.19.0",
 		"acorn-walk": "8.3.5",
 		"croq-mirror": "github:takty/croq-mirror#main",
+		"fs-nw": "github:takty/fs-nw#main",
 		"jssha": "^3.3.2",
 		"sweetalert2": "11.26.25"
 	},
 	"devDependencies": {
-		"electron": "^45.2.1",
+		"electron": "^45.2.3",
 		"electron-builder": "^26.18.0",
 		"vite": "^8.3.6"
 	},

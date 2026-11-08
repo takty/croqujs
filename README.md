@@ -154,8 +154,12 @@ directory. Vite emits it as a separate editor bundle and emits its analysis work
 After building, run `node test/run-study-integration.mjs` to check the Electron
 integration, and `node --test test/exporter.test.cjs` to check library exports.
 
-Local file and path operations use `NodeFileSystem` in
-`src/fs/fs-node.js`. The main process and SessionServer create instances;
+Filesystem operations use [`github:takty/fs-nw#main`](https://github.com/takty/fs-nw),
+with the resolved commit pinned in `yarn.lock`. Vite bundles the installed library;
+no sibling checkout or local library build is required. Shared path helpers and
+`FileSystemBase` come from `fs-nw/base`, and the browser uses `WebFileSystem`
+from `fs-nw/web`. Local file and path operations use `NodeFileSystem` in
+`fs-nw/node`. The main process and SessionServer create instances;
 Backup and Exporter receive a filesystem instance from their callers.
 File operations are asynchronous. File dialogs remain in SessionServer;
 backup naming and generated content remain in their callers.
@@ -223,7 +227,7 @@ No generated files are saved through the supplied filesystem. The worker also
 contains the IndexedDB mapping storage and file-response handling.
 
 For any other request, the worker reads the file at request time from the supplied
-BrowserFileSystem root handle. Explicit `sources` mappings take precedence over
+WebFileSystem root handle. Explicit `sources` mappings take precedence over
 the default project-root-relative lookup. There is no file-list enumeration:
 files created after execution starts can also be read. Ordinary JS, images, audio,
 JSON, and other project assets are never added to Cache Storage. Each response
@@ -236,7 +240,7 @@ unless the File supplies a MIME type.
 import { BrowserExporter } from './src/project/exporter-browser.js';
 import { BrowserUrlProvider } from './src/execution/url-provider-browser.js';
 
-// files is a BrowserFileSystem containing the source files and built injection script.
+// files is a WebFileSystem containing the source files and built injection script.
 const exporter = new BrowserExporter(files, 'lib/injection.js');
 // For hosted hooks, pass a URL instead of a filesystem path:
 // const exporter = new BrowserExporter(files, new URL('assets/injection.js', document.baseURI));
@@ -287,7 +291,7 @@ is execution storage, not an explicit user export or a guarantee against browser
 storage eviction. The caller must dispose sessions: after an abrupt host closure,
 cached runs and source mappings may remain. Directory handles and path mappings
 are retained in IndexedDB across worker restarts; static file contents are not.
-The BrowserFileSystem `getDirectoryHandle()` method exposes the root handle for
+The WebFileSystem `getDirectoryHandle()` method exposes the root handle for
 this purpose. See the [File System API documentation](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API)
 for handle serialization. Automatic cleanup of abandoned sessions and restoration
 of the host's provider objects after reload are not implemented.
@@ -300,10 +304,11 @@ node --test test/url-provider-browser-errors.test.mjs test/url-provider-browser.
 ```
 
 The worker test runs a hidden Chromium window through Electron, loads the browser
-exporter in a module Service Worker, reads real OPFS files using BrowserFileSystem,
+exporter in a module Service Worker, reads real OPFS files using WebFileSystem,
 and serves generated runtime and explicit-export responses without writing output
-files. The existing `fs-library.test.mjs` and `shared-filesystem.test.mjs` currently
-require the missing `test/fs-handles.mjs` fixture and cannot run until it is restored.
+files. The `fs-library.test.mjs` and `shared-filesystem.test.mjs` tests use the
+disk-backed mock handles in `test/fs-handles.mjs` to check the installed library
+and its integration with Backup and Exporter.
 The browser URL test opens the returned URLs in hidden Chromium windows, executes
 their generated scripts, stops the Service Worker and reloads, then verifies URL
 replacement, independent sessions, failed registration, and disposal. It also

@@ -9,7 +9,7 @@ async function checkWorker() {
 	const { BrowserWindow } = require('electron');
 	const worker = `
 import { BrowserExporter } from '/app/project/exporter-browser.js';
-import { BrowserFileSystem } from '/app/fs/fs-browser.js';
+import { WebFileSystem } from '/app/fs-nw/web.js';
 self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', event => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', event => {
 	if (pathname !== '/runtime' && pathname !== '/saved') return;
 	event.respondWith((async () => {
 		if (typeof process !== 'undefined' || typeof document !== 'undefined') throw new Error('Unexpected host globals');
-		const files = new BrowserFileSystem(await navigator.storage.getDirectory());
+		const files = new WebFileSystem(await navigator.storage.getDirectory());
 		await files.makeDirectory('lib', { recursive: true });
 		await files.writeText('lib/injection.js', '// runtime hooks');
 		await files.writeText('helper.js', 'function twice(x) { return x * 2; }');

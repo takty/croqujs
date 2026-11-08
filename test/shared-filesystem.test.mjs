@@ -6,13 +6,13 @@ import os from 'node:os';
 import vm from 'node:vm';
 import { Backup } from '../src/project/backup.js';
 import { NodeExporter } from '../src/project/exporter-node.js';
-import { NodeFileSystem } from '../src/fs/fs-node.js';
-import { BrowserFileSystem } from '../src/fs/fs-browser.js';
+import { NodeFileSystem } from 'fs-nw/node';
+import { WebFileSystem } from 'fs-nw/web';
 import { directoryHandle } from './fs-handles.mjs';
 
 for (const [label, create] of [
 	['Node', root => new NodeFileSystem(root)],
-	['Browser handles', root => new BrowserFileSystem(directoryHandle(root))],
+	['Browser handles', root => new WebFileSystem(directoryHandle(root))],
 ]) {
 	test(`${label}: backup and exporter use the supplied filesystem`, async t => {
 		const root = await native.mkdtemp(path.join(os.tmpdir(), 'croqujs-shared-'));

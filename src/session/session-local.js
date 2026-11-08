@@ -8,9 +8,9 @@
 import { Backup } from '../project/backup.js';
 import { BrowserExporter } from '../project/exporter-browser.js';
 import { BrowserUrlProvider } from '../execution/url-provider-browser.js';
-import { FileSystemBase } from '../fs/fs-common.js';
+import { FileSystemBase } from 'fs-nw/base';
 import { Lsc } from '../lib/lsc.js';
-import { BrowserFileSystem } from '../fs/fs-browser.js';
+import { WebFileSystem } from 'fs-nw/web';
 import { showOpenProjectDialog, showSaveProjectDialog } from '../study/ui/project-dialog.js';
 
 export class SessionLocal {
@@ -143,7 +143,7 @@ export class SessionLocal {
 	}
 
 	async #openDocument(root, filePath) {
-		const files = new BrowserFileSystem(root);
+		const files = new WebFileSystem(root);
 		const text = await files.readText(filePath);
 		const definitions = await new BrowserExporter(files).loadDefJsons(text, filePath);
 		this.onStudyProgramClosed();
@@ -243,7 +243,7 @@ export class SessionLocal {
 			suggestedName: this.#filePath ? this.#files.baseName(this.#filePath) : 'untitled.js',
 			save: async (root, path) => {
 				await this.#requireWrite(root);
-				const files = new BrowserFileSystem(root);
+				const files = new WebFileSystem(root);
 				const definitions = copy ? null : await new BrowserExporter(files).loadDefJsons(text, path);
 				const backup = new Backup(files);
 				backup.setFilePath(path);

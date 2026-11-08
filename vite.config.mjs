@@ -23,7 +23,11 @@ export default defineConfig(({ mode }) => {
 		},
 		server: {
 			open: '/',
-			fs: { allow: [root, fileURLToPath(new URL('./', import.meta.resolve('croq-mirror')))] },
+			fs: { allow: [
+				root,
+				fileURLToPath(new URL('./', import.meta.resolve('croq-mirror'))),
+				fileURLToPath(new URL('./', import.meta.resolve('fs-nw/web'))),
+			] },
 		},
 		preview: { open: '/' },
 		plugins: [{

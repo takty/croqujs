@@ -5,7 +5,7 @@
  * @version 2026-11-06
  */
 
-import { splitPath, joinPath } from '../fs/fs-common.js';
+import { splitPath, joinPath } from 'fs-nw/base';
 
 const TYPES = {
 	html: 'text/html; charset=utf-8', htm: 'text/html; charset=utf-8',

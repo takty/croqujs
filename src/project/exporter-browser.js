@@ -6,7 +6,7 @@
  */
 
 import { ExporterCore } from './exporter-core.js';
-import { splitPath } from '../fs/fs-common.js';
+import { splitPath } from 'fs-nw/base';
 
 // Share successful requests across exporters, keeping different URLs independent.
 const injectionRequests = new Map();

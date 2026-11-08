@@ -9,7 +9,7 @@ const { test, before } = require('node:test');
 let NodeExporter, NodeFileSystem;
 before(async () => {
 	({ NodeExporter } = await import('../src/project/exporter-node.js'));
-	({ NodeFileSystem } = await import('../src/fs/fs-node.js'));
+	({ NodeFileSystem } = await import('fs-nw/node'));
 });
 
 test('Node exporter resolves and parses a local @use library', async () => {

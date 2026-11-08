@@ -4,7 +4,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { NodeExporter } from '../src/project/exporter-node.js';
-import { NodeFileSystem } from '../src/fs/fs-node.js';
+import { NodeFileSystem } from 'fs-nw/node';
 import { LibraryError, NodeUrlProvider } from '../src/execution/url-provider-node.js';
 
 test('issued URLs locate the injected program and expire independently per session', async () => {

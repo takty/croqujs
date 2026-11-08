@@ -6,7 +6,7 @@
  */
 
 import { ipcMain, BrowserWindow, dialog, shell } from 'electron';
-import { NodeFileSystem } from '../fs/fs-node.js';
+import { NodeFileSystem } from 'fs-nw/node';
 import { Backup } from '../project/backup.js';
 import { NodeExporter } from '../project/exporter-node.js';
 import { NodeUrlProvider, LibraryError } from '../execution/url-provider-node.js';

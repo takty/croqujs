@@ -35,8 +35,8 @@ async function checkProvider() {
 		const urls = await host.webContents.executeJavaScript(`(async () => {
 			const { BrowserUrlProvider } = await import('/app/execution/url-provider-browser.js');
 			const { BrowserExporter } = await import('/app/project/exporter-browser.js');
-			const { BrowserFileSystem } = await import('/app/fs/fs-browser.js');
-			const files = new BrowserFileSystem(await navigator.storage.getDirectory());
+			const { WebFileSystem } = await import('/app/fs-nw/web.js');
+			const files = new WebFileSystem(await navigator.storage.getDirectory());
 			await files.makeDirectory('lib', { recursive: true });
 			await files.makeDirectory('project/nested', { recursive: true });
 			await files.writeText('lib/injection.js', 'window.injected = true;');

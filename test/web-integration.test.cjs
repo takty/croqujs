@@ -242,7 +242,7 @@ async function checkRenderer() {
 			assert.deepEqual(translations, [['スクリプトを開く', 'キャンセル'], ['スクリプトを保存', 'キャンセル'], ['Open script', 'Cancel'], ['Save script', 'Cancel']]);
 			const saved = await evaluate(`(async () => {
 				const { SessionLocal } = await import('/session/session-local.js');
-				const { BrowserFileSystem } = await import('/fs/fs-browser.js');
+				const { WebFileSystem } = await import('/@id/fs-nw/web');
 				const resources = await (await fetch('/res/lang.en.json')).json();
 				const makeSession = (id, options) => {
 					const session = new SessionLocal(id, options);
@@ -250,7 +250,7 @@ async function checkRenderer() {
 					return session;
 				};
 				const root = await (await navigator.storage.getDirectory()).getDirectoryHandle('saving', { create: true });
-				const files = new BrowserFileSystem(root);
+				const files = new WebFileSystem(root);
 				await files.makeDirectory('sample');
 				await files.writeText('sample/main.js', 'old text');
 				await files.writeText('support.js', 'window.support = true;');
@@ -291,7 +291,7 @@ async function checkRenderer() {
 				if (document.querySelector('dialog')?.open) throw new Error(document.querySelector('dialog [role=alert]').textContent || 'Save did not complete');
 				const untitled = await pending;
 				const secondRoot = await (await navigator.storage.getDirectory()).getDirectoryHandle('saving-second', { create: true });
-				const secondFiles = new BrowserFileSystem(secondRoot);
+				const secondFiles = new WebFileSystem(secondRoot);
 				window.showDirectoryPicker = async () => secondRoot;
 				destination = await secondRoot.getFileHandle('copy.js', { create: true });
 				pending = fresh.doSaveCopy('copied');

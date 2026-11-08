@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import * as native from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { NodeFileSystem } from '../src/fs/fs-node.js';
-import { BrowserFileSystem } from '../src/fs/fs-browser.js';
+import { NodeFileSystem } from 'fs-nw/node';
+import { WebFileSystem } from 'fs-nw/web';
 import { directoryHandle } from './fs-handles.mjs';
 
 test('unrooted Node filesystem supports native paths and temporary directories', async t => {
@@ -49,7 +49,7 @@ async function fixture(t) {
 
 for (const [label, create] of [
 	['Node', root => new NodeFileSystem(root)],
-	['Browser adapter (mock handles)', root => new BrowserFileSystem(directoryHandle(root))],
+	['Browser adapter (mock handles)', root => new WebFileSystem(directoryHandle(root))],
 ]) {
 	test(`${label}: UTF-8, binary views, overwrite and sorted listing`, async t => {
 		const fs = create(await fixture(t));
@@ -147,14 +147,14 @@ test('Node URLs, module location and owner write bit', async t => {
 	await fs.writeText('a #%.js', 'x');
 	assert.match(await fs.toFileURL('a #%.js'), /a%20%23%25\.js$/);
 	assert.equal(await fs.executionFileURL('a #%.js'), 'file:///' + path.join(await native.realpath(root), 'a #%.js').replace(/\\/g, '/'));
-	assert.equal(fs.moduleDirectory(new URL('../src/fs/fs-node.js', import.meta.url)), path.resolve('src/fs'));
+	assert.equal(fs.moduleDirectory(import.meta.resolve('fs-nw/node')), path.resolve('node_modules/fs-nw/dist'));
 	assert.equal(await fs.isWritable('a #%.js'), ((await native.stat(path.join(root, 'a #%.js'))).mode & 0x0080) !== 0);
 	assert.equal(fs.capabilities.fileURL, true);
 });
 
 test('Browser permissions and explicit unsupported operations', async () => {
 	let permission = 'granted';
-	const fs = new BrowserFileSystem({ kind: 'directory', async queryPermission(options) {
+	const fs = new WebFileSystem({ kind: 'directory', async queryPermission(options) {
 		assert.equal(options.mode, 'readwrite');
 		return permission;
 	} });
@@ -165,8 +165,8 @@ test('Browser permissions and explicit unsupported operations', async () => {
 	for (const operation of [() => fs.toFileURL('x'), () => fs.executionFileURL('x'), () => fs.hideDirectory('x')]) {
 		await assert.rejects(operation(), { name: 'NotSupportedError' });
 	}
-	await assert.rejects(new BrowserFileSystem({ kind: 'directory' }).isWritable(), { name: 'NotSupportedError' });
-	const denied = new BrowserFileSystem({ kind: 'directory', async getFileHandle() { throw new DOMException('Denied', 'NotAllowedError'); } });
+	await assert.rejects(new WebFileSystem({ kind: 'directory' }).isWritable(), { name: 'NotSupportedError' });
+	const denied = new WebFileSystem({ kind: 'directory', async getFileHandle() { throw new DOMException('Denied', 'NotAllowedError'); } });
 	await assert.rejects(denied.exists('x'), { name: 'NotAllowedError' });
 });
 
@@ -205,7 +205,7 @@ test('Node rejects symlink traversal', async t => {
 test('Browser pickers validate membership, preserve options and cancel', async t => {
 	const root = directoryHandle(await fixture(t));
 	await native.writeFile(path.join(root.location, 'file.txt'), 'x');
-	const fs = new BrowserFileSystem(root);
+	const fs = new WebFileSystem(root);
 	let selection = await root.getFileHandle('file.txt');
 	t.mock.method(globalThis, 'showOpenFilePicker', async options => {
 		assert.equal(options.startIn, root);
@@ -217,10 +217,10 @@ test('Browser pickers validate membership, preserve options and cancel', async t
 	await assert.rejects(fs.pickFile(), /outside/);
 	t.mock.method(globalThis, 'showDirectoryPicker', async () => root);
 	assert.equal(await fs.pickDirectory(), '');
-	assert.equal((await BrowserFileSystem.open()).name, root.name);
+	assert.equal((await WebFileSystem.open()).name, root.name);
 	t.mock.method(globalThis, 'showDirectoryPicker', async () => { throw new DOMException('Cancel', 'AbortError'); });
 	assert.equal(await fs.pickDirectory(), null);
-	assert.equal(await BrowserFileSystem.open(), null);
+	assert.equal(await WebFileSystem.open(), null);
 });
 
 // The picker functions do not exist in Node; define test placeholders for mock.method.
@@ -230,7 +230,7 @@ globalThis.showDirectoryPicker = () => {};
 test('Browser aborts an incomplete write and preserves the original error', async () => {
 	let aborted = false;
 	const failure = new Error('Write failed');
-	const fs = new BrowserFileSystem({ kind: 'directory', async getFileHandle() {
+	const fs = new WebFileSystem({ kind: 'directory', async getFileHandle() {
 		return { async createWritable() { return {
 			async write() { throw failure; },
 			async abort() { aborted = true; },

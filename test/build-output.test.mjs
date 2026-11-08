@@ -66,8 +66,8 @@ test('Electron output contains only bundled main and preload outside assets', as
 		['electron/main.js', 'electron/preload.js']);
 	const map = JSON.parse(await readFile(new URL('electron/main.js.map', app), 'utf8'));
 	assert.ok(map.sources.some(name => name.endsWith('/session/session-server.js')));
-	assert.ok(map.sources.some(name => name.endsWith('/fs/fs-node.js')));
-	assert.ok(!map.sources.some(name => name.endsWith('/fs/fs-browser.js')));
+	assert.ok(map.sources.some(name => name.includes('/fs-nw/') && name.endsWith('/fs-node.min.js')));
+	assert.ok(!map.sources.some(name => name.endsWith('/fs-web.min.js')));
 });
 
 test('runtime-selected resources keep their paths and contain the build version', async () => {
