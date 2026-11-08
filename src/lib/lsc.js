@@ -30,7 +30,7 @@ export class Lsc {
 			if (event.storageArea !== ls || event.key !== this._address) {
 				return;
 			}
-			const v = ls.getItem(this._address);
+			const v = event.newValue;
 			if (v === null) {
 				return;
 			}
