@@ -103,6 +103,14 @@ are rejected. Changing the root clears the script selection. Cancelling leaves
 the current document and execution context unchanged. The root is reused as the
 initial selection on the next Open, but is not persisted across page reloads.
 
+Web Study keeps the latest unsaved document in `localStorage`, scoped to the
+deployment path. It restores the code as an unsaved, untitled document on the
+next visit; file handles and directory permissions are not restored. Recovery
+does not depend on an exit warning. Saving without further edits, undoing back
+to the saved content, or confirming New/Open clears that document's recovery
+data. Edits made while a save is pending remain recoverable. This is one shared
+recovery slot per deployment, not a separate history for each tab.
+
 Running `test/main.js` uses the chosen root for assets such as `../data.json`.
 Switching projects releases the old execution URL before creating a new provider.
 New clears the current file path while retaining the root for the next Open.

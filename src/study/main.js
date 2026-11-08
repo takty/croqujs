@@ -15,6 +15,7 @@ import { Toolbar } from './ui/toolbar.js';
 import { DialogBox } from './ui/dialog-box.js';
 import { OutputPane } from './ui/output-pane.js';
 import { Splitter } from './ui/splitter.js';
+import { WebDraft } from './web-draft.js';
 import { createEditor } from 'croq-mirror';
 import './style.css';
 
@@ -37,6 +38,9 @@ export class Study {
 	constructor() {
 		this._id = import.meta.env.MODE === 'web' ? crypto.randomUUID() : window.location.hash;
 		if (this._id) this._id = this._id.replace('#', '');
+		this._webDraft = import.meta.env.MODE === 'web'
+			? new WebDraft(window.localStorage, '$croqujs_draft:' + new URL('.', document.baseURI).pathname, this._id)
+			: null;
 		this._session = new Session(this._id);
 		this._lsc = new Lsc('#study_' + this._id);
 
@@ -161,7 +165,15 @@ export class Study {
 		this._config.notify();
 
 		const [msg, arg] = await this._session.doReady();
+		const draft = this._webDraft?.read() ?? null;
 		this._handleServerResponse(msg, arg);
+		if (draft !== null) {
+			this._editor.loadDocument(draft);
+			this._isModified = true;
+			this._session.onStudyModified();
+			this._webDraft.write(draft);
+			this._updateWindowTitle();
+		}
 
 		this._readClipboard();
 		window.focus();
@@ -185,6 +197,8 @@ export class Study {
 			this._clearErrorMarker();
 			if (event.origin !== 'edit') return;
 			this._isModified = true;
+			if (event.text === this._webSavedText) this._webDraft?.clear();
+			else this._webDraft?.write(event.text);
 			this._session.onStudyModified();
 		});
 		this._editor.on('state', () => {
@@ -294,6 +308,8 @@ export class Study {
 		this._setDocumentFile(filePath, name, baseName, dirName, readOnly, defJsons);
 
 		this._editor.loadDocument(text);
+		this._webSavedText = text;
+		this._webDraft?.clear();
 		this._editor.focus();
 
 		this._clearErrorMarker();
@@ -559,8 +575,20 @@ export class Study {
 	}
 
 	async _handleSaving(save) {
-		const [msg, arg] = await save(this._editor.getValue());
+		const text = this._editor.getValue();
+		const [msg, arg] = await save(text);
 		this._handleServerResponse(msg, arg);
+		if (this._webDraft && msg === 'path') {
+			this._webSavedText = text;
+			if (this._editor.getValue() === text) {
+				this._webDraft.clear();
+			} else {
+				this._isModified = true;
+				this._session.onStudyModified();
+				this._webDraft.write(this._editor.getValue());
+				this._updateWindowTitle();
+			}
+		}
 	}
 
 	// -------------------------------------------------------------------------

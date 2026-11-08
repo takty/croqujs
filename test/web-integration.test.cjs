@@ -434,6 +434,20 @@ async function checkRenderer() {
 		}
 		assert.equal(await evaluate('window.hookRequests'), 2);
 		assert.deepEqual(errors, []);
+		// Recovery must survive a navigation even when no beforeunload warning runs.
+		const draftKey = '$croqujs_draft:' + new URL('.', process.env.CROQUJS_TEST_URL).pathname;
+		const recoveryText = '// unsaved recovery\nconsole.log("recovered");';
+		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue(${JSON.stringify(recoveryText)}); void 0`);
+		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), recoveryText);
+		await evaluate('window.onbeforeunload = null; void 0');
+		await window.loadURL(process.env.CROQUJS_TEST_URL);
+		await waitFor(`document.querySelector('.CodeMirror')?.CodeMirror.getValue() === ${JSON.stringify(recoveryText)} && document.title.startsWith('* ')`);
+		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), recoveryText);
+		await evaluate('document.querySelector("[data-cmd=new]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		await waitFor('!!document.querySelector(".swal2-confirm")');
+		await evaluate('document.querySelector(".swal2-confirm").click()');
+		await waitFor('document.querySelector(".CodeMirror").CodeMirror.getValue() === ""');
+		assert.equal(await evaluate(`localStorage.getItem(${JSON.stringify(draftKey)})`), null);
 	} finally {
 		for (const view of BrowserWindow.getAllWindows()) view.destroy();
 	}
