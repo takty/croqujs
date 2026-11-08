@@ -19,6 +19,29 @@ async function checkRenderer() {
 		}
 		throw new Error('Timed out: ' + code + '\n' + errors.join('\n'));
 	}
+	async function checkTextInput() {
+		// Give the hidden renderer an active input context without showing a window.
+		window.webContents.debugger.attach('1.3');
+		try {
+			await window.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', { enabled: true });
+			const before = await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()');
+			const point = await evaluate(`(() => {
+				const r = document.querySelector('.CodeMirror-lines').getBoundingClientRect();
+				return { x: Math.round(r.x + 20), y: Math.round(r.y + 10) };
+			})()`);
+			window.webContents.sendInputEvent({ type: 'mouseDown', button: 'left', clickCount: 1, ...point });
+			window.webContents.sendInputEvent({ type: 'mouseUp', button: 'left', clickCount: 1, ...point });
+			await new Promise(resolve => setTimeout(resolve, 100));
+			window.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'X' });
+			window.webContents.sendInputEvent({ type: 'char', keyCode: 'x' });
+			window.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'X' });
+			await waitFor(`document.querySelector('.CodeMirror').CodeMirror.getValue() !== ${JSON.stringify(before)}`);
+			await evaluate('document.querySelector(".CodeMirror").CodeMirror.undo()');
+			assert.equal(await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()'), before);
+		} finally {
+			window.webContents.debugger.detach();
+		}
+	}
 	try {
 		await window.loadURL(process.env.CROQUJS_TEST_URL);
 		await waitFor('!!document.querySelector(".CodeMirror") && document.title.includes(" — Croqujs")');
@@ -40,6 +63,7 @@ async function checkRenderer() {
 		await evaluate('document.querySelector("dialog [data-action=cancel]").click()');
 		await waitFor('!document.querySelector("dialog")');
 		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("webExample")'), true);
+		await checkTextInput();
 		await evaluate('document.querySelector("[data-cmd=new]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!!document.querySelector(".swal2-confirm")');
 		await evaluate('document.querySelector(".swal2-confirm").click()');
@@ -195,6 +219,7 @@ async function checkRenderer() {
 		})()`);
 		await choose('open');
 		await waitFor('!document.querySelector("dialog") && document.title.includes("main.js")');
+		await checkTextInput();
 		const projectOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		const projectField = await projectOpened;

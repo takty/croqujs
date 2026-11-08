@@ -100,8 +100,19 @@ function showProjectDialog({ res, root = null, open, saving = false, title, sugg
 	if (!supported) error.textContent = labels.unsupported;
 	update();
 	document.body.appendChild(dialog);
+	const previousFocus = document.activeElement;
 	return new Promise(resolve => {
-		dialog.addEventListener('close', () => { dialog.remove(); resolve(result); }, { once: true });
+		dialog.addEventListener('close', () => {
+			dialog.remove();
+			setTimeout(() => {
+				// Chrome can retain keyboard focus without restoring text input after a modal.
+				if (previousFocus?.isConnected) {
+					previousFocus.blur();
+					previousFocus.focus({ preventScroll: true });
+				}
+				resolve(result);
+			}, 0);
+		}, { once: true });
 		dialog.showModal();
 	});
 }
