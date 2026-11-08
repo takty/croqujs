@@ -9,6 +9,7 @@ const root = fileURLToPath(new URL('./src/', import.meta.url));
 
 export default defineConfig(({ mode }) => {
 	const web = mode === 'web';
+	let base;
 	return {
 		root,
 		base: './',
@@ -31,13 +32,21 @@ export default defineConfig(({ mode }) => {
 		},
 		preview: { open: '/' },
 		plugins: [{
-			name: 'croqujs-editor-stylesheet',
+			name: 'croqujs-study-links',
+			configResolved(config) { base = config.base; },
 			transformIndexHtml: {
 				order: 'post',
 				handler(_html, context) {
 					if (path.resolve(context.filename) !== path.join(root, 'index.html')) return;
 					const href = './assets/croq-mirror.min.css';
-					return [{ tag: 'link', attrs: { rel: 'stylesheet', href }, injectTo: 'head' }];
+					return [
+						{ tag: 'link', attrs: { rel: 'stylesheet', href }, injectTo: 'head' },
+						...(web ? [
+							{ tag: 'link', attrs: { rel: 'icon', href: base + 'favicon.svg', type: 'image/svg+xml', sizes: 'any' }, injectTo: 'head' },
+							{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: base + 'apple-touch-icon.png', sizes: '180x180' }, injectTo: 'head' },
+							{ tag: 'link', attrs: { rel: 'manifest', href: base + 'manifest.webmanifest' }, injectTo: 'head' },
+						] : []),
+					];
 				},
 			},
 		}, rendererResources(), applicationResources({ web }), ...(web ? [webResources()] : [])],
