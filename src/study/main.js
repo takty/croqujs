@@ -42,6 +42,12 @@ export class Study {
 			? new WebDraft(window.localStorage, '$croqujs_draft:' + new URL('.', document.baseURI).pathname, this._id)
 			: null;
 		this._session = new Session(this._id);
+		this._webAppDisplayMode = import.meta.env.MODE === 'web'
+			? window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay)')
+			: null;
+		this._webAppDisplayMode?.addEventListener('change', () => {
+			if (this._res) this._updateWindowTitle();
+		});
 		this._lsc = new Lsc('#study_' + this._id);
 
 		this._winstate = new WinState(window, '$winstate_study');
@@ -345,8 +351,9 @@ export class Study {
 	_updateWindowTitle() {
 		const prefix = (this._isModified ? '* ' : '') + (this._isReadOnly ? `(${this._res.readOnly}) ` : '');
 		const fn = (this._filePath === null) ? this._res.untitled : this._baseName;
-		const fp = (this._filePath === null) ? '' : (' — ' + this._dirName + '');
-		const title = prefix + fn + fp + ' — ' + 'Croqujs';
+		const fp = (this._filePath === null || !this._dirName) ? '' : (' — ' + this._dirName);
+		const suffix = this._webAppDisplayMode?.matches ? '' : ' — Croqujs';
+		const title = prefix + fn + fp + suffix;
 		if (window.title !== title) {
 			window.title = title;
 			this._session.onStudyTitleChanged(title);
