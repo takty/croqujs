@@ -42,6 +42,8 @@ export class Study {
 			? new WebDraft(window.localStorage, '$croqujs_draft:' + new URL('.', document.baseURI).pathname, this._id)
 			: null;
 		this._session = new Session(this._id);
+		this._isLimitedMode = import.meta.env.MODE === 'web' &&
+			['showDirectoryPicker', 'showOpenFilePicker', 'showSaveFilePicker'].some(method => typeof window[method] !== 'function');
 		this._webAppDisplayMode = import.meta.env.MODE === 'web'
 			? window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay)')
 			: null;
@@ -349,7 +351,9 @@ export class Study {
 	}
 
 	_updateWindowTitle() {
-		const prefix = (this._isModified ? '* ' : '') + (this._isReadOnly ? `(${this._res.readOnly}) ` : '');
+		const prefix = (this._isModified ? '* ' : '') +
+			(this._isLimitedMode ? `(${this._res.limitedMode}) ` : '') +
+			(this._isReadOnly ? `(${this._res.readOnly}) ` : '');
 		const fn = (this._filePath === null) ? this._res.untitled : this._baseName;
 		const fp = (this._filePath === null || !this._dirName) ? '' : (' — ' + this._dirName);
 		const suffix = this._webAppDisplayMode?.matches ? '' : ' — Croqujs';

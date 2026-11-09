@@ -45,6 +45,7 @@ async function checkRenderer() {
 	try {
 		await window.loadURL(process.env.CROQUJS_TEST_URL);
 		await waitFor('!!document.querySelector(".CodeMirror") && document.title.includes(" — Croqujs")');
+		assert.equal(await evaluate('document.title.includes("(制限モード)") || document.title.includes("(Limited Mode)")'), false);
 		assert.equal(await evaluate('typeof window.ipc'), 'undefined');
 		assert.equal(await evaluate('[...document.styleSheets].some(sheet => sheet.href?.endsWith("/croq-mirror.min.css"))'), true);
 		assert.equal(await evaluate('location.href'), process.env.CROQUJS_TEST_URL);
@@ -448,6 +449,45 @@ async function checkRenderer() {
 		await evaluate('document.querySelector(".swal2-confirm").click()');
 		await waitFor('document.querySelector(".CodeMirror").CodeMirror.getValue() === ""');
 		assert.equal(await evaluate(`localStorage.getItem(${JSON.stringify(draftKey)})`), null);
+		for (const [language, label, untitled, message] of [
+			['ja', '制限モード', '名称未設定', 'この環境では、ローカルファイルの読み込み・保存は利用できません。'],
+			['en', 'Limited Mode', 'Untitled', 'Opening and saving local files is unavailable in this environment.'],
+		]) {
+			const limited = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, partition: 'limited-' + language + '-' + process.pid } });
+			const contents = limited.webContents;
+			contents.on('console-message', event => {
+				if (event.level === 'error') errors.push(event.message);
+			});
+			const read = code => contents.executeJavaScript(code, true);
+			try {
+				await limited.loadURL('about:blank');
+				contents.debugger.attach('1.3');
+				await contents.debugger.sendCommand('Page.enable');
+				await contents.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument', { source: `
+					for (const name of ['showDirectoryPicker', 'showOpenFilePicker', 'showSaveFilePicker']) {
+						Object.defineProperty(window, name, { configurable: true, value: undefined });
+					}
+					localStorage.setItem('$config', JSON.stringify({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, autoIndent: true, language: ${JSON.stringify(language)} }));
+				` });
+				await limited.loadURL(process.env.CROQUJS_TEST_URL);
+				await waitFor(`document.title === ${JSON.stringify('(' + label + ') ' + untitled + ' — Croqujs')}`, contents);
+				for (const command of ['open', 'save']) {
+					await read(`document.querySelector('[data-cmd="${command}"]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0`);
+					await waitFor('!!document.querySelector("dialog")', contents);
+					assert.equal(await read('document.querySelector("dialog [role=alert]").textContent'), message);
+					assert.equal(await read('document.querySelector("dialog [data-action=root]").disabled'), true);
+					assert.equal(await read('document.querySelector("dialog [data-action=file]").disabled'), true);
+					await read('document.querySelector("dialog [data-action=cancel]").click()');
+					await waitFor('!document.querySelector("dialog")', contents);
+				}
+				await read('document.querySelector(".CodeMirror").CodeMirror.replaceRange("// limited", { line: 0, ch: 0 }, undefined, "+input"); void 0');
+				await read('window.onbeforeunload = null; void 0');
+				await limited.loadURL(process.env.CROQUJS_TEST_URL);
+				await waitFor(`document.title === ${JSON.stringify('* (' + label + ') ' + untitled + ' — Croqujs')}`, contents);
+			} finally {
+				limited.destroy();
+			}
+		}
 	} finally {
 		for (const view of BrowserWindow.getAllWindows()) view.destroy();
 	}
@@ -476,7 +516,7 @@ if (process.versions.electron) {
 					let output = '';
 					child.stdout.on('data', data => { output += data; });
 					child.stderr.on('data', data => { output += data; });
-					const timer = setTimeout(() => { child.kill(); reject(new Error('Browser test timed out\n' + output)); }, 30000);
+					const timer = setTimeout(() => { child.kill(); reject(new Error('Browser test timed out\n' + output)); }, 60000);
 					child.on('error', error => { clearTimeout(timer); reject(error); });
 					child.on('exit', code => { clearTimeout(timer); if (code === 0) { if (output.trim()) console.log(output.trim()); resolve(); } else reject(new Error(output)); });
 				});

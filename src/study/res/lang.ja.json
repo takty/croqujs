@@ -75,7 +75,7 @@
 		"save": "保存",
 		"outside": "選択したルート配下のファイルを選んでください。",
 		"script": ".jsファイルを選んでください。",
-		"unsupported": "このブラウザではディレクトリ・ファイルの選択を利用できません。",
+		"unsupported": "この環境では、ローカルファイルの読み込み・保存は利用できません。",
 		"fileType": "JavaScript"
 	},
 	"dialogTitle": {
@@ -84,6 +84,7 @@
 	},
 	"untitled": "名称未設定",
 	"readOnly": "読み込み専用",
+	"limitedMode": "制限モード",
 	"typeLabels": [
 		{"type": "boolean", "label": "真偽値"},
 		{"type": "function", "label": "関数"},

@@ -75,7 +75,7 @@
 		"save": "Save",
 		"outside": "Choose a file inside the selected root directory.",
 		"script": "Choose a .js file.",
-		"unsupported": "Directory and file pickers are unavailable in this browser.",
+		"unsupported": "Opening and saving local files is unavailable in this environment.",
 		"fileType": "JavaScript"
 	},
 	"dialogTitle": {
@@ -84,6 +84,7 @@
 	},
 	"untitled": "Untitled",
 	"readOnly": "Read Only",
+	"limitedMode": "Limited Mode",
 	"typeLabels": [
 		{"type": "boolean", "label": "Boolean"},
 		{"type": "function", "label": "Function"},
