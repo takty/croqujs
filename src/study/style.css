@@ -2,7 +2,7 @@
  * Study Window Style
  *
  * @author Takuto Yanagida
- * @version 2026-11-01
+ * @version 2026-11-09
  */
 
 :root {
@@ -45,6 +45,22 @@
 	--dialog-box-font-family   : var(--font-ui);
 	--dialog-box-font-console  : var(--font-console);
 	--dialog-box-font-size     : var(--font-size);
+	--dialog-box-color         : rgba(0, 0, 0, 0.95);
+	--dialog-box-background    : #fff;
+	--dialog-box-backdrop      : rgba(0, 0, 0, 0.5);
+	--dialog-box-border-radius : 0.3125rem;
+	--dialog-box-shadow        : 0 0 0.25rem rgba(0, 0, 0, 0.15), 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+
+	--dialog-box-button-min-width   : 8rem;
+	--dialog-box-button-min-height  : 2.5rem;
+	--dialog-box-button-padding     : 0 1rem;
+	--dialog-box-button-radius      : 0.25em;
+	--dialog-box-button-color       : #fff;
+	--dialog-box-button-focus-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+	--dialog-box-secondary          : var(--L-LightGray);
+	--dialog-box-secondary-hover    : color-mix(in srgb, var(--L-LightGray) 85%, black);
+
+	--dialog-box-error         : var(--L-Red);
 	--dialog-box-info          : var(--L-Aqua);
 	--dialog-box-info-border   : color-mix(in srgb, var(--L-Aqua) 20%, transparent);
 	--dialog-box-error-border  : color-mix(in srgb, var(--L-Red) 20%, transparent);

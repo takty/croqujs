@@ -2,21 +2,23 @@
  * Dialog Box - SweetAlert2
  *
  * @author Takuto Yanagida
- * @version 2026-11-01
+ * @version 2026-11-09
  */
 
 .swal2-container.swal2-backdrop-show {
-	background: rgba(0, 0, 0, 0.5);
+	background: var(--dialog-box-backdrop);
 	outline   : none;
 }
 
 .swal2-popup {
-	box-shadow : 0 0 0.25rem rgba(0, 0, 0, 0.15), 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
-	user-select: none;
+	box-shadow   : var(--dialog-box-shadow);
+	background   : var(--dialog-box-background);
+	border-radius: var(--dialog-box-border-radius);
+	user-select  : none;
 
 	font-family: var(--dialog-box-font-family);
 	font-size  : var(--dialog-box-font-size);
-	color      : rgba(0, 0, 0, 0.95);
+	color      : var(--dialog-box-color);
 }
 
 .swal2-icon {
@@ -82,10 +84,12 @@
 		color      : inherit;
 	}
 	.swal2-styled {
-		margin    : 0.5rem 0.75rem;
-		padding   : 0 1rem;
-		min-width : 8rem;
-		min-height: 2.5rem;
+		margin       : 0.5rem 0.75rem;
+		padding      : var(--dialog-box-button-padding);
+		min-width    : var(--dialog-box-button-min-width);
+		min-height   : var(--dialog-box-button-min-height);
+		border-radius: var(--dialog-box-button-radius);
+		color        : var(--dialog-box-button-color);
 
 		transition: 0.25s;
 
@@ -101,7 +105,7 @@
 			&:hover { background-color: var(--dialog-box-cancel-hover); }
 		}
 		&:focus {
-			box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+			box-shadow: var(--dialog-box-button-focus-shadow);
 			outline   : none;
 		}
 	}
