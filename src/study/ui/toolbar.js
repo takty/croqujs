@@ -38,6 +38,7 @@ export class Toolbar {
 				if (item.type !== undefined) throw new Error('Unknown toolbar item type: ' + item.type);
 				if (!item.cmd) throw new Error('Toolbar item requires cmd');
 				elm.className = 'btn';
+				if (item.optional === true) elm.classList.add('optional');
 				for (const key of ['cmd', 'res', 'icon']) {
 					if (item[key] !== undefined) elm.dataset[key] = item[key];
 				}

@@ -7,6 +7,7 @@
 
 .toolbar {
 	display: flex;
+	container: toolbar / inline-size;
 
 	position: relative;
 	width   : 100%;
@@ -47,6 +48,10 @@
 	}
 
 	.filler { flex: 1 1 auto; }
+}
+
+@container toolbar (max-width: 640px) {
+	.toolbar .btn.optional { display: none; }
 }
 
 .toolbar .btn img {  /* Icon wrapper */

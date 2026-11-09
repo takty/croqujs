@@ -152,6 +152,12 @@
 		"res": "view",
 		"items": [
 			{
+				"cmd": "tileWin"
+			},
+			{
+				"type": "separator"
+			},
+			{
 				"type": "group",
 				"res": "font",
 				"alt": "toggleLamono",
