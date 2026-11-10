@@ -13,7 +13,7 @@ window.addEventListener('DOMContentLoaded', () => { new Field(); });
 class Field {
 
 	constructor() {
-		[this._id, ] = window.location.hash.replace('#', '').split(',');
+		[this._id, this._instance] = window.location.hash.replace('#', '').split(',');
 		this._lsc = new Lsc('#field_' + this._id);
 		this._winstate = new WinState(window, '$winstate_field');
 
@@ -22,16 +22,24 @@ class Field {
 
 		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
 		this._lsc.listen(ma => {
+			if (import.meta.env.MODE === 'web') return;
 			if (ma.message === 'callFieldMethod' && this[ma.params.method]) {
 				this[ma.params.method](...ma.params.args);
 			}
 		});
 		window.addEventListener('keydown', (e) => this.onKeyDown(e));
-		window.addEventListener('message', event => {
-			if (event.origin !== location.origin || event.source !== window.opener) return;
-			if (event.data?.type !== 'croqujs-field-ping' || event.data.id !== this._id) return;
-			event.source.postMessage({ type: 'croqujs-field-ready', id: this._id }, event.origin);
-		});
+		if (import.meta.env.MODE === 'web') {
+			this._channel = new BroadcastChannel('croqujs-field-' + this._id);
+			this._channel.addEventListener('message', event => {
+				if (event.data?.instance !== this._instance) return;
+				if (event.data.type === 'ping') this._channel.postMessage({ type: 'ready', instance: this._instance, token: event.data.token });
+				else if (event.data?.type === 'close') window.close();
+				else if (event.data.type === 'call' && typeof this[event.data.method] === 'function') this[event.data.method](...event.data.args);
+			});
+			window.addEventListener('beforeunload', () => {
+				this._channel.postMessage({ type: 'closed', instance: this._instance });
+			});
+		}
 		this.initializeFullscreenPoller();
 	}
 

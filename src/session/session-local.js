@@ -9,7 +9,6 @@ import { Backup } from '../project/backup.js';
 import { BrowserExporter } from '../project/exporter-browser.js';
 import { BrowserUrlProvider } from '../execution/url-provider-browser.js';
 import { FileSystemBase } from 'fs-nw/base';
-import { Lsc } from '../lib/lsc.js';
 import { WebFileSystem } from 'fs-nw/web';
 import { showOpenProjectDialog, showSaveProjectDialog } from '../study/ui/project-dialog.js';
 
@@ -17,13 +16,15 @@ export class SessionLocal {
 
 	#id;
 	#res;
-	#field = null;
+	#field = false;
+	#preparingRun = false;
+	#fieldChannel;
+	#cancelFieldWait = null;
 	#hiddenFrame = null;
 	#provider = null;
 	#running = null;
 	#cleanup = Promise.resolve();
 	#generation = 0;
-	#openError = null;
 	#files;
 	#filePath;
 	#opening = null;
@@ -37,9 +38,13 @@ export class SessionLocal {
 		this.#files = files;
 		this.#filePath = filePath;
 		this.#resetBackup();
+		this.#fieldChannel = new BroadcastChannel('croqujs-field-' + id);
+		this.#fieldChannel.addEventListener('message', event => {
+			if (event.data?.type === 'closed' && event.data.instance === this.#field) this.#field = false;
+		});
 		window.addEventListener('pagehide', () => {
 			this.onStudyProgramClosed();
-			this.#field?.close();
+			this.#fieldChannel.postMessage({ type: 'close', instance: this.#field });
 		});
 	}
 
@@ -48,35 +53,50 @@ export class SessionLocal {
 	}
 
 	prepareRun() {
-		this.#openError = null;
-		if (!this.#field || this.#field.closed) {
-			const url = new URL('field/', document.baseURI);
-			url.hash = this.#id;
-			this.#field = window.open(url.href, 'croqujs-field-' + this.#id);
-		}
-		if (!this.#field) this.#openError = new Error('Allow pop-ups to open the execution window.');
+		if (this.#preparingRun || this.#running) return false;
+		this.#preparingRun = true;
+		// A busy or crashed field cannot reliably report that its tab was closed.
+		// Start each run in a fresh tab without relying on an unload notification.
+		this.#fieldChannel.postMessage({ type: 'close', instance: this.#field });
+		this.#field = crypto.randomUUID();
+		const url = new URL('field/', document.baseURI);
+		url.hash = this.#id + ',' + this.#field;
+		window.open(url.href, 'croqujs-field-' + this.#id, 'noopener');
+		return true;
+	}
+
+	callField(method, ...args) {
+		if (!this.#field) return;
+		this.#fieldChannel.postMessage({ type: 'call', instance: this.#field, method, args });
 	}
 
 	async #waitForField() {
-		if (this.#openError) throw this.#openError;
-		if (!this.#field || this.#field.closed) throw new Error('The execution window is closed.');
+		if (!this.#field) throw new Error('The execution window is closed.');
 		await new Promise((resolve, reject) => {
+			const instance = this.#field;
+			const token = crypto.randomUUID();
+			let finished = false;
 			const finish = error => {
+				if (finished) return;
+				finished = true;
 				clearInterval(poller);
 				clearTimeout(timeout);
-				window.removeEventListener('message', receive);
+				this.#fieldChannel.removeEventListener('message', receive);
+				this.#cancelFieldWait = null;
+				if (error) this.#field = false;
 				error ? reject(error) : resolve();
 			};
 			const receive = event => {
-				if (event.origin === location.origin && event.source === this.#field &&
-					event.data?.type === 'croqujs-field-ready' && event.data.id === this.#id) finish();
+				if (event.data?.instance !== instance) return;
+				if (event.data.type === 'ready' && event.data.token === token) finish();
+				else if (event.data.type === 'closed') finish(new Error('The execution window is closed.'));
 			};
 			const poller = setInterval(() => {
-				if (this.#field.closed) finish(new Error('The execution window is closed.'));
-				else this.#field.postMessage({ type: 'croqujs-field-ping', id: this.#id }, location.origin);
+				this.#fieldChannel.postMessage({ type: 'ping', instance: this.#field, token });
 			}, 50);
-			const timeout = setTimeout(() => finish(new Error('Execution window did not become ready.')), 10000);
-			window.addEventListener('message', receive);
+			const timeout = setTimeout(() => finish(new Error('Execution window did not become ready. Allow pop-ups and try again.')), 10000);
+			this.#fieldChannel.addEventListener('message', receive);
+			this.#cancelFieldWait = () => finish();
 		});
 	}
 
@@ -105,8 +125,9 @@ export class SessionLocal {
 	onStudyToggleDevToolsField() {}
 	onStudyProgramClosed() {
 		this.#removeHiddenFrame();
-		new Lsc('#study_' + this.#id).send('#field_' + this.#id, { message: 'callFieldMethod', params: { method: 'closeProgram', args: [] } });
+		this.callField('closeProgram');
 		this.#generation += 1;
+		this.#cancelFieldWait?.();
 		// Serialize disposal after any in-flight registration.
 		this.#cleanup = Promise.all([this.#cleanup, this.#running]).then(() => this.#provider?.dispose()).catch(console.error);
 	}
@@ -348,7 +369,7 @@ export class SessionLocal {
 	async #execute(text, visible) {
 		if (this.#running) return ['nop'];
 		this.#removeHiddenFrame();
-		new Lsc('#study_' + this.#id).send('#field_' + this.#id, { message: 'callFieldMethod', params: { method: 'closeProgram', args: [] } });
+		this.callField('closeProgram');
 		const generation = ++this.#generation;
 		const cleanup = this.#cleanup;
 		this.#running = (async () => {
@@ -356,10 +377,12 @@ export class SessionLocal {
 				await cleanup;
 				this.#codeCache = text;
 				if (this.#modified && await this.#canWrite()) await this.#backup.backupText(text);
+				if (generation !== this.#generation) return ['nop'];
 				if (visible) await this.#waitForField();
+				if (generation !== this.#generation) return ['nop'];
 				const provider = await this.#getProvider();
 				const url = await provider.createUrl(text, this.#filePath);
-				if (generation !== this.#generation || (visible && this.#field.closed)) {
+				if (generation !== this.#generation || (visible && !this.#field)) {
 					await provider.dispose();
 					return ['nop'];
 				}
@@ -373,11 +396,12 @@ export class SessionLocal {
 				document.body.appendChild(frame);
 				return ['nop'];
 			} catch (error) {
+				if (generation !== this.#generation) return ['nop'];
 				return ['alert_error', '\n' + error.message];
 			}
 		})();
 		try { return await this.#running; }
-		finally { this.#running = null; }
+		finally { this.#running = null; this.#preparingRun = false; }
 	}
 
 	#unsupported() {

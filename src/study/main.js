@@ -271,6 +271,7 @@ export class Study {
 	// -------------------------------------------------------------------------
 
 	_callField(method, ...args) {
+		if (this._session.callField) return this._session.callField(method, ...args);
 		this._lsc.send('#field_' + this._id, { message: 'callFieldMethod', params: { method: method, args: args } });
 	}
 
@@ -448,7 +449,7 @@ export class Study {
 	// -------------------------------------------------------------------------
 
 	executeCommand(cmd, close = true) {
-		if (cmd === 'run') this._session.prepareRun?.();
+		if (cmd === 'run' && this._session.prepareRun?.() === false) return;
 		if (close) this._sideMenu.close();
 		this._editor.setLineSelectionMode(false);
 

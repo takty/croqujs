@@ -97,27 +97,31 @@ async function checkRenderer() {
 		await runHidden(41);
 		assert.equal(await evaluate(`document.querySelector('iframe[data-croqujs-execution]').contentWindow.fetch(${JSON.stringify(hiddenUrl)}).then(response => response.status)`), 404);
 		const run = async value => {
+			const opened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 			await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = ${value}; console.log("run-${value}");')`);
 			await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+			return opened;
 		};
 		await evaluate(`window.originalOpen = window.open;
 			window.open = (...args) => {
 				const popup = originalOpen(...args);
-				if (args[1]?.startsWith('croqujs-field-')) window.testField = popup;
+				if (args[1]?.startsWith('croqujs-field-')) window.testOpenReturnedNull = popup === null;
 				return popup;
 			}; void 0;`);
-		const opened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
-		await run(42);
-		const field = await opened;
+		let field = await run(42);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 42', field.webContents);
+		assert.equal(await evaluate('testOpenReturnedNull'), true);
+		assert.equal(await field.webContents.executeJavaScript('window.opener === null'), true);
 		assert.equal(await evaluate('!!document.querySelector("iframe[data-croqujs-execution]")'), false);
 		assert.match(field.webContents.getURL(), /\/field\/#/);
 		const firstUrl = await field.webContents.executeJavaScript('window.previousFrame = document.querySelector("iframe"); previousFrame.src');
 		assert.match(new URL(firstUrl).pathname, /\/__croqujs_run__\/[0-9a-f-]+\/$/);
 		await waitFor('document.querySelector("#output-pane").textContent.includes("run-42")');
-		await run(43);
+		const previousField = field;
+		field = await run(43);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 43', field.webContents);
-		assert.equal(await field.webContents.executeJavaScript('previousFrame !== document.querySelector("iframe")'), true);
+		assert.notEqual(field, previousField);
+		assert.equal(previousField.isDestroyed(), true);
 		assert.equal(BrowserWindow.getAllWindows().length, 2);
 		assert.equal(await field.webContents.executeJavaScript(`document.querySelector('iframe').contentWindow.fetch(${JSON.stringify(firstUrl)}).then(response => response.status)`), 404);
 		await runHidden(45);
@@ -125,22 +129,46 @@ async function checkRenderer() {
 		assert.equal(BrowserWindow.getAllWindows().length, 2);
 		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!document.querySelector("iframe[data-croqujs-execution]")');
-		await run(43);
+		field = await run(43);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 43', field.webContents);
 		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('throw new Error("web-error");')`);
+		const errorOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		field = await errorOpened;
 		await waitFor('document.querySelector("#output-pane").textContent.includes("web-error")');
 		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!document.querySelector("iframe")', field.webContents);
 		assert.equal(field.isDestroyed(), false);
 		await waitFor('(async () => (await caches.keys()).filter(name => name.startsWith("croqujs-execution-v1:")).length === 0)()');
-		field.destroy();
-		await waitFor('testField.closed');
-		const reopened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
-		await run(44);
-		const nextField = await reopened;
+		await evaluate(`window.fieldClosed = false;
+			window.fieldObserver = new BroadcastChannel(${JSON.stringify('croqujs-field-' + new URL(field.webContents.getURL()).hash.slice(1).split(',')[0])});
+			fieldObserver.onmessage = event => { if (event.data?.type === 'closed') window.fieldClosed = true; }; void 0;`);
+		field.close();
+		await waitFor('fieldClosed');
+		const nextField = await run(44);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 44', nextField.webContents);
-		nextField.destroy();
+		await evaluate('fieldClosed = false');
+		nextField.close();
+		await waitFor('fieldClosed');
+		await evaluate('fieldObserver.close()');
+		// Closing a looping tab may bypass its unload notification entirely.
+		const loopOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
+		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('localStorage.setItem("croqujs-loop-started", "yes"); while (true) { console.log("hoge"); }');
+			document.querySelector('.toolbar [data-cmd=run]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
+		const loopingField = await loopOpened;
+		await waitFor('localStorage.getItem("croqujs-loop-started") === "yes"');
+		assert.notEqual(window.webContents.getOSProcessId(), loopingField.webContents.getOSProcessId());
+		loopingField.webContents.forcefullyCrashRenderer();
+		loopingField.destroy();
+		const recoveredOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
+		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = 46; console.log("recovered");');
+			for (let i = 0; i < 3; i++) document.querySelector('.toolbar [data-cmd=run]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
+		const recoveredField = await recoveredOpened;
+		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 46', recoveredField.webContents);
+		await waitFor('document.querySelector("#output-pane").textContent.includes("recovered")');
+		assert.equal(BrowserWindow.getAllWindows().length, 2);
+		assert.equal(await evaluate('!!document.querySelector(".swal2-popup")'), false);
+		recoveredField.close();
 		// Replace only native picker UI; use real directory/file handles and worker reads.
 		await evaluate(`(async () => {
 			const storage = await navigator.storage.getDirectory();
@@ -191,7 +219,7 @@ async function checkRenderer() {
 		assert.equal(await evaluate('!!document.querySelector(".swal2-popup")'), false);
 		await choose('cancel');
 		await waitFor('!document.querySelector("dialog")');
-		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("run-44")'), true);
+		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("recovered")'), true);
 		await openDialog();
 		await choose('root');
 		await waitFor('!document.querySelector("dialog [data-action=file]").disabled');
@@ -210,7 +238,7 @@ async function checkRenderer() {
 		await evaluate('(async () => (await projectRoots[0].getDirectoryHandle("test")).removeEntry("main.js"))()');
 		await choose('open');
 		await waitFor('!!document.querySelector("dialog [role=alert]").textContent');
-		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("run-44")'), true);
+		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("recovered")'), true);
 		await evaluate(`(async () => {
 			const directory = await projectRoots[0].getDirectoryHandle('test');
 			projectScripts[0] = await directory.getFileHandle('main.js', { create: true });
@@ -223,7 +251,7 @@ async function checkRenderer() {
 		await checkTextInput();
 		const projectOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
-		const projectField = await projectOpened;
+		let projectField = await projectOpened;
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 101', projectField.webContents);
 		assert.match(await projectField.webContents.executeJavaScript('document.querySelector("iframe").src'), /\/test\/#/);
 		await openDialog();
@@ -238,7 +266,9 @@ async function checkRenderer() {
 		await waitFor('!document.querySelector("dialog [data-action=open]").disabled');
 		await choose('open');
 		await waitFor('!document.querySelector("dialog")');
+		const nextProjectOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		projectField = await nextProjectOpened;
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 202', projectField.webContents);
 		projectField.destroy();
 		// Exercise the browser-only window methods through the existing Study commands.
@@ -488,6 +518,37 @@ async function checkRenderer() {
 				limited.destroy();
 			}
 		}
+		// A non-responsive execution window must not leave a readiness error after Stop.
+		await evaluate(`window.originalSetTimeout = window.setTimeout;
+			window.originalClearTimeout = window.clearTimeout;
+			window.stopTestOriginalOpen = window.open;
+			window.originalChannelPost = BroadcastChannel.prototype.postMessage;
+			window.readyWaitCanceled = false;
+			window.setTimeout = (callback, delay, ...args) => {
+				const timer = originalSetTimeout(callback, delay, ...args);
+				if (delay === 10000) { window.readyWaitTimer = timer; window.readyWaitCallback = callback; }
+				return timer;
+			};
+			window.clearTimeout = timer => {
+				if (timer === window.readyWaitTimer) window.readyWaitCanceled = true;
+				return originalClearTimeout(timer);
+			};
+			BroadcastChannel.prototype.postMessage = function (message) {
+				if (message?.type !== 'ping') return originalChannelPost.call(this, message);
+			};
+			window.open = () => null; void 0;`);
+		await evaluate('document.querySelector("[data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		await waitFor('typeof readyWaitCallback === "function"');
+		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		await waitFor('readyWaitCanceled');
+		await evaluate(`readyWaitCallback();
+			document.querySelector('.CodeMirror').CodeMirror.replaceRange('// after stop', { line: 0, ch: 0 }, undefined, '+input');
+			window.setTimeout = originalSetTimeout;
+			window.clearTimeout = originalClearTimeout;
+			BroadcastChannel.prototype.postMessage = originalChannelPost;
+			window.open = stopTestOriginalOpen; void 0;`);
+		await evaluate('new Promise(resolve => setTimeout(resolve, 100))');
+		assert.equal(await evaluate('!!document.querySelector(".swal2-popup")'), false);
 	} finally {
 		for (const view of BrowserWindow.getAllWindows()) view.destroy();
 	}
@@ -495,6 +556,7 @@ async function checkRenderer() {
 
 if (process.versions.electron) {
 	const { app } = require('electron');
+	app.setPath('userData', path.join(__dirname, '.profiles', 'web-integration-' + process.pid));
 	app.commandLine.appendSwitch('disable-gpu');
 	app.whenReady().then(checkRenderer).then(() => app.exit(0), error => {
 		console.error(error);
