@@ -10,6 +10,7 @@ import { BrowserExporter } from '../project/exporter-browser.js';
 import { BrowserUrlProvider } from '../execution/url-provider-browser.js';
 import { FileSystemBase } from 'fs-nw/base';
 import { WebFileSystem } from 'fs-nw/web';
+import { Iwc } from '../lib/iwc.js';
 import { showOpenProjectDialog, showSaveProjectDialog } from '../study/ui/project-dialog.js';
 
 export class SessionLocal {
@@ -18,7 +19,8 @@ export class SessionLocal {
 	#res;
 	#field = false;
 	#preparingRun = false;
-	#fieldChannel;
+	#iwc;
+	#receiveFieldStatus = null;
 	#cancelFieldWait = null;
 	#hiddenFrame = null;
 	#provider = null;
@@ -38,13 +40,15 @@ export class SessionLocal {
 		this.#files = files;
 		this.#filePath = filePath;
 		this.#resetBackup();
-		this.#fieldChannel = new BroadcastChannel('croqujs-field-' + id);
-		this.#fieldChannel.addEventListener('message', event => {
-			if (event.data?.type === 'closed' && event.data.instance === this.#field) this.#field = false;
+		this.#iwc = new Iwc('#session_' + id, 'croqujs-iwc:');
+		this.#iwc.listen(message => {
+			if (message.type === 'closed' && message.instance === this.#field) this.#field = false;
+			this.#receiveFieldStatus?.(message);
 		});
 		window.addEventListener('pagehide', () => {
 			this.onStudyProgramClosed();
-			this.#fieldChannel.postMessage({ type: 'close', instance: this.#field });
+			this.#iwc.send('#field_' + this.#id, { type: 'close', instance: this.#field });
+			this.#iwc.dispose();
 		});
 	}
 
@@ -57,7 +61,7 @@ export class SessionLocal {
 		this.#preparingRun = true;
 		// A busy or crashed field cannot reliably report that its tab was closed.
 		// Start each run in a fresh tab without relying on an unload notification.
-		this.#fieldChannel.postMessage({ type: 'close', instance: this.#field });
+		this.#iwc.send('#field_' + this.#id, { type: 'close', instance: this.#field });
 		this.#field = crypto.randomUUID();
 		const url = new URL('field/', document.baseURI);
 		url.hash = this.#id + ',' + this.#field;
@@ -67,7 +71,7 @@ export class SessionLocal {
 
 	callField(method, ...args) {
 		if (!this.#field) return;
-		this.#fieldChannel.postMessage({ type: 'call', instance: this.#field, method, args });
+		this.#iwc.send('#field_' + this.#id, { type: 'call', instance: this.#field, method, args });
 	}
 
 	async #waitForField() {
@@ -81,21 +85,20 @@ export class SessionLocal {
 				finished = true;
 				clearInterval(poller);
 				clearTimeout(timeout);
-				this.#fieldChannel.removeEventListener('message', receive);
+				this.#receiveFieldStatus = null;
 				this.#cancelFieldWait = null;
 				if (error) this.#field = false;
 				error ? reject(error) : resolve();
 			};
-			const receive = event => {
-				if (event.data?.instance !== instance) return;
-				if (event.data.type === 'ready' && event.data.token === token) finish();
-				else if (event.data.type === 'closed') finish(new Error('The execution window is closed.'));
+			this.#receiveFieldStatus = message => {
+				if (message.instance !== instance) return;
+				if (message.type === 'ready' && message.token === token) finish();
+				else if (message.type === 'closed') finish(new Error('The execution window is closed.'));
 			};
 			const poller = setInterval(() => {
-				this.#fieldChannel.postMessage({ type: 'ping', instance: this.#field, token });
+				this.#iwc.send('#field_' + this.#id, { type: 'ping', instance: this.#field, token });
 			}, 50);
 			const timeout = setTimeout(() => finish(new Error('Execution window did not become ready. Allow pop-ups and try again.')), 10000);
-			this.#fieldChannel.addEventListener('message', receive);
 			this.#cancelFieldWait = () => finish();
 		});
 	}

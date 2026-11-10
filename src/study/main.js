@@ -8,7 +8,7 @@
 import { Config } from '../lib/config.js';
 import { ErrorTranslator } from '../lib/error-translator.js';
 import { Session } from '#session';
-import { Lsc } from '../lib/lsc.js';
+import { Iwc } from '../lib/iwc.js';
 import { WinState } from '../lib/winstate.js';
 import { SideMenu } from './ui/side-menu.js';
 import { Toolbar } from './ui/toolbar.js';
@@ -50,7 +50,7 @@ export class Study {
 		this._webAppDisplayMode?.addEventListener('change', () => {
 			if (this._res) this._updateWindowTitle();
 		});
-		this._lsc = new Lsc('#study_' + this._id);
+		this._iwc = new Iwc('#study_' + this._id, 'croqujs-iwc:');
 
 		this._winstate = new WinState(window, '$winstate_study');
 		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, autoIndent: true, language: 'ja' });
@@ -64,7 +64,6 @@ export class Study {
 			if (!this._isModified) return;
 			e.preventDefault();
 			e.returnValue = this._res.msg.confirmExit;
-			this._cleanLocalStorage();
 		}
 
 		window.addEventListener('keydown', (e) => {
@@ -74,17 +73,9 @@ export class Study {
 
 		this._initFileDrop();
 		this.ready = this._initialize();
-		window.addEventListener('unload', () => { this._lsc.dispose(); this._splitter?.destroy(); this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
+		window.addEventListener('unload', () => { this._iwc.dispose(); this._config.dispose(); this._splitter?.destroy(); this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
 	}
 
-
-	_cleanLocalStorage() {
-		const keys = [];
-		for (let i = 0; i < window.localStorage.length; i += 1) keys.push(window.localStorage.key(i));
-		for (let key of keys) {
-			if (key[0] !== '$') window.localStorage.removeItem(key);
-		}
-	}
 
 	_initFileDrop() {
 		let flag = false;
@@ -224,7 +215,7 @@ export class Study {
 	}
 
 	_initFieldConnection() {
-		this._lsc.listen(ma => {
+		this._iwc.listen(ma => {
 			if (ma.message === 'error') {
 				this._session.onStudyErrorOccurred(ma.params);
 				this._addErrorMessage(ma.params);
@@ -265,14 +256,14 @@ export class Study {
 					break;
 			}
 		}
-		this._lsc.send('#injection_' + this._id, { message: 'permission', params: { type: type, result: this._permissions[type] } });
+		this._iwc.send('#injection_' + this._id, { message: 'permission', params: { type: type, result: this._permissions[type] } });
 	}
 
 	// -------------------------------------------------------------------------
 
 	_callField(method, ...args) {
 		if (this._session.callField) return this._session.callField(method, ...args);
-		this._lsc.send('#field_' + this._id, { message: 'callFieldMethod', params: { method: method, args: args } });
+		this._iwc.send('#field_' + this._id, { message: 'callFieldMethod', params: { method: method, args: args } });
 	}
 
 	// -------------------------------------------------------------------------

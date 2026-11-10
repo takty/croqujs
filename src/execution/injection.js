@@ -5,16 +5,17 @@
  * @version 2026-11-01
  */
 
-export function installInjection(Lsc) {
+export function installInjection(Iwc) {
 	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
 
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
-	const lsc = new Lsc('#injection_' + ID);
+	const iwc = new Iwc('#injection_' + ID, 'croqujs-iwc:');
+	window.addEventListener('pagehide', () => iwc.dispose());
 	const URL = window.location.href.replace(window.location.hash, '');
 
 	const afterPermitted = {};
 
-	lsc.listen(ma => {
+	iwc.listen(ma => {
 		if (ma.message === 'window-fullscreen-entered') {
 			document.body.style.overflow = 'hidden';
 			document.body.scrollTop = 0;
@@ -36,12 +37,12 @@ export function installInjection(Lsc) {
 		const base = URL.replace('index.html', '');
 		info.fileName = info.url ? info.url.replace(base, '') : '';
 
-		lsc.send('#study_' + ID, { message: 'error', params: info });
+		iwc.send('#study_' + ID, { message: 'error', params: info });
 	});
 
 	window.addEventListener('unhandledrejection', (e) => {
 		const info = { msg: 'DOMException: ' + e.reason.message, isPromise: true, isUserCode: false };
-		lsc.send('#study_' + ID, { message: 'error', params: info });
+		iwc.send('#study_' + ID, { message: 'error', params: info });
 	});
 
 	// -------------------------------------------------------------------------
@@ -59,7 +60,7 @@ export function installInjection(Lsc) {
 			const sub = outputCache.slice(Math.max(0, outputCache.length - MAX_SENT_OUTPUT_COUNT));
 			outputCache.length = 0;  // Clear old outputs after sending the newest MAX_SENT_OUTPUT_COUNT lines.
 			sendOutputTimeout = null;
-			lsc.send('#study_' + ID, { message: 'output', params: sub });
+			iwc.send('#study_' + ID, { message: 'output', params: sub });
 			lastTime = window.performance.now();
 		};
 
@@ -167,7 +168,7 @@ export function installInjection(Lsc) {
 	function createPseudoGetCurrentPosition() {
 		return function (success, error) {
 			afterPermitted['geolocation'] = (result) => { if (result) actualGetCurrentPosition(success, error); };
-			lsc.send('#study_' + ID, { message: 'requestPermission', params: 'geolocation' });
+			iwc.send('#study_' + ID, { message: 'requestPermission', params: 'geolocation' });
 		}
 	}
 
@@ -216,7 +217,7 @@ export function installInjection(Lsc) {
 					else reject(new DOMException('NotAllowedError'));
 				};
 			});
-			lsc.send('#study_' + ID, { message: 'requestPermission', params: ps });
+			iwc.send('#study_' + ID, { message: 'requestPermission', params: ps });
 			return p.then(() => { return origFn(constraints); });
 		}
 	}

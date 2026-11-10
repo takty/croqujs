@@ -108,6 +108,8 @@ test('both builds ship identical standalone hooks without embedding them in UI b
 		const source = await readFile(new URL('assets/injection.js', root), 'utf8');
 		new vm.Script(source);
 		assert.match(source, /function installInjection/);
+		assert.match(source, /class Iwc/);
+		assert.doesNotMatch(source, /localStorage/);
 		hooks.push(source);
 		await access(new URL('index.html', root));
 		await assert.rejects(access(new URL('study/', root)), { code: 'ENOENT' });

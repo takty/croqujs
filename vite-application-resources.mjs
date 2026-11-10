@@ -1,5 +1,5 @@
 import { installInjection } from './src/execution/injection.js';
-import { Lsc } from './src/lib/lsc.js';
+import { Iwc } from './src/lib/iwc.js';
 import path from 'node:path';
 import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,7 @@ export function applicationResources({ web }) {
 	// Generate the root entry in memory from the shared Study HTML.
 	const entry = normalizePath(path.join(root, 'index.html'));
 	const template = normalizePath(path.join(root, 'study/index.html'));
-	const hooks = `(${installInjection})(${Lsc});\n`;
+	const hooks = `(${installInjection})(${Iwc});\n`;
 	const metadata = getVersionInfo();
 	async function collect(directory, prefix, filter = () => true) {
 		for (const entry of await readdir(directory, { withFileTypes: true })) {

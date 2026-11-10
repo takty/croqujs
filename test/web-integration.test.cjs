@@ -141,8 +141,8 @@ async function checkRenderer() {
 		assert.equal(field.isDestroyed(), false);
 		await waitFor('(async () => (await caches.keys()).filter(name => name.startsWith("croqujs-execution-v1:")).length === 0)()');
 		await evaluate(`window.fieldClosed = false;
-			window.fieldObserver = new BroadcastChannel(${JSON.stringify('croqujs-field-' + new URL(field.webContents.getURL()).hash.slice(1).split(',')[0])});
-			fieldObserver.onmessage = event => { if (event.data?.type === 'closed') window.fieldClosed = true; }; void 0;`);
+			window.fieldObserver = new BroadcastChannel(${JSON.stringify('croqujs-iwc:#session_' + new URL(field.webContents.getURL()).hash.slice(1).split(',')[0])});
+			fieldObserver.onmessage = event => { if (JSON.parse(event.data.payload).type === 'closed') window.fieldClosed = true; }; void 0;`);
 		field.close();
 		await waitFor('fieldClosed');
 		const nextField = await run(44);
@@ -534,7 +534,7 @@ async function checkRenderer() {
 				return originalClearTimeout(timer);
 			};
 			BroadcastChannel.prototype.postMessage = function (message) {
-				if (message?.type !== 'ping') return originalChannelPost.call(this, message);
+				if (JSON.parse(message.payload).type !== 'ping') return originalChannelPost.call(this, message);
 			};
 			window.open = () => null; void 0;`);
 		await evaluate('document.querySelector("[data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');

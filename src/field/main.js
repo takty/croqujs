@@ -5,7 +5,7 @@
  * @version 2026-11-01
  */
 
-import { Lsc } from '../lib/lsc.js';
+import { Iwc } from '../lib/iwc.js';
 import { WinState } from '../lib/winstate.js';
 
 window.addEventListener('DOMContentLoaded', () => { new Field(); });
@@ -14,32 +14,32 @@ class Field {
 
 	constructor() {
 		[this._id, this._instance] = window.location.hash.replace('#', '').split(',');
-		this._lsc = new Lsc('#field_' + this._id);
+		this._iwc = new Iwc('#field_' + this._id, 'croqujs-iwc:');
 		this._winstate = new WinState(window, '$winstate_field');
 
 		this._container = document.createElement('div');
 		document.body.appendChild(this._container);
 
 		window.ondragover = window.ondrop = (e) => { e.preventDefault(); return false; };
-		this._lsc.listen(ma => {
-			if (import.meta.env.MODE === 'web') return;
+		this._iwc.listen(ma => {
+			if (import.meta.env.MODE === 'web') {
+				if (ma.instance !== this._instance) return;
+				if (ma.type === 'ping') this._iwc.send('#session_' + this._id, { type: 'ready', instance: this._instance, token: ma.token });
+				else if (ma.type === 'close') window.close();
+				else if (ma.type === 'call' && typeof this[ma.method] === 'function') this[ma.method](...ma.args);
+				return;
+			}
 			if (ma.message === 'callFieldMethod' && this[ma.params.method]) {
 				this[ma.params.method](...ma.params.args);
 			}
 		});
 		window.addEventListener('keydown', (e) => this.onKeyDown(e));
 		if (import.meta.env.MODE === 'web') {
-			this._channel = new BroadcastChannel('croqujs-field-' + this._id);
-			this._channel.addEventListener('message', event => {
-				if (event.data?.instance !== this._instance) return;
-				if (event.data.type === 'ping') this._channel.postMessage({ type: 'ready', instance: this._instance, token: event.data.token });
-				else if (event.data?.type === 'close') window.close();
-				else if (event.data.type === 'call' && typeof this[event.data.method] === 'function') this[event.data.method](...event.data.args);
-			});
 			window.addEventListener('beforeunload', () => {
-				this._channel.postMessage({ type: 'closed', instance: this._instance });
+				this._iwc.send('#session_' + this._id, { type: 'closed', instance: this._instance });
 			});
 		}
+		window.addEventListener('pagehide', () => this._iwc.dispose());
 		this.initializeFullscreenPoller();
 	}
 
@@ -76,7 +76,7 @@ class Field {
 			this.closeProgram();
 			window.close();
 		} else if (e.key === 'F12') {
-			this._lsc.send('#study_' + this._id, { message: 'toggleDevTools' });
+			this._iwc.send('#study_' + this._id, { message: 'toggleDevTools' });
 		}
 	}
 
@@ -126,14 +126,14 @@ class Field {
 		if (this._isFullscreenEnabled) return;
 		this._isFullscreenEnabled = true;
 		if (!this._frame) return;
-		this._lsc.send('#injection_' + this._id, { message: 'window-fullscreen-entered' });
+		this._iwc.send('#injection_' + this._id, { message: 'window-fullscreen-entered' });
 	}
 
 	onFullscreenLeft() {
 		if (!this._isFullscreenEnabled) return;
 		this._isFullscreenEnabled = false;
 		if (!this._frame) return;
-		this._lsc.send('#injection_' + this._id, { message: 'window-fullscreen-left' });
+		this._iwc.send('#injection_' + this._id, { message: 'window-fullscreen-left' });
 	}
 
 }
