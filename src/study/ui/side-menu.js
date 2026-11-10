@@ -22,12 +22,8 @@ export class SideMenu {
 
 		this._elm = document.querySelector('.side-menu');
 		this._elm.style.display = 'none';
+		this._elm.tabIndex = -1;
 		this._createMenu(menu);
-
-		this._pseudoFocus = document.createElement('input');
-		this._pseudoFocus.style.position = 'absolute';
-		this._pseudoFocus.style.top = '-100vh';
-		this._elm.appendChild(this._pseudoFocus);
 
 		const his = this._elm.querySelectorAll('[data-res]:not([data-cmd])');
 		for (let i = 0; i < his.length; i += 1) {
@@ -196,7 +192,7 @@ export class SideMenu {
 
 	open() {
 		this._elm.style.display = 'block';
-		this._pseudoFocus.focus();
+		this._elm.focus({ preventScroll: true });
 	}
 
 	toggle() {

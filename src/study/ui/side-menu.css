@@ -20,6 +20,10 @@
 	line-height: 1;
 	font-family: var(--side-menu-font-family);
 
+	&:focus {
+		outline: none;
+	}
+
 	ul {
 		margin    : 0;
 		padding   : 0;
