@@ -595,9 +595,9 @@ async function checkRenderer() {
 		await waitFor('!!document.querySelector(".swal2-confirm")');
 		await evaluate('document.querySelector(".swal2-confirm").click()');
 		await waitFor('document.querySelector(".CodeMirror").CodeMirror.getValue() === ""');
-		for (const [language, label, untitled, message] of [
-			['ja', '制限モード', '名称未設定', 'この環境では、ローカルファイルの読み込み・保存は利用できません。'],
-			['en', 'Limited Mode', 'Untitled', 'Opening and saving local files is unavailable in this environment.'],
+		for (const [browserLanguage, language, label, untitled, message] of [
+			['ja-JP', 'ja', '制限モード', '名称未設定', 'この環境では、ローカルファイルの読み込み・保存は利用できません。'],
+			['fr-FR', 'en', 'Limited Mode', 'Untitled', 'Opening and saving local files is unavailable in this environment.'],
 		]) {
 			const limited = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, partition: 'limited-' + language + '-' + process.pid } });
 			const contents = limited.webContents;
@@ -613,10 +613,13 @@ async function checkRenderer() {
 					for (const name of ['showDirectoryPicker', 'showOpenFilePicker', 'showSaveFilePicker']) {
 						Object.defineProperty(window, name, { configurable: true, value: undefined });
 					}
-					localStorage.setItem('$config', JSON.stringify({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, autoIndent: true, language: ${JSON.stringify(language)} }));
+					Object.defineProperty(navigator, 'language', {
+						value: sessionStorage.getItem('test-browser-language') ?? ${JSON.stringify(browserLanguage)}
+					});
 				` });
 				await limited.loadURL(process.env.CROQUJS_TEST_URL);
 				await waitFor(`document.title === ${JSON.stringify('(' + label + ') ' + untitled + ' — Croqujs')}`, contents);
+				assert.equal(await read('JSON.parse(localStorage.getItem("$config")).language'), language);
 				for (const command of ['open', 'save']) {
 					await read(`document.querySelector('[data-cmd="${command}"]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0`);
 					await waitFor('!!document.querySelector("dialog")', contents);
@@ -627,9 +630,13 @@ async function checkRenderer() {
 					await waitFor('!document.querySelector("dialog")', contents);
 				}
 				await read('document.querySelector(".CodeMirror").CodeMirror.replaceRange("// limited", { line: 0, ch: 0 }, undefined, "+input"); void 0');
+				const otherLanguage = language === 'ja' ? 'en-US' : 'ja-JP';
+				await read(`sessionStorage.setItem('test-browser-language', ${JSON.stringify(otherLanguage)})`);
 				await read('window.onbeforeunload = null; void 0');
 				await limited.loadURL(process.env.CROQUJS_TEST_URL);
 				await waitFor(`document.title === ${JSON.stringify('* (' + label + ') ' + untitled + ' — Croqujs')}`, contents);
+				assert.equal(await read('navigator.language'), otherLanguage);
+				assert.equal(await read('JSON.parse(localStorage.getItem("$config")).language'), language);
 			} finally {
 				limited.destroy();
 			}

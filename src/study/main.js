@@ -54,7 +54,8 @@ export class Study {
 		this._iwc = new Iwc('#study_' + this._id, 'croqujs-iwc:');
 
 		this._winstate = new WinState(window, '$winstate_study');
-		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, autoIndent: true, language: 'ja' });
+		const language = /^ja(?:-|$)/i.test(navigator.language) ? 'ja' : 'en';
+		this._config = new Config({ fontSize: 16, lineHeight: 165, softWrap: false, functionLineNumber: false, autoIndent: true, language });
 		this._config.addEventListener((cfg) => this._configUpdated(cfg));
 		this._lang = this._config.getItem('language', 'ja');
 		this._permissions = {};
