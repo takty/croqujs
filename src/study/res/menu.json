@@ -149,6 +149,10 @@
 			{
 				"cmd": "copyShareLink",
 				"webOnly": true
+			},
+			{
+				"cmd": "copyShareQr",
+				"webOnly": true
 			}
 		]
 	},

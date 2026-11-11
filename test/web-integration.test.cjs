@@ -539,6 +539,28 @@ async function checkRenderer() {
 		const shareUrl = new URL(await evaluate('copiedShareLink'));
 		assert.match(shareUrl.hash, /^#code=v1\.[A-Za-z0-9_-]+$/);
 		assert.equal(gunzipSync(Buffer.from(shareUrl.hash.slice('#code=v1.'.length), 'base64url')).toString(), code);
+		await evaluate('document.querySelector(".swal2-confirm").click()');
+		await waitFor('!document.querySelector(".swal2-popup")');
+		assert.equal(await evaluate('document.querySelector("[data-cmd=copyShareQr]").previousElementSibling.dataset.cmd'), 'copyShareLink');
+		await evaluate(`
+			navigator.clipboard.write = async ([item]) => {
+				const image = await createImageBitmap(await item.getType('image/png'));
+				const canvas = document.createElement('canvas');
+				canvas.width = image.width;
+				canvas.height = image.height;
+				const context = canvas.getContext('2d');
+				context.drawImage(image, 0, 0);
+				const pixel = (x, y) => Array.from(context.getImageData(x, y, 1, 1).data);
+				window.copiedShareQr = { width: image.width, height: image.height, margin: pixel(0, 0), corner: pixel(32, 32) };
+			};
+			document.querySelector('[data-cmd=copyShareQr]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+		`);
+		await waitFor('typeof copiedShareQr === "object" && !!document.querySelector(".swal2-confirm")');
+		const qr = await evaluate('copiedShareQr');
+		assert.equal(qr.width, qr.height);
+		assert.equal(qr.width % 8, 0);
+		assert.deepEqual(qr.margin, [255, 255, 255, 255]);
+		assert.deepEqual(qr.corner, [0, 0, 0, 255]);
 		shareUrl.searchParams.set('keep', '1');
 		const previousDraft = '// previous draft';
 		await evaluate('document.querySelector(".swal2-confirm").click()');

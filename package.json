@@ -25,6 +25,7 @@
 		"croq-mirror": "github:takty/croq-mirror#main",
 		"fs-nw": "github:takty/fs-nw#main",
 		"jssha": "^3.3.2",
+		"lean-qr": "2.7.4",
 		"sweetalert2": "11.26.25"
 	},
 	"devDependencies": {

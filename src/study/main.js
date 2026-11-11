@@ -9,7 +9,7 @@ import { Config } from '../lib/config.js';
 import { ErrorTranslator } from '../lib/error-translator.js';
 import { Session } from '#session';
 import { Iwc } from '../lib/iwc.js';
-import { createShareLink, isShareLink, readShareLink } from '../lib/share.js';
+import { createShareLink, createShareQr, isShareLink, readShareLink } from '../lib/share.js';
 import { WinState } from '../lib/winstate.js';
 import { SideMenu } from './ui/side-menu.js';
 import { Toolbar } from './ui/toolbar.js';
@@ -233,18 +233,22 @@ export class Study {
 		window.history.replaceState(window.history.state, '', url);
 	}
 
-	async _copyShareLink() {
+	async _copyShare(asQr) {
 		const messages = this._res.msg;
 		const clipboard = navigator.clipboard;
+		const mime = asQr ? 'image/png' : 'text/plain';
+		const canWriteItem = typeof ClipboardItem === 'function' && clipboard?.write;
 		try {
-			if (!clipboard) throw new Error('Clipboard unavailable');
+			if (!clipboard || (asQr && !canWriteItem)) throw new Error('Clipboard unavailable');
 			const link = createShareLink(new URL(window.location.href), this._editor.getValue());
-			if (typeof ClipboardItem === 'function' && clipboard.write) {
+			if (canWriteItem) {
 				// Safari requires the write to begin during the menu gesture.
-				const data = link.then(url => new Blob([url], { type: 'text/plain' }));
+				const data = import.meta.env.MODE === 'web' && asQr
+					? link.then(createShareQr)
+					: link.then(url => new Blob([url], { type: mime }));
 				const [encoded, copied] = await Promise.allSettled([
-					link,
-					clipboard.write([new ClipboardItem({ 'text/plain': data })]),
+					data,
+					clipboard.write([new ClipboardItem({ [mime]: data })]),
 				]);
 				if (encoded.status === 'rejected') throw encoded.reason;
 				if (copied.status === 'rejected') throw copied.reason;
@@ -252,10 +256,13 @@ export class Study {
 				await clipboard.writeText(await link);
 			}
 		} catch (error) {
-			await this._dialogBox.showAlert(error instanceof RangeError ? messages.shareTooLong : messages.shareCopyFailed, 'error');
+			const message = error instanceof RangeError
+				? (asQr ? messages.shareQrTooLong : messages.shareTooLong)
+				: (asQr ? messages.shareQrCopyFailed : messages.shareCopyFailed);
+			await this._dialogBox.showAlert(message, 'error');
 			return;
 		}
-		await this._dialogBox.showAlert(messages.shareCopied, 'success');
+		await this._dialogBox.showAlert(asQr ? messages.shareQrCopied : messages.shareCopied, 'success');
 	}
 
 	async _readClipboard() {
@@ -524,8 +531,8 @@ export class Study {
 		if (close) this._sideMenu.close();
 		this._editor.setLineSelectionMode(false);
 
-		if (import.meta.env.MODE === 'web' && cmd === 'copyShareLink') {
-			this._copyShareLink();
+		if (import.meta.env.MODE === 'web' && (cmd === 'copyShareLink' || cmd === 'copyShareQr')) {
+			this._copyShare(cmd === 'copyShareQr');
 			return;
 		}
 		setTimeout(() => {

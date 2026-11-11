@@ -27,6 +27,38 @@ export async function createShareLink(url, code) {
 	return header + payload;
 }
 
+export async function createShareQr(link) {
+	const { correction, generate } = await import('lean-qr/nano');
+	let qr;
+	try {
+		qr = generate(link, { minCorrectionLevel: correction.M });
+	} catch (error) {
+		// Lean QR reports capacity errors with code 4.
+		if (error.code === 4) throw new RangeError('Share link does not fit in a QR code', { cause: error });
+		throw error;
+	}
+
+	const modules = document.createElement('canvas');
+	qr.toCanvas(modules, { pad: 4, off: [255, 255, 255, 255] });
+	const image   = document.createElement('canvas');
+	const scale   = 8;
+	image.width   = modules.width * scale;
+	image.height  = modules.height * scale;
+	const context = image.getContext('2d');
+	context.imageSmoothingEnabled = false;
+	context.drawImage(modules, 0, 0, image.width, image.height);
+
+	return new Promise((resolve, reject) => {
+		image.toBlob(blob => {
+			if (blob) {
+				resolve(blob);
+			} else {
+				reject(new Error('Could not encode the QR image'));
+			}
+		}, 'image/png');
+	});
+}
+
 export async function readShareLink(url) {
 	if (!isShareLink(url)) {
 		return null;

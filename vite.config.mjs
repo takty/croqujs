@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
 					];
 				},
 			},
-		}, rendererResources(), applicationResources({ web }), ...(web ? [webResources()] : [])],
+		}, rendererResources({ web }), applicationResources({ web }), ...(web ? [webResources()] : [])],
 		build: {
 			outDir: fileURLToPath(new URL(web ? './dist-web/' : './app/', import.meta.url)),
 			// build.mjs cleans once, then installs the main process and runtime files.

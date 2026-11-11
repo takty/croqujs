@@ -994,6 +994,7 @@ __metadata:
     electron-builder: "npm:^26.18.0"
     fs-nw: "github:takty/fs-nw#main"
     jssha: "npm:^3.3.2"
+    lean-qr: "npm:2.7.4"
     sweetalert2: "npm:11.26.25"
     vite: "npm:^8.3.6"
   languageName: unknown
@@ -2036,6 +2037,15 @@ __metadata:
   version: 1.0.5
   resolution: "lazy-val@npm:1.0.5"
   checksum: 10c0/28ba7a0e704895a444eed47d110274090f485b991f2ea6fff2ab0878c529c53f60f2eb2d944cbbd68b91408e7455eabc62861c48289d4757fa9c818b97454f24
+  languageName: node
+  linkType: hard
+
+"lean-qr@npm:2.7.4":
+  version: 2.7.4
+  resolution: "lean-qr@npm:2.7.4"
+  bin:
+    lean-qr: cli.mjs
+  checksum: 10c0/4537990ad9e7b5a4a60aec2b52684ec5fe1e0ec1f54d018e5c6ab4dda2172c8e12162d3b76d43da784f9631f273dad09d2e414494cb7e534bb48c2bf5183b7cd
   languageName: node
   linkType: hard
 

@@ -22,6 +22,7 @@ test('web output resolves local assets and includes versioned resources without 
 		await assert.rejects(access(new URL(file, root)), { code: 'ENOENT' });
 	}
 	await access(new URL('assets/croq-mirror.min.css', root));
+	await access(new URL('assets/licenses/lean-qr-LICENSE', root));
 	await assert.rejects(access(new URL('lib/', root)), { code: 'ENOENT' });
 });
 
@@ -45,7 +46,9 @@ test('web pages keep their own scripts and styles with one shared helper bundle'
 	assert.ok(!studyMap.sources.some(source => source.endsWith('/field/main.js')));
 	assert.ok(!fieldMap.sources.some(source => source.endsWith('/study/main.js')));
 	const files = (await readdir(root, { recursive: true })).filter(name => name.endsWith('.js'));
-	assert.equal(files.filter(name => !name.includes('worker') && !name.endsWith('injection.js')).length, 4);
+	const qrBundles = files.filter(name => /[/\\]nano-.*\.js$/.test(name));
+	assert.equal(qrBundles.length, 1);
+	assert.equal(files.filter(name => !name.includes('worker') && !name.endsWith('injection.js') && !qrBundles.includes(name)).length, 4);
 	for (const file of files) {
 		const relative = file.replaceAll('\\', '/');
 		assert.ok(relative === 'url-provider-worker.js' || relative.startsWith('assets/'), file);
@@ -84,6 +87,7 @@ test('renderer bundles select only the session implementation for their build ta
 		assert.ok(sources.some(source => source.endsWith('/' + included)), directory);
 		assert.ok(!sources.some(source => source.endsWith('/' + excluded)), directory);
 		assert.equal(sources.some(source => source.endsWith('/project-dialog.js')), directory === 'dist-web');
+		assert.equal(sources.some(source => source.replaceAll('\\', '/').includes('/lean-qr/')), directory === 'dist-web');
 	}
 });
 
