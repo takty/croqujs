@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { test } = require('node:test');
+const { gunzipSync } = require('node:zlib');
 
 async function checkRenderer() {
 	const { BrowserWindow } = require('electron');
@@ -525,6 +526,53 @@ async function checkRenderer() {
 		await evaluate('document.querySelector(".swal2-confirm").click()');
 		await waitFor('document.querySelector(".CodeMirror").CodeMirror.getValue() === ""');
 		assert.equal(await evaluate(`localStorage.getItem(${JSON.stringify(draftKey)})`), null);
+		const code = 'globalThis.sharedCodeRan = true;\n// 日本語 🎨';
+		await evaluate(`
+			document.querySelector('.CodeMirror').CodeMirror.setValue(${JSON.stringify(code)});
+			navigator.clipboard.write = async ([item]) => {
+				window.copiedShareLink = await (await item.getType('text/plain')).text();
+			};
+			document.querySelector('[data-cmd=copyShareLink]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+		`);
+		await waitFor('typeof copiedShareLink === "string" && !!document.querySelector(".swal2-confirm")');
+		assert.equal(await evaluate('document.querySelector("[data-cmd=copyShareLink]").previousElementSibling.dataset.cmd'), 'runWithoutWindow');
+		const shareUrl = new URL(await evaluate('copiedShareLink'));
+		assert.match(shareUrl.hash, /^#code=v1\.[A-Za-z0-9_-]+$/);
+		assert.equal(gunzipSync(Buffer.from(shareUrl.hash.slice('#code=v1.'.length), 'base64url')).toString(), code);
+		shareUrl.searchParams.set('keep', '1');
+		const previousDraft = '// previous draft';
+		await evaluate('document.querySelector(".swal2-confirm").click()');
+		await waitFor('!document.querySelector(".swal2-popup")');
+		await evaluate(`
+			const editor = document.querySelector('.CodeMirror').CodeMirror;
+			editor.replaceRange(${JSON.stringify(previousDraft)}, { line: 0, ch: 0 }, { line: editor.lineCount(), ch: 0 }, '+input');
+			window.onbeforeunload = null;
+		`);
+		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), previousDraft);
+		await window.loadURL(shareUrl.href);
+		await waitFor('!!document.querySelector(".swal2-cancel")');
+		await evaluate('document.querySelector(".swal2-cancel").click()');
+		await waitFor('!location.hash');
+		assert.equal(await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()'), previousDraft);
+		assert.equal(await evaluate('location.search'), '?keep=1');
+
+		await evaluate(`location.hash = ${JSON.stringify(shareUrl.hash)}; void 0`);
+		await waitFor('!!document.querySelector(".swal2-confirm")');
+		await evaluate('document.querySelector(".swal2-confirm").click()');
+		await waitFor('!location.hash');
+		assert.equal(await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()'), code);
+		assert.equal(await evaluate('typeof sharedCodeRan'), 'undefined');
+		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), code);
+		await evaluate('location.hash = "#code=v1.bad"; void 0');
+		await waitFor('!location.hash && !!document.querySelector(".swal2-confirm")');
+		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), code);
+		await evaluate('document.querySelector(".swal2-confirm").click(); window.onbeforeunload = null; void 0');
+		await window.loadURL(process.env.CROQUJS_TEST_URL);
+		await waitFor(`document.querySelector('.CodeMirror')?.CodeMirror.getValue() === ${JSON.stringify(code)}`);
+		await evaluate('document.querySelector("[data-cmd=new]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+		await waitFor('!!document.querySelector(".swal2-confirm")');
+		await evaluate('document.querySelector(".swal2-confirm").click()');
+		await waitFor('document.querySelector(".CodeMirror").CodeMirror.getValue() === ""');
 		for (const [language, label, untitled, message] of [
 			['ja', '制限モード', '名称未設定', 'この環境では、ローカルファイルの読み込み・保存は利用できません。'],
 			['en', 'Limited Mode', 'Untitled', 'Opening and saving local files is unavailable in this environment.'],

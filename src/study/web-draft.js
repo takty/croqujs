@@ -19,8 +19,10 @@ export class WebDraft {
 	write(text) {
 		try {
 			this._storage.setItem(this._key, JSON.stringify({ owner: this._owner, text }));
+			return true;
 		} catch (error) {
 			console.warn('Could not save recovery data', error);
+			return false;
 		}
 	}
 

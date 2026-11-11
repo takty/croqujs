@@ -9,6 +9,7 @@ import { Config } from '../lib/config.js';
 import { ErrorTranslator } from '../lib/error-translator.js';
 import { Session } from '#session';
 import { Iwc } from '../lib/iwc.js';
+import { createShareLink, isShareLink, readShareLink } from '../lib/share.js';
 import { WinState } from '../lib/winstate.js';
 import { SideMenu } from './ui/side-menu.js';
 import { Toolbar } from './ui/toolbar.js';
@@ -114,7 +115,11 @@ export class Study {
 				else this.executeCommand(cmd);
 			},
 		});
-		this._sideMenu = new SideMenu(this._res, rets[2], {
+		const menu = rets[2].map(section => ({
+			...section,
+			items: section.items.filter(item => !item.webOnly || import.meta.env.MODE === 'web'),
+		}));
+		this._sideMenu = new SideMenu(this._res, menu, {
 			onCommand: (cmd, close) => this.executeCommand(cmd, close),
 			onClose: () => this._editor.focus(),
 			shouldHandleShortcut: (e) => {
@@ -169,16 +174,88 @@ export class Study {
 		const [msg, arg] = await this._session.doReady();
 		const draft = this._webDraft?.read() ?? null;
 		this._handleServerResponse(msg, arg);
-		if (draft !== null) {
-			this._editor.loadDocument(draft);
-			this._isModified = true;
-			this._session.onStudyModified();
-			this._webDraft.write(draft);
-			this._updateWindowTitle();
+		if (draft !== null) this._loadUnsavedCode(draft);
+		if (import.meta.env.MODE === 'web') {
+			let loading = this._openShareLink();
+			window.addEventListener('hashchange', () => {
+				loading = loading.then(() => this._openShareLink());
+			});
+			await loading;
 		}
 
 		this._readClipboard();
 		window.focus();
+	}
+
+	_loadUnsavedCode(code) {
+		this._editor.loadDocument(code);
+		this._isModified = true;
+		this._session.onStudyModified();
+		this._updateWindowTitle();
+		return this._webDraft.write(code);
+	}
+
+	async _openShareLink() {
+		const url = new URL(window.location.href);
+		if (!isShareLink(url)) return;
+
+		const messages = this._res.msg;
+		let code;
+		try {
+			code = await readShareLink(url);
+		} catch (error) {
+			this._removeShareHash(url);
+			await this._dialogBox.showAlert(error instanceof RangeError ? messages.shareTooLong : messages.shareInvalid, 'error');
+			return;
+		}
+		if (window.location.href !== url.href) return;
+		if (this._isModified || this._webDraft.read() !== null) {
+			const { isConfirmed } = await this._dialogBox.showConfirm(messages.confirmShare, 'warning', {
+				confirmButtonText: messages.openShare,
+				cancelButtonText: messages.keepDraft,
+			});
+			if (!isConfirmed) {
+				this._removeShareHash(url);
+				return;
+			}
+			if (window.location.href !== url.href) return;
+		}
+
+		const [, documentArgs] = await this._session.doNew();
+		if (window.location.href !== url.href) return;
+		this._initDocument(...documentArgs, false);
+		if (this._loadUnsavedCode(code)) this._removeShareHash(url);
+	}
+
+	_removeShareHash(url) {
+		if (window.location.href !== url.href) return;
+		url.hash = '';
+		window.history.replaceState(window.history.state, '', url);
+	}
+
+	async _copyShareLink() {
+		const messages = this._res.msg;
+		const clipboard = navigator.clipboard;
+		try {
+			if (!clipboard) throw new Error('Clipboard unavailable');
+			const link = createShareLink(new URL(window.location.href), this._editor.getValue());
+			if (typeof ClipboardItem === 'function' && clipboard.write) {
+				// Safari requires the write to begin during the menu gesture.
+				const data = link.then(url => new Blob([url], { type: 'text/plain' }));
+				const [encoded, copied] = await Promise.allSettled([
+					link,
+					clipboard.write([new ClipboardItem({ 'text/plain': data })]),
+				]);
+				if (encoded.status === 'rejected') throw encoded.reason;
+				if (copied.status === 'rejected') throw copied.reason;
+			} else {
+				await clipboard.writeText(await link);
+			}
+		} catch (error) {
+			await this._dialogBox.showAlert(error instanceof RangeError ? messages.shareTooLong : messages.shareCopyFailed, 'error');
+			return;
+		}
+		await this._dialogBox.showAlert(messages.shareCopied, 'success');
 	}
 
 	async _readClipboard() {
@@ -307,12 +384,12 @@ export class Study {
 
 	// -------------------------------------------------------------------------
 
-	_initDocument(filePath, name, baseName, dirName, readOnly, defJsons, text) {
+	_initDocument(filePath, name, baseName, dirName, readOnly, defJsons, text, clearDraft = true) {
 		this._setDocumentFile(filePath, name, baseName, dirName, readOnly, defJsons);
 
 		this._editor.loadDocument(text);
 		this._webSavedText = text;
-		this._webDraft?.clear();
+		if (clearDraft) this._webDraft?.clear();
 		this._editor.focus();
 
 		this._clearErrorMarker();
@@ -447,6 +524,10 @@ export class Study {
 		if (close) this._sideMenu.close();
 		this._editor.setLineSelectionMode(false);
 
+		if (import.meta.env.MODE === 'web' && cmd === 'copyShareLink') {
+			this._copyShareLink();
+			return;
+		}
 		setTimeout(() => {
 			const cfg = this._config;
 

@@ -25,13 +25,13 @@ export class DialogBox {
 		});
 	}
 
-	showConfirm(text, type) {
+	showConfirm(text, type, { confirmButtonText = 'OK', cancelButtonText = this._textCancel } = {}) {
 		window.focus();
 		this._onOpen();
 		return Swal.fire(this._makeOption(text, type, {
-			confirmButtonText: 'OK',
+			confirmButtonText,
 			showCancelButton : true,
-			cancelButtonText : this._textCancel,
+			cancelButtonText,
 		})).finally(() => {
 			this._onClose();
 		});
