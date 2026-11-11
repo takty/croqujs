@@ -2,8 +2,192 @@
  * Error Translator
  *
  * @author Takuto Yanagida
- * @version 2021-02-25
+ * @version 2026-11-11
  */
+
+import * as ja from './error-translator-ja.js';
+import * as en from './error-translator-en.js';
+
+function parseMessage(msg) {
+	const match = /^Uncaught (ReferenceError|RangeError|TypeError|SyntaxError|Error)/.exec(msg);
+	if (match) {
+		return { type: match[1], text: msg.substr(msg.indexOf(': ') + 2) };
+	}
+	return { type: 'Error', text: msg.replace('Uncaught ', '') };
+}
+
+function interpolate(message, values) {
+	const text = message.text.replace(/\{(\w+)\}/g, (_, key) => values[key]);
+	return { ...message, text };
+}
+
+function explainMessage(type, text, messages) {
+	if (type === 'ReferenceError') {
+		if (text.endsWith(' is not defined')) {
+			const t = text.replace(' is not defined', '');
+			return interpolate(messages.undefinedName, { value: t });
+		}
+		if (text.startsWith('Cannot access \'') && text.endsWith('\' before initialization')) {
+			const t = text.replace('Cannot access \'', '').replace('\' before initialization', '');
+			return interpolate(messages.beforeInitialization, { value: t });
+		}
+		if (text === 'Invalid left-hand side in assignment') {
+			return messages.invalidAssignment;
+		}
+	}
+	if (type === 'RangeError') {
+		if (text === 'Maximum call stack size exceeded') {
+			return messages.callStackLimit;
+		}
+		if (text === 'Invalid count value') {
+			return messages.invalidCount;
+		}
+		if (text === 'Invalid string length') {
+			return messages.invalidStringLength;
+		}
+		if (text === 'Invalid array length') {
+			return messages.invalidArrayLength;
+		}
+		if (text === 'Invalid array buffer length') {
+			return messages.invalidBufferLength;
+		}
+		if (text === 'Array buffer allocation failed') {
+			return messages.bufferAllocationFailed;
+		}
+		if (text === 'Invalid time value') {
+			return messages.invalidTime;
+		}
+		if (text === 'toString() radix argument must be between 2 and 36') {
+			return messages.invalidRadix;
+		}
+		if (text.startsWith('Invalid code point')) {
+			return messages.invalidCodePoint;
+		}
+		if (text.endsWith('argument must be between 0 and 100')) {
+			return messages.invalidPrecision;
+		}
+	}
+	if (type === 'TypeError') {
+		if (text.endsWith('is not a function')) {
+			const t = text.replace(' is not a function', '');
+			return interpolate(messages.notAFunction, { value: t });
+		}
+		if (text.endsWith('is not a constructor')) {
+			const t = text.replace(' is not a constructor', '');
+			return interpolate(messages.notAConstructor, { value: t });
+		}
+		if (text.startsWith('Class constructor ') && text.endsWith(" cannot be invoked without 'new'")) {
+			const t = text.replace('Class constructor ', '').replace(" cannot be invoked without 'new'", '');
+			return interpolate(messages.missingNew, { value: t });
+		}
+		if (text.endsWith('is not a function or its return value is not iterable')) {
+			const t = text.replace(' is not a function or its return value is not iterable', '');
+			return interpolate(messages.functionOrIterable, { value: t });
+		}
+		if (text.endsWith('is not iterable')) {
+			const t = text.replace(' is not iterable', '');
+			return interpolate(messages.notIterable, { value: t });
+		}
+		if (text.startsWith('Cannot read property ') && (text.endsWith(' of undefined') || text.endsWith(' of null'))) {
+			const t = text.replace(/.*'(.*)'.*/, (_, s1) => s1);
+			return interpolate(messages.readEmptyProperty, { value: t });
+		}
+		if (text.startsWith('Cannot set property ') && (text.endsWith(' of undefined') || text.endsWith(' of null'))) {
+			const t = text.replace(/.*'(.*)'.*/, (_, s1) => s1);
+			return interpolate(messages.writeEmptyProperty, { value: t });
+		}
+		if (text.startsWith('Assignment to constant variable.')) {
+			return messages.constantAssignment;
+		}
+		if (text.startsWith('Cannot create property \'') && text.includes('\' on ') && text.endsWith('\'')) {
+			const m2 = text.replace('Cannot create property \'', '').replace(/'$/, '');
+			let valueType, parts;
+			if (m2.includes(' on boolean ')) {
+				valueType = 'boolean';
+				parts     = m2.split('\' on boolean \'');
+			} else if (m2.includes(' on string ')) {
+				valueType = 'string';
+				parts     = m2.split('\' on string \'');
+			} else if (m2.includes(' on number ')) {
+				valueType = 'number';
+				parts     = m2.split('\' on number \'');
+			} else {
+				return undefined;
+			}
+			return interpolate(messages.createPrimitiveProperty, { valueType: messages.valueTypes[valueType], property: parts[0], value: parts[1] });
+		}
+	}
+	if (type === 'SyntaxError') {
+		if (text.startsWith('Unexpected token')) {
+			const t = text.replace(/.*'(.*)'.*/, (_, s1) => s1);
+			return interpolate(messages.unexpectedToken, { value: t });
+		}
+		if (text.startsWith('Unexpected identifier')) {
+			return messages.unexpectedIdentifier;
+		}
+		if (text.startsWith('Invalid or unexpected token')) {
+			return messages.invalidToken;
+		}
+		if (text.startsWith('missing ) after argument list')) {
+			return messages.missingArgumentParen;
+		}
+		if (text === 'Unexpected number') {
+			return messages.unexpectedNumber;
+		}
+		if (text === 'Unexpected string') {
+			return messages.unexpectedString;
+		}
+		if (text === 'Invalid destructuring assignment target') {
+			return messages.invalidDestructuring;
+		}
+		if (text === 'Invalid left-hand side in assignment') {
+			return messages.invalidAssignment;
+		}
+		if (text === 'Missing initializer in const declaration') {
+			return messages.missingConstValue;
+		}
+		if (text === 'Function statements require a function name') {
+			return messages.missingFunctionName;
+		}
+		if (text === 'Invalid shorthand property initializer') {
+			return messages.invalidShorthand;
+		}
+		if (text === 'for-of loop variable declaration may not have an initializer.') {
+			return messages.invalidForOfInitializer;
+		}
+		if (text === 'Unexpected strict mode reserved word') {
+			return messages.reservedWord;
+		}
+		if (text === 'Octal literals are not allowed in strict mode.') {
+			return messages.octalInStrictMode;
+		}
+		if (text === 'Illegal return statement') {
+			return messages.illegalReturn;
+		}
+		if (text === 'Unexpected end of input') {
+			return messages.unexpectedEnd;
+		}
+		if (text === 'await is only valid in async function') {
+			return messages.awaitOutsideAsync;
+		}
+		if (text.startsWith('Identifier \'') && text.endsWith('\' has already been declared')) {
+			const t = text.replace('Identifier \'', '').replace('\' has already been declared', '');
+			return interpolate(messages.duplicateName, { value: t });
+		}
+	}
+	return undefined;
+}
+
+function formatMessage(name, { text = '', hint }, original, hintSeparator = '') {
+	let html = '<span>' + name + '</span>' + text;
+	if (hint !== undefined) {
+		html += hintSeparator + '<b>' + hint + '</b>';
+	}
+	if (original !== undefined) {
+		html += '<div>' + original + '</div>';
+	}
+	return html;
+}
 
 export class ErrorTranslator {
 
@@ -18,166 +202,14 @@ export class ErrorTranslator {
 	}
 
 	translateJa(msg) {
-		if (msg.startsWith('Uncaught ReferenceError')) {
-			let m = msg.substr(msg.indexOf(': ') + 2);
-			if (m.endsWith(' is not defined')) {
-				const t = m.replace(' is not defined', '');
-				m = '「' + t + '」が何かが分かりません。<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Cannot access \'') && m.endsWith('\' before initialization')) {
-				const t = m.replace('Cannot access \'', '').replace('\' before initialization', '');
-				m = '値がセットされていないので、変数／定数「' + t + '」は使えません。<b>入力する場所を間違えていませんか？</b>';
-			} else if (m === 'Invalid left-hand side in assignment') {
-				m = '記号 = の左側や周りが正しくありません。<b>間違えて入力していませんか？</b>';
-			}
-			return '<span>参照エラー</span>' + m + '<div>' + msg + '</div>';
-		}
-		if (msg.startsWith('Uncaught RangeError')) {
-			let m = msg.substr(msg.indexOf(': ') + 2);
-			if (m === 'Maximum call stack size exceeded') {
-				m = '関数呼び出しが深くなり過ぎました。<b>再帰呼び出しの部分を間違えていませんか？</b>';
-			} else if (m === 'Invalid count value') {
-				m = '回数が正しくありません。<b>回数が負になっていたり、無限大になっていたりしませんか？</b>';
-			} else if (m === 'Invalid string length') {
-				m = '文字列の長さが正しくありません。<b>長さが負になっていたり、とても大きな数になっていたりしませんか？</b>';
-			} else if (m === 'Invalid array length') {
-				m = '配列の長さが正しくありません。<b>長さが負になっていたり、とても大きな数になっていたりしませんか？</b>';
-			} else if (m === 'Invalid array buffer length') {
-				m = '配列バッファの長さが正しくありません。<b>サイズが負になっていたり、とても大きな数になっていたりしませんか？</b>';
-			} else if (m === 'Array buffer allocation failed') {
-				m = '配列バッファを作ることが出来ません。<b>サイズがとても大きな数になっていませんか？</b>';
-			} else if (m === 'Invalid time value') {
-				m = '日付の書き方が正しくありません。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'toString() radix argument must be between 2 and 36') {
-				m = 'toString()関数の基数は2～36の範囲でなくてはなりません。<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Invalid code point')) {
-				m = 'コードポイントが正しくありません。<b>間違えて入力していませんか？</b>';
-			} else if (m.endsWith('argument must be between 0 and 100')) {
-				m = '精度は0～100の範囲でなくてはなりません。<b>間違えて入力していませんか？</b>';
-			}
-			return '<span>範囲エラー</span>' + m + '<div>' + msg + '</div>';
-		}
-		if (msg.startsWith('Uncaught TypeError')) {
-			let m = msg.substr(msg.indexOf(': ') + 2);
-			if (m.endsWith('is not a function')) {
-				const t = m.replace(' is not a function', '');
-				m = '「' + t + '」は関数ではないので、呼び出せません。<b>間違えて入力していませんか？</b>';
-			} else if (m.endsWith('is not a constructor')) {
-				const t = m.replace(' is not a constructor', '');
-				m = '「' + t + '」はコンストラクターではないので、「new」を付けて呼び出せません。<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Class constructor ') && m.endsWith(" cannot be invoked without 'new'")) {
-				const t = m.replace('Class constructor ', '').replace(" cannot be invoked without 'new'", '');
-				m = '「' + t + '」はコンストラクターなのに、「new」がありません。<b>「new」を忘れたり、間違えて入力したりしていませんか？</b>';
-			} else if (m.endsWith('is not a function or its return value is not iterable')) {
-				const t = m.replace(' is not a function or its return value is not iterable', '');
-				m = '「' + t + '」は関数ではないか、戻り値が配列のような繰り返せるものではないので、for文では使えません。<b>間違えて入力していませんか？</b>';
-			} else if (m.endsWith('is not iterable')) {
-				const t = m.replace(' is not iterable', '');
-				m = '「' + t + '」は配列のような繰り返せるものではないので、for文では使えません。<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Cannot read property ') && (m.endsWith(' of undefined') || m.endsWith(' of null'))) {
-				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
-				m = '変数が空なので、プロパティ「' + t + '」は使えません。<b>直前を間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Cannot set property ') && (m.endsWith(' of undefined') || m.endsWith(' of null'))) {
-				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
-				m = '変数が空なので、プロパティ「' + t + '」は使えません。<b>直前を間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Assignment to constant variable.')) {
-				m = '定数なので、値をもう一度セットすることはできません。<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Cannot create property \'') && m.includes('\' on ') && m.endsWith('\'')) {
-				const m2 = m.replace('Cannot create property \'', '').replace(/'$/, '');
-				let type = '', ts;
-				if (m2.includes(' on boolean ')) {
-					type = 'ブーリアン値';
-					ts = m2.split('\' on boolean \'');
-				} else if (m2.includes(' on string ')) {
-					type = '文字列';
-					ts = m2.split('\' on string \'');
-				} else if (m2.includes(' on number ')) {
-					type = '数値';
-					ts = m2.split('\' on number \'');
-				}
-				m = type + '「' + ts[1] + '」に、プロパティ「' + ts[0] + '」を作ることはできません。<b>間違えて入力していませんか？</b>';
-			}
-			return '<span>型エラー</span>' + m + '<div>' + msg + '</div>';
-		}
-		if (msg.startsWith('Uncaught SyntaxError')) {
-			let m = msg.substr(msg.indexOf(': ') + 2);
-			if (m.startsWith('Unexpected token')) {
-				const t = m.replace(/.*'(.*)'.*/, (m, s1) => s1);
-				m = 'ここに「' + t + '」があるのはおかしいです。<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Unexpected identifier')) {
-				m = '<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('Invalid or unexpected token')) {
-				m = '<b>間違えて入力していませんか？</b>';
-			} else if (m.startsWith('missing ) after argument list')) {
-				m = '関数の引数の最後に閉じカッコ ) がありません。<b>入力するのを間違えたり、忘れたりしていませんか？</b>';
-			} else if (m.startsWith('Unexpected token )')) {
-				m = 'ここに閉じカッコ ) があるのはおかしいです。<b>) が多かったり、その手前で開きカッコ ( が足りていなかったりしませんか？</b>';
-			} else if (m.startsWith('Unexpected token }')) {
-				m = 'ここに閉じ中カッコ } があるのはおかしいです。<b>} が多かったり、その手前で開き中カッコ { が足りていなかったりしませんか？</b>';
-			} else if (m.startsWith('Unexpected token ]')) {
-				m = 'ここに閉じ大カッコ ] があるのはおかしいです。<b>] が多かったり、その手前で開き大カッコ [ が足りていなかったりしませんか？</b>';
-			} else if (m.startsWith('Unexpected token ;')) {
-				m = 'ここにセミコロン ; があるのはおかしいです。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Unexpected number') {
-				m = 'ここに数値があるのはおかしいです。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Unexpected string') {
-				m = 'ここに文字列があるのはおかしいです。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Invalid destructuring assignment target') {
-				m = 'ここにオブジェクトがあるのはおかしいです。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Invalid left-hand side in assignment') {
-				m = '記号 = の左側や周りが正しくありません。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Missing initializer in const declaration') {
-				m = '定数なので、値をセットする必要があります。<b>入力するのを忘れていませんか？</b>';
-			} else if (m === 'Function statements require a function name') {
-				m = '関数を作るには、名前を付ける必要があります。<b>入力するのを忘れていませんか？</b>';
-			} else if (m === 'Invalid shorthand property initializer') {
-				m = 'オブジェクトの作り方（書き方）が正しくありません。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'for-of loop variable declaration may not have an initializer.') {
-				m = 'for-of文の変数は初期化できません。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Unexpected strict mode reserved word') {
-				m = 'この名前はJavaScript自体で使われているので、使えません。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Octal literals are not allowed in strict mode.') {
-				m = '数値の始めに0があるのはおかしいです。<b>間違えて入力していませんか？</b>';
-			} else if (m === 'Illegal return statement') {
-				m = 'ここにreturn文を置くことはできません。<b>入力する場所を間違えていませんか？</b>';
-			} else if (m === 'Unexpected end of input') {
-				m = 'プログラムは途中なのに、ファイルが終わってしまいました。<b>中カッコ {} を入力するのを間違えたり、忘れたりしていませんか？</b>';
-			} else if (m === 'await is only valid in async function') {
-				m = 'awaitを付けた関数呼び出しは、async関数の中でしかできません。<b>functionの前にasyncを付け忘れていませんか？</b>';
-			} else if (m.startsWith('Identifier \'') && m.endsWith('\' has already been declared')) {
-				const t = m.replace('Identifier \'', '').replace('\' has already been declared', '');
-				m = '名前「' + t + '」は既に別の場所で使われているので、同じ名前を付けることは出来ません。<b>間違えて入力していませんか？</b>';
-			}
-			return '<span>構文エラー</span>' + m + '<div>' + msg + '</div>';
-		}
-		if (msg.startsWith('Uncaught Error')) {
-			const m = msg.substr(msg.indexOf(': ') + 2);
-			return '<span>エラー</span>' + m + '<div>' + msg + '</div>';
-		}
-		return '<span>エラー</span>' + msg.replace('Uncaught ', '') + '<div>' + msg + '</div>';
+		const { type, text } = parseMessage(msg);
+		return formatMessage(ja.errorNames[type], explainMessage(type, text, ja.messages) ?? { text }, msg);
 	}
 
 	translateEn(msg) {
-		if (msg.startsWith('Uncaught ReferenceError')) {
-			const m = msg.substr(msg.indexOf(': ') + 2);
-			return '<span>ReferenceError</span>' + m;
-		}
-		if (msg.startsWith('Uncaught RangeError')) {
-			const m = msg.substr(msg.indexOf(': ') + 2);
-			return '<span>RangeError</span>' + m;
-		}
-		if (msg.startsWith('Uncaught SyntaxError')) {
-			const m = msg.substr(msg.indexOf(': ') + 2);
-			return '<span>SyntaxError</span>' + m;
-		}
-		if (msg.startsWith('Uncaught TypeError')) {
-			const m = msg.substr(msg.indexOf(': ') + 2);
-			return '<span>TypeError</span>' + m;
-		}
-		if (msg.startsWith('Uncaught Error')) {
-			const m = msg.substr(msg.indexOf(': ') + 2);
-			return '<span>Error</span>' + m;
-		}
-		return '<span>Error</span>' + msg.replace('Uncaught ', '');
+		const { type, text } = parseMessage(msg);
+		const explanation = explainMessage(type, text, en.messages);
+		return explanation ? formatMessage(type, explanation, msg, ' ') : formatMessage(type, { text });
 	}
 
 }
