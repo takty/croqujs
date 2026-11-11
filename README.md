@@ -84,8 +84,9 @@ failed requests are reported and can be retried on the next execution.
 Execution pages still reference their own `lib/injection.js`. The
 output-pane worker, editor analysis worker, and execution Service Worker are
 separate JavaScript files. The Service Worker includes its filesystem helpers.
-All JavaScript files are emitted under `assets/`; web execution pages use
-the Service Worker's `assets/__croqujs_run__/` scope.
+The web build emits `url-provider-worker.js` at the deployment root beside
+`index.html`. Its `__croqujs_run__/` scope is relative to that root. The other
+JavaScript files are emitted under `assets/`.
 The editor stylesheet is `assets/croq-mirror.min.css`, and dependency licenses
 are collected under `assets/licenses/`.
 The web build includes Study and Field. Run opens `field/#<sessionId>` once,
@@ -227,12 +228,13 @@ the Electron execution URL still uses temporary files.
 NodeExporter. It keeps the existing temporary-file creation, URL generation, and
 cleanup behavior. Each provider defines and exports its own `LibraryError` class.
 
-`BrowserUrlProvider` in `src/execution/url-provider-browser.js` uses BrowserExporter and
-registers the module Service Worker `url-provider-worker.js`. It sends generated
-content through a MessageChannel and returns a URL only after the worker has
-stored the generated files in Cache Storage and the source mapping in IndexedDB.
-No generated files are saved through the supplied filesystem. The worker also
-contains the IndexedDB mapping storage and file-response handling.
+`BrowserUrlProvider` in `src/execution/url-provider-browser.js` generates execution
+content with BrowserExporter and publishes it through the local web server client
+in `src/lib/lws.js`. The client registers `url-provider-worker.js`, which installs
+the reusable worker from `src/lib/lws-sw.js` with Croqujs's namespace. The client
+returns a URL after the worker has stored the generated files in Cache Storage and
+the source mapping in IndexedDB. No generated files are saved through the supplied
+filesystem.
 
 For any other request, the worker reads the file at request time from the supplied
 WebFileSystem root handle. Explicit `sources` mappings take precedence over

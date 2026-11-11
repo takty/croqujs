@@ -48,10 +48,11 @@ test('web pages keep their own scripts and styles with one shared helper bundle'
 	assert.equal(files.filter(name => !name.includes('worker') && !name.endsWith('injection.js')).length, 4);
 	for (const file of files) {
 		const relative = file.replaceAll('\\', '/');
-		assert.ok(relative.startsWith('assets/'), file);
+		assert.ok(relative === 'url-provider-worker.js' || relative.startsWith('assets/'), file);
 	}
 	assert.equal(files.filter(name => name.includes('worker')).length, 3);
-	await access(new URL('assets/url-provider-worker.js', root));
+	await access(new URL('url-provider-worker.js', root));
+	await assert.rejects(access(new URL('assets/url-provider-worker.js', root)), { code: 'ENOENT' });
 });
 
 test('both builds keep croq-mirror in a separate editor bundle', async () => {

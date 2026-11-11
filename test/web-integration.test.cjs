@@ -94,6 +94,8 @@ async function checkRenderer() {
 		await runHidden(40);
 		assert.equal(BrowserWindow.getAllWindows().length, 1);
 		const hiddenUrl = await evaluate('document.querySelector("iframe[data-croqujs-execution]").src');
+		const scope = new URL('__croqujs_run__/', process.env.CROQUJS_TEST_URL);
+		assert.equal(new URL('..', hiddenUrl).href, scope.href);
 		await runHidden(41);
 		assert.equal(await evaluate(`document.querySelector('iframe[data-croqujs-execution]').contentWindow.fetch(${JSON.stringify(hiddenUrl)}).then(response => response.status)`), 404);
 		const run = async value => {
@@ -115,7 +117,8 @@ async function checkRenderer() {
 		assert.equal(await evaluate('!!document.querySelector("iframe[data-croqujs-execution]")'), false);
 		assert.match(field.webContents.getURL(), /\/field\/#/);
 		const firstUrl = await field.webContents.executeJavaScript('window.previousFrame = document.querySelector("iframe"); previousFrame.src');
-		assert.match(new URL(firstUrl).pathname, /\/__croqujs_run__\/[0-9a-f-]+\/$/);
+		assert.equal(new URL('..', firstUrl).href, scope.href);
+		assert.match(new URL(firstUrl).pathname, /\/[0-9a-f-]+\/$/);
 		await waitFor('document.querySelector("#output-pane").textContent.includes("run-42")');
 		const previousField = field;
 		field = await run(43);

@@ -8,9 +8,9 @@ export function webResources() {
 		name: 'croqujs-web-resources',
 		configureServer(server) {
 			server.middlewares.use((request, response, next) => {
-				if (new URL(request.url, 'http://localhost').pathname !== '/assets/url-provider-worker.js') return next();
+				if (new URL(request.url, 'http://localhost').pathname !== server.config.base + 'url-provider-worker.js') return next();
 				response.setHeader('Content-Type', 'text/javascript');
-				response.end("import '../execution/url-provider-worker.js';\n");
+				response.end("import './execution/url-provider-worker.js';\n");
 			});
 		},
 		async generateBundle() {
@@ -26,7 +26,7 @@ export function webResources() {
 				},
 			});
 			for (const output of worker.output) {
-				this.emitFile({ type: 'asset', fileName: 'assets/' + output.fileName, source: output.type === 'chunk' ? output.code : output.source });
+				this.emitFile({ type: 'asset', fileName: output.fileName, source: output.type === 'chunk' ? output.code : output.source });
 			}
 		},
 	};

@@ -106,7 +106,7 @@ export class SessionLocal {
 	async #getProvider() {
 		if (this.#provider) return this.#provider;
 		const exporter = new BrowserExporter(this.#files, new URL('assets/injection.js', document.baseURI));
-		this.#provider = new BrowserUrlProvider(this.#id, exporter, new URL('assets/url-provider-worker.js', document.baseURI));
+		this.#provider = new BrowserUrlProvider(this.#id, exporter, new URL('url-provider-worker.js', document.baseURI));
 		return this.#provider;
 	}
 
