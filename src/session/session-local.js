@@ -2,7 +2,7 @@
  * Session Local - provisional browser-only session
  *
  * @author Takuto Yanagida
- * @version 2026-11-07
+ * @version 2026-11-11
  */
 
 import { Backup } from '../project/backup.js';
@@ -59,9 +59,7 @@ export class SessionLocal {
 	prepareRun() {
 		if (this.#preparingRun || this.#running) return false;
 		this.#preparingRun = true;
-		// A busy or crashed field cannot reliably report that its tab was closed.
-		// Start each run in a fresh tab without relying on an unload notification.
-		this.#iwc.send('#field_' + this.#id, { type: 'close', instance: this.#field });
+		if (this.#field) return true;
 		this.#field = crypto.randomUUID();
 		const url = new URL('field/', document.baseURI);
 		url.hash = this.#id + ',' + this.#field;
@@ -75,12 +73,12 @@ export class SessionLocal {
 	}
 
 	async #waitForField() {
-		if (!this.#field) throw new Error('The execution window is closed.');
-		await new Promise((resolve, reject) => {
+		if (!this.#field) return false;
+		return new Promise((resolve, reject) => {
 			const instance = this.#field;
 			const token = crypto.randomUUID();
 			let finished = false;
-			const finish = error => {
+			const finish = (error = null, ready = false) => {
 				if (finished) return;
 				finished = true;
 				clearInterval(poller);
@@ -88,12 +86,12 @@ export class SessionLocal {
 				this.#receiveFieldStatus = null;
 				this.#cancelFieldWait = null;
 				if (error) this.#field = false;
-				error ? reject(error) : resolve();
+				error ? reject(error) : resolve(ready);
 			};
 			this.#receiveFieldStatus = message => {
 				if (message.instance !== instance) return;
-				if (message.type === 'ready' && message.token === token) finish();
-				else if (message.type === 'closed') finish(new Error('The execution window is closed.'));
+				if (message.type === 'ready' && message.token === token) finish(null, true);
+				else if (message.type === 'closed') finish();
 			};
 			const poller = setInterval(() => {
 				this.#iwc.send('#field_' + this.#id, { type: 'ping', instance: this.#field, token });
@@ -381,7 +379,7 @@ export class SessionLocal {
 				this.#codeCache = text;
 				if (this.#modified && await this.#canWrite()) await this.#backup.backupText(text);
 				if (generation !== this.#generation) return ['nop'];
-				if (visible) await this.#waitForField();
+				if (visible && !await this.#waitForField()) return ['nop'];
 				if (generation !== this.#generation) return ['nop'];
 				const provider = await this.#getProvider();
 				const url = await provider.createUrl(text, this.#filePath);

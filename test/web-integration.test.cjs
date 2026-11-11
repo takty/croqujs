@@ -98,8 +98,8 @@ async function checkRenderer() {
 		assert.equal(new URL('..', hiddenUrl).href, scope.href);
 		await runHidden(41);
 		assert.equal(await evaluate(`document.querySelector('iframe[data-croqujs-execution]').contentWindow.fetch(${JSON.stringify(hiddenUrl)}).then(response => response.status)`), 404);
-		const run = async value => {
-			const opened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
+		const run = async (value, existingField = null) => {
+			const opened = existingField ?? new Promise(resolve => window.webContents.once('did-create-window', resolve));
 			await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = ${value}; console.log("run-${value}");')`);
 			await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 			return opened;
@@ -121,10 +121,11 @@ async function checkRenderer() {
 		assert.match(new URL(firstUrl).pathname, /\/[0-9a-f-]+\/$/);
 		await waitFor('document.querySelector("#output-pane").textContent.includes("run-42")');
 		const previousField = field;
-		field = await run(43);
+		field = await run(43, field);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 43', field.webContents);
-		assert.notEqual(field, previousField);
-		assert.equal(previousField.isDestroyed(), true);
+		assert.equal(field, previousField);
+		assert.equal(previousField.isDestroyed(), false);
+		assert.equal(await field.webContents.executeJavaScript('document.querySelector("iframe") === previousFrame'), false);
 		assert.equal(BrowserWindow.getAllWindows().length, 2);
 		assert.equal(await field.webContents.executeJavaScript(`document.querySelector('iframe').contentWindow.fetch(${JSON.stringify(firstUrl)}).then(response => response.status)`), 404);
 		await runHidden(45);
@@ -132,12 +133,10 @@ async function checkRenderer() {
 		assert.equal(BrowserWindow.getAllWindows().length, 2);
 		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!document.querySelector("iframe[data-croqujs-execution]")');
-		field = await run(43);
+		field = await run(43, field);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 43', field.webContents);
 		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('throw new Error("web-error");')`);
-		const errorOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
-		field = await errorOpened;
 		await waitFor('document.querySelector("#output-pane").textContent.includes("web-error")');
 		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!document.querySelector("iframe")', field.webContents);
@@ -151,7 +150,46 @@ async function checkRenderer() {
 		const nextField = await run(44);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 44', nextField.webContents);
 		await evaluate('fieldClosed = false');
-		nextField.close();
+		const fieldContents = nextField.webContents;
+		fieldContents.debugger.attach('1.3');
+		await fieldContents.debugger.sendCommand('Emulation.setTouchEmulationEnabled', { enabled: false });
+		assert.equal(await fieldContents.executeJavaScript('getComputedStyle(document.querySelector(".field-close")).display'), 'none');
+		await fieldContents.debugger.sendCommand('Emulation.setTouchEmulationEnabled', { enabled: true });
+		await waitFor('getComputedStyle(document.querySelector(".field-close")).display === "grid"', fieldContents);
+		assert.deepEqual(await fieldContents.executeJavaScript(`(() => {
+			const button = document.querySelector('.field-close');
+			const { width, height, right, bottom } = button.getBoundingClientRect();
+			return {
+				width, height, rightGap: innerWidth - right, bottomGap: innerHeight - bottom,
+				radius: getComputedStyle(button).borderRadius,
+				onTop: document.elementFromPoint(right - 20, bottom - 20) === button,
+			};
+		})()`), { width: 40, height: 40, rightGap: 0, bottomGap: 0, radius: '8px 0px 0px', onTop: true });
+		const nextFieldClosed = new Promise(resolve => nextField.once('closed', resolve));
+		await Promise.all([nextFieldClosed, fieldContents.executeJavaScript('document.querySelector(".field-close").click()')]);
+		await waitFor('fieldClosed');
+		// Closing Field during its readiness handshake cancels execution without an alert.
+		await evaluate(`window.closeTestOriginalPost = BroadcastChannel.prototype.postMessage;
+			BroadcastChannel.prototype.postMessage = function (message) {
+				if (JSON.parse(message.payload).type === 'ping') window.closeTestWaiting = true;
+				else return closeTestOriginalPost.call(this, message);
+			}; void 0;`);
+		for (let attempt = 0; attempt < 3; attempt++) {
+			await evaluate('fieldClosed = false; closeTestWaiting = false');
+			const closingField = await run(46);
+			await waitFor('!!document.querySelector(".field-close")', closingField.webContents);
+			if (attempt > 0) await waitFor('closeTestWaiting');
+			const closed = new Promise(resolve => closingField.once('closed', resolve));
+			await Promise.all([closed, closingField.webContents.executeJavaScript('document.querySelector(".field-close").click()')]);
+			await waitFor('fieldClosed');
+			await evaluate('new Promise(resolve => setTimeout(resolve, 100))');
+			assert.equal(await evaluate('!!document.querySelector(".swal2-popup")'), false);
+		}
+		await evaluate('BroadcastChannel.prototype.postMessage = closeTestOriginalPost; void 0');
+		const fieldAfterCancellation = await run(47);
+		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 47', fieldAfterCancellation.webContents);
+		await evaluate('fieldClosed = false');
+		fieldAfterCancellation.close();
 		await waitFor('fieldClosed');
 		await evaluate('fieldObserver.close()');
 		// Closing a looping tab may bypass its unload notification entirely.
@@ -163,6 +201,13 @@ async function checkRenderer() {
 		assert.notEqual(window.webContents.getOSProcessId(), loopingField.webContents.getOSProcessId());
 		loopingField.webContents.forcefullyCrashRenderer();
 		loopingField.destroy();
+		// If a crashed Field cannot notify Study, its readiness timeout allows a fresh tab on retry.
+		await evaluate(`window.crashOriginalSetTimeout = window.setTimeout;
+			window.setTimeout = (callback, delay, ...args) => crashOriginalSetTimeout(callback, delay === 10000 ? 100 : delay, ...args);
+			document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = 46; console.log("recovered");');
+			document.querySelector('.toolbar [data-cmd=run]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
+		await waitFor('document.querySelector(".swal2-popup")?.textContent.includes("Execution window did not become ready")');
+		await evaluate('window.setTimeout = crashOriginalSetTimeout; document.querySelector(".swal2-confirm").click()');
 		const recoveredOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = 46; console.log("recovered");');
 			for (let i = 0; i < 3; i++) document.querySelector('.toolbar [data-cmd=run]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
@@ -269,9 +314,7 @@ async function checkRenderer() {
 		await waitFor('!document.querySelector("dialog [data-action=open]").disabled');
 		await choose('open');
 		await waitFor('!document.querySelector("dialog")');
-		const nextProjectOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
-		projectField = await nextProjectOpened;
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 202', projectField.webContents);
 		projectField.destroy();
 		// Exercise the browser-only window methods through the existing Study commands.

@@ -2,7 +2,7 @@
  * Field
  *
  * @author Takuto Yanagida
- * @version 2026-11-01
+ * @version 2026-11-11
  */
 
 import { Iwc } from '../lib/iwc.js';
@@ -35,6 +35,15 @@ class Field {
 		});
 		window.addEventListener('keydown', (e) => this.onKeyDown(e));
 		if (import.meta.env.MODE === 'web') {
+			if (this._instance) {
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'field-close';
+				button.textContent = '×';
+				button.setAttribute('aria-label', navigator.language.startsWith('ja') ? 'Field を閉じる' : 'Close Field');
+				button.addEventListener('click', () => window.close());
+				document.body.appendChild(button);
+			}
 			window.addEventListener('beforeunload', () => {
 				this._iwc.send('#session_' + this._id, { type: 'closed', instance: this._instance });
 			});
@@ -51,6 +60,7 @@ class Field {
 			this._frame.contentWindow.addEventListener('keydown', (e) => this.onKeyDown(e));
 		});
 		this._container.appendChild(this._frame);
+		if (import.meta.env.MODE === 'web') window.focus();
 	}
 
 	closeProgram() {
