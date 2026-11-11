@@ -7,6 +7,7 @@
 
 import * as ja from './error-translator-ja.js';
 import * as en from './error-translator-en.js';
+import { escapeHtml } from './escape-html.js';
 
 function parseMessage(msg) {
 	const match = /^Uncaught (ReferenceError|RangeError|TypeError|SyntaxError|Error)/.exec(msg);
@@ -179,12 +180,12 @@ function explainMessage(type, text, messages) {
 }
 
 function formatMessage(name, { text = '', hint }, original, hintSeparator = '') {
-	let html = '<span>' + name + '</span>' + text;
+	let html = '<span>' + escapeHtml(name) + '</span>' + escapeHtml(text);
 	if (hint !== undefined) {
-		html += hintSeparator + '<b>' + hint + '</b>';
+		html += hintSeparator + '<b>' + escapeHtml(hint) + '</b>';
 	}
 	if (original !== undefined) {
-		html += '<div>' + original + '</div>';
+		html += '<div>' + escapeHtml(original) + '</div>';
 	}
 	return html;
 }
@@ -198,7 +199,7 @@ export class ErrorTranslator {
 	translate(msg) {
 		if (this._lang === 'ja') return this.translateJa(msg);
 		if (this._lang === 'en') return this.translateEn(msg);
-		return msg;
+		return escapeHtml(msg);
 	}
 
 	translateJa(msg) {

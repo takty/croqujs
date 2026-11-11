@@ -5,7 +5,7 @@
  * @version 2026-11-01
  */
 
-export function installInjection(Iwc) {
+export function installInjection(Iwc, escapeHtml) {
 	const IS_ELECTRON = window.navigator.userAgent.toLowerCase().includes('electron');
 
 	const [ID, UCO] = window.location.hash.replace('#', '').split(',');
@@ -91,12 +91,12 @@ export function installInjection(Iwc) {
 		const toStruct = (s, os = []) => {
 			if (s === null)               return '<span class="type-null">null</span>';
 			if (typeof s === 'undefined') return '<span class="type-undefined">undefined</span>';
-			if (typeof s === 'string')    return `<span class="type-string">${s}</span>`;
-			if (typeof s === 'boolean')   return `<span class="type-boolean">${s.toString()}</span>`;
-			if (typeof s === 'function')  return `<span class="type-function">${s.toString()}</span>`;
-			if (typeof s === 'symbol')    return `<span class="type-symbol">${s.toString()}</span>`;
-			if (typeof s === 'number')    return `<span class="type-number">${s.toString()}</span>`;
-			if (os.includes(s)) return `<span class="type">${s.toString()}</span>`;
+			if (typeof s === 'string')    return `<span class="type-string">${escapeHtml(s)}</span>`;
+			if (typeof s === 'boolean')   return `<span class="type-boolean">${escapeHtml(s)}</span>`;
+			if (typeof s === 'function')  return `<span class="type-function">${escapeHtml(s.toString())}</span>`;
+			if (typeof s === 'symbol')    return `<span class="type-symbol">${escapeHtml(s.toString())}</span>`;
+			if (typeof s === 'number')    return `<span class="type-number">${escapeHtml(s)}</span>`;
+			if (os.includes(s)) return `<span class="type">${escapeHtml(s.toString())}</span>`;
 			os.push(s);
 
 			if (Array.isArray(s)) return `<span class="type-array">[${s.map(e => toStruct(e, os)).join(', ')}]</span>`;
@@ -108,10 +108,10 @@ export function installInjection(Iwc) {
 			};
 			for (const [cls, proto] of Object.entries(arrayLikes)) {
 				if (!(s instanceof proto)) continue;
-				return `<span class="type-array-${cls}">[${s.join(', ')}]</span>`;
+				return `<span class="type-array-${cls}">[${escapeHtml(s.join(', '))}]</span>`;
 			}
 
-			if (s instanceof DOMException) return `<span class="type-domexception">${s.toString()}</span>`;
+			if (s instanceof DOMException) return `<span class="type-domexception">${escapeHtml(s.toString())}</span>`;
 
 			const setLikes = { set: Set, weakset: WeakSet };
 			for (const [cls, proto] of Object.entries(setLikes)) {
@@ -129,7 +129,7 @@ export function installInjection(Iwc) {
 				const vs = Object.entries(s).map(([key, val]) => `\t${toStruct(key, os)}: ${toStruct(val, os)}`);
 				return makeStringRepresentation(vs, 'object');
 			}
-			return `<span class="type">${s.toString()}</span>`;
+			return `<span class="type">${escapeHtml(s.toString())}</span>`;
 		};
 
 		const makeStringRepresentation = function (vs, cls) {
@@ -140,7 +140,7 @@ export function installInjection(Iwc) {
 		return {
 			dir: (obj) => {
 				orig.dir(obj);
-				cacheOutput(JSON.stringify(obj, null, '\t'), 'std');
+				cacheOutput(escapeHtml(JSON.stringify(obj, null, '\t') ?? ''), 'std');
 			},
 			log: (...vs) => {
 				orig.log(...vs);

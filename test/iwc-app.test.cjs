@@ -21,9 +21,14 @@ async function checkApp() {
 		await waitFor(read, '!!document.querySelector(".CodeMirror")');
 		await waitFor(async () => session._studyWin.getTitle() !== 'Croqujs', 'Study initialization');
 		for (const value of [1, 2]) {
-			await read(`document.querySelector('.CodeMirror').CodeMirror.setValue('console.log("iwc-output-${value}"); setTimeout(() => { throw new Error("iwc-error-${value}"); }, 0);');
+			const label = '<em> &amp; "quoted"';
+			const output = 'iwc-output-' + value + ' ' + label;
+			const error = 'iwc-error-' + value + ' ' + label;
+			const source = 'console.log(' + JSON.stringify(output) + '); setTimeout(() => { throw new Error(' + JSON.stringify(error) + '); }, 0);';
+			await read(`document.querySelector('.CodeMirror').CodeMirror.setValue(${JSON.stringify(source)});
 				document.querySelector('[data-cmd=runWithoutWindow]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
-			await waitFor(read, `document.querySelector('#output-pane').textContent.includes('iwc-output-${value}') && document.querySelector('#output-pane').textContent.includes('iwc-error-${value}')`);
+			await waitFor(read, `document.querySelector('#output-pane .type-string')?.textContent === ${JSON.stringify(output)} && document.querySelector('#output-pane').textContent.includes(${JSON.stringify(error)})`);
+			assert.equal(await read('!!document.querySelector("#output-pane em")'), false);
 			assert.equal(session._fieldWin.isVisible(), false);
 			assert.match(session._studyWin.webContents.getURL(), /^file:/);
 			assert.match(session._fieldWin.webContents.mainFrame.frames[0].url, /^file:/);

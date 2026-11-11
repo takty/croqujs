@@ -7,6 +7,7 @@
 
 import { Config } from '../lib/config.js';
 import { ErrorTranslator } from '../lib/error-translator.js';
+import { escapeHtml } from '../lib/escape-html.js';
 import { Session } from '#session';
 import { Iwc } from '../lib/iwc.js';
 import { createShareLink, createShareQr, isShareLink, readShareLink } from '../lib/share.js';
@@ -447,14 +448,14 @@ export class Study {
 	_addErrorMessage(info) {
 		let msg;
 		if (info.library) {
-			msg = this._res.msg.cannotReadLibrary.replace('%s', info.msg);
+			msg = this._res.msg.cannotReadLibrary.replace('%s', () => escapeHtml(info.msg));
 		} else {
 			const transMsg = new ErrorTranslator(this._lang).translate(info.msg);
 			if (info.isPromise) {
 				msg = `[in promise] - ${transMsg}`;
 			} else {
-				const file = info.isUserCode ? '' : `(${info.fileName}) `;
-				msg = `${file}%lineno% [${info.col}] - ${transMsg}`;
+				const file = info.isUserCode ? '' : `(${escapeHtml(info.fileName)}) `;
+				msg = `${file}%lineno% [${escapeHtml(info.col)}] - ${transMsg}`;
 
 				if (!info.isUserCode) {
 					const lc = this._extractErrorLocation(info);
@@ -462,7 +463,7 @@ export class Study {
 						info.line       = lc[0];
 						info.col        = lc[1];
 						info.isUserCode = true;
-						msg = `%lineno% [${info.col}] (${info.fileName}) - ${transMsg}`;
+						msg = `%lineno% [${escapeHtml(info.col)}] (${escapeHtml(info.fileName)}) - ${transMsg}`;
 					}
 				}
 				if (info.isUserCode && this._editor.getSettings().functionLineNumbers) {
@@ -470,7 +471,7 @@ export class Study {
 					const lnf = this._editor.getFunctionLineNumber(line);
 					msg = msg.replace('%lineno%', lnf[0] + ':' + lnf[1]);
 				} else {
-					msg = msg.replace('%lineno%', info.line);
+					msg = msg.replace('%lineno%', () => escapeHtml(info.line));
 				}
 			}
 		}
@@ -555,7 +556,7 @@ export class Study {
 			else if (cmd === 'replace')       this._editor.execute('replace');
 
 			else if (cmd === 'tileWin')       this._cmdTileWindow();
-			else if (cmd === 'showAbout')     this._dialogBox.showAlert(this._res.about.join('\n'), 'info');
+			else if (cmd === 'showAbout')     this._dialogBox.showAlert(this._res.about.join('\n'), 'info', { html: true });
 
 			else if (cmd === 'fontSizePlus')     cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') + 2, 10, 64));
 			else if (cmd === 'fontSizeMinus')    cfg.setItem('fontSize', minmax(cfg.getItem('fontSize') - 2, 10, 64));

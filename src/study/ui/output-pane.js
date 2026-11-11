@@ -10,6 +10,27 @@ import './output-pane.css';
 const MAX_SIZE = 100;
 const DELAY    = 100;
 
+// Rebuild the supported formatting without attaching nodes from the input HTML.
+function appendFormattedOutput(target, html) {
+	const template = document.createElement('template');
+	template.innerHTML = html;
+	function appendChildren(parent, source) {
+		for (const node of source.childNodes) {
+			if (node.nodeType === Node.TEXT_NODE) {
+				parent.appendChild(document.createTextNode(node.data));
+				continue;
+			}
+			if (!['span', 'div', 'br', 'b'].includes(node.localName)) continue;
+			const element = document.createElement(node.localName);
+			const typeClass = node.getAttribute('class');
+			if (typeClass && /^type(?:-[a-z0-9-]+)?$/.test(typeClass)) element.className = typeClass;
+			appendChildren(element, node);
+			parent.appendChild(element);
+		}
+	}
+	appendChildren(target, template.content);
+}
+
 export class OutputPane {
 
 	constructor(elm, res, { onVisibilityChange = () => {} } = {}) {
@@ -73,11 +94,7 @@ export class OutputPane {
 	addError(msg, className, onClick) {
 		const e = document.createElement('div');
 		e.className = className;
-		if (msg.indexOf('<') === -1) {
-			e.appendChild(document.createTextNode(msg));
-		} else {
-			e.innerHTML = msg;
-		}
+		appendFormattedOutput(e, msg);
 		if (onClick) {
 			e.addEventListener('click', onClick);
 			e.style.cursor = 'pointer';
@@ -141,9 +158,14 @@ export class OutputPane {
 
 		for (let m of msgs) {
 			const e = document.createElement('div');
-			e.className = m.type;
-			const c = (m.count > 1) ? ('<span class="count">' + m.count + '</span>') : '';
-			e.innerHTML = c + this._format(m.msg);
+			e.className = m.type === 'err' ? 'err' : 'std';
+			if (Number.isSafeInteger(m.count) && m.count > 1) {
+				const count = document.createElement('span');
+				count.className = 'count';
+				count.textContent = m.count;
+				e.appendChild(count);
+			}
+			if (typeof m.msg === 'string') appendFormattedOutput(e, this._format(m.msg));
 			this._assignTypeLabel(e);
 			inner.appendChild(e);
 		}

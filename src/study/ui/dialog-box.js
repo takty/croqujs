@@ -8,6 +8,7 @@
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import './dialog-box.css';
+import { escapeHtml } from '../../lib/escape-html.js';
 
 export class DialogBox {
 
@@ -17,10 +18,10 @@ export class DialogBox {
 		this._textCancel = res.btn.cancel;
 	}
 
-	showAlert(text, type) {
+	showAlert(text, type, { html = false } = {}) {
 		window.focus();
 		this._onOpen();
-		return Swal.fire(this._makeOption(text, type)).then(() => {}).finally(() => {
+		return Swal.fire(this._makeOption(type, html ? { html: text } : { text })).then(() => {}).finally(() => {
 			this._onClose();
 		});
 	}
@@ -28,7 +29,8 @@ export class DialogBox {
 	showConfirm(text, type, { confirmButtonText = 'OK', cancelButtonText = this._textCancel } = {}) {
 		window.focus();
 		this._onOpen();
-		return Swal.fire(this._makeOption(text, type, {
+		return Swal.fire(this._makeOption(type, {
+			html: text,
 			confirmButtonText,
 			showCancelButton : true,
 			cancelButtonText,
@@ -49,10 +51,10 @@ export class DialogBox {
 			cancelButtonText: this._textCancel,
 			customClass: 'prompt-with-option',
 			focusConfirm: false,
-			html: '<div style="display: inline-block;">' + text + '</div>' +
-				'<input id="swal-input" class="swal2-input" placeholder="' + placeholder + '" type="text" value="' + value + '">' +
+			html: '<div style="display: inline-block;">' + escapeHtml(text) + '</div>' +
+				'<input id="swal-input" class="swal2-input" placeholder="' + escapeHtml(placeholder) + '" type="text" value="' + escapeHtml(value) + '">' +
 				'<label class="swal2-checkbox-opt"><input type="checkbox" id="swal-checkbox">' +
-				'<span class="swal2-label">' + optText + '</span></label>',
+				'<span class="swal2-label">' + escapeHtml(optText) + '</span></label>',
 			preConfirm: () => {
 				return [
 					document.getElementById('swal-input').value,
@@ -76,10 +78,9 @@ export class DialogBox {
 
 	// -------------------------------------------------------------------------
 
-	_makeOption(text, type, opt = {}) {
+	_makeOption(type, opt) {
 		return Object.assign(opt, {
 			title: '',
-			html: text,
 			icon: type,
 			allowOutsideClick: false,
 			showClass: {
