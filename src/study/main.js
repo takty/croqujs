@@ -73,9 +73,13 @@ export class Study {
 
 		this._initFileDrop();
 		this.ready = this._initialize();
-		window.addEventListener('unload', () => { this._iwc.dispose(); this._config.dispose(); this._splitter?.destroy(); this._editor?.destroy(); this._outputPane?.destroy(); }, { once: true });
+		window.addEventListener('unload', () => {
+			this._iwc.dispose();
+			this._splitter?.destroy();
+			this._editor?.destroy();
+			this._outputPane?.destroy();
+		}, { once: true });
 	}
-
 
 	_initFileDrop() {
 		let flag = false;
@@ -97,7 +101,6 @@ export class Study {
 		}, true);
 	}
 
-
 	async _initialize() {
 		const rets = await loadJSON(['res/lang.' + this._lang + '.json', 'res/resource.json', 'res/menu.json', 'res/toolbar.json']);
 		this._res = Object.assign(rets[0], rets[1]);
@@ -105,13 +108,13 @@ export class Study {
 		this._session.setResources?.(this._res);
 		await this._initEditor();
 
-		this._toolbar    = new Toolbar(this._res, rets[3], {
+		this._toolbar = new Toolbar(this._res, rets[3], {
 			onCommand: (cmd) => {
 				if (cmd === 'menu') this._sideMenu.toggle();
 				else this.executeCommand(cmd);
 			},
 		});
-		this._sideMenu   = new SideMenu(this._res, rets[2], {
+		this._sideMenu = new SideMenu(this._res, rets[2], {
 			onCommand: (cmd, close) => this.executeCommand(cmd, close),
 			onClose: () => this._editor.focus(),
 			shouldHandleShortcut: (e) => {
@@ -122,7 +125,7 @@ export class Study {
 				return !(isMac && isCopy && !this._editor.hasFocus());
 			},
 		});
-		this._dialogBox  = new DialogBox(this._res, {
+		this._dialogBox = new DialogBox(this._res, {
 			onOpen: () => {
 				this._sideMenu.close();
 				this._editor.setSettings({ disabled: true });
@@ -145,10 +148,10 @@ export class Study {
 		this._errorMarker = null;
 
 		this._splitter = new Splitter(document.querySelector('#splitter'), {
-			main: document.querySelector('.main'),
-			handle: document.querySelector('#handle'),
-			sub: document.querySelector('#output-pane'),
-			minMain: document.querySelector('.toolbar').offsetHeight + 100,
+			main    : document.querySelector('.main'),
+			handle  : document.querySelector('#handle'),
+			sub     : document.querySelector('#output-pane'),
+			minMain : document.querySelector('.toolbar').offsetHeight + 100,
 			onResize: mainHeight => {
 				document.querySelector('#editor').style.height = (mainHeight - document.querySelector('.toolbar').offsetHeight) + 'px';
 				this._editor.refresh();
@@ -346,10 +349,10 @@ export class Study {
 		const prefix = (this._isModified ? '* ' : '') +
 			(this._isLimitedMode ? `(${this._res.limitedMode}) ` : '') +
 			(this._isReadOnly ? `(${this._res.readOnly}) ` : '');
-		const fn = (this._filePath === null) ? this._res.untitled : this._baseName;
-		const fp = (this._filePath === null || !this._dirName) ? '' : (' — ' + this._dirName);
+		const fn     = (this._filePath === null) ? this._res.untitled : this._baseName;
+		const fp     = (this._filePath === null || !this._dirName) ? '' : (' — ' + this._dirName);
 		const suffix = this._webAppDisplayMode?.matches ? '' : ' — Croqujs';
-		const title = prefix + fn + fp + suffix;
+		const title  = prefix + fn + fp + suffix;
 		if (window.title !== title) {
 			window.title = title;
 			this._session.onStudyTitleChanged(title);
@@ -558,7 +561,7 @@ export class Study {
 		const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption(this._res.msg.enterLibName, '', this._res.msg.libName, this._name, this._res.msg.includeUsedLibs);
 		if (libName) {
 			try {
-				const snapshot = await this._editor.analyzeNow();
+				const snapshot   = await this._editor.analyzeNow();
 				const [msg, arg] = await this._session.doExportAsLibrary(snapshot.text, libName, flag, JSON.stringify(snapshot));
 				this._handleServerResponse(msg, arg);
 			} catch (error) {
