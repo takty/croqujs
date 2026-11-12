@@ -6,7 +6,7 @@
  */
 
 import { Iwc } from '../lib/iwc.js';
-import { WinState } from '../lib/winstate.js';
+import { WinState } from '../lib/win-state.ts';
 
 window.addEventListener('DOMContentLoaded', () => { new Field(); });
 

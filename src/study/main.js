@@ -11,7 +11,7 @@ import { escapeHtml } from '../lib/escape-html.js';
 import { Session } from '#session';
 import { Iwc } from '../lib/iwc.js';
 import { createShareLink, createShareQr, isShareLink, readShareLink } from '../lib/share.js';
-import { WinState } from '../lib/winstate.js';
+import { WinState } from '../lib/win-state.ts';
 import { SideMenu } from './ui/side-menu.js';
 import { Toolbar } from './ui/toolbar.js';
 import { DialogBox } from './ui/dialog-box.js';
@@ -522,7 +522,7 @@ export class Study {
 		window.resizeTo(w, h);
 		this._callField('alignWindow', x + w, y, w, h);
 
-		const state = { x: x + w, y: y, width: w, height: h };
+		const state = { x: x + w, y: y, cx: w, cy: h };
 		window.localStorage.setItem('$winstate_field', JSON.stringify(state));
 	}
 
