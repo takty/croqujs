@@ -22,7 +22,7 @@
 	"dependencies": {
 		"acorn": "8.19.0",
 		"acorn-walk": "8.3.5",
-		"croq-mirror": "github:takty/croq-mirror#main",
+		"opticm": "github:takty/opticm#main",
 		"fs-nw": "github:takty/fs-nw#main",
 		"jssha": "^3.3.2",
 		"lean-qr": "2.7.4",

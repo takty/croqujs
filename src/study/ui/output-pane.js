@@ -48,7 +48,7 @@ export class OutputPane {
 		this._errorCount = 0;
 		this._clickEvents = [];
 
-		const con = new Worker(new URL('./output-pane-worker.js', import.meta.url));
+		const con = new Worker(new URL('./output-pane-worker.js', import.meta.url), { type: 'module' });
 		this._worker = con;
 		con.addEventListener('message', (e) => { this._addMessages(e.data); }, false);
 		this._console = (type, msgs = false) => { con.postMessage(JSON.stringify({ type, msgs })); };

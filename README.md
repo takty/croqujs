@@ -23,7 +23,7 @@ Do not store source or user files in `app/`.
 Both outputs place Study at `index.html`, Field at `field/index.html`, and
 runtime JSON under `res/`. Vite builds the HTML entries from `src/`, with relative asset
 URLs for Electron's `file:` pages. Bundled JS, CSS, fonts, the output-pane worker,
-and the editor analysis worker are emitted under `app/assets/`. `app/.vite/manifest.json` records their
+and the editor analysis workers and WebAssembly files are emitted under `app/assets/`. `app/.vite/manifest.json` records their
 paths. The main process and its Node dependencies are bundled into
 `app/electron/main.js`; the CommonJS preload is `app/electron/preload.js`.
 The generated classic `assets/injection.js` provides the execution hooks.
@@ -32,16 +32,16 @@ There is no Vite development server or HMR in the Electron launch command yet.
 Study statically imports its UI components and their CSS. Vite combines the
 Study, component, and SweetAlert2 styles into one stylesheet linked from the
 built HTML; components do not insert stylesheet links at runtime. Field keeps
-its own stylesheet, and the prebuilt croq-mirror stylesheet remains separate.
+its own stylesheet, and the prebuilt opticm stylesheet remains separate.
 
 Study icons are imported with `?inline` through a shared icon map and displayed
 in the existing `<img>` elements; the check mark is embedded in CSS. Original
 SVGs remain in the source tree, but are not copied as separate Study assets.
 Runtime-selected language JSON keeps its paths under `res/`;
 version information is inserted into `resource.json` and `package.json`.
-Both builds bundle SweetAlert2 into Study and croq-mirror into a separate
-`assets/croq-mirror-*.js` file. The editor is imported
-statically with `import { createEditor } from 'croq-mirror'`. `vite-renderer-resources.mjs` serves
+Both builds bundle SweetAlert2 into Study and opticm into a separate
+`assets/opticm-*.js` file. The editor is imported
+statically with `import { createEditor } from 'opticm'`. `vite-renderer-resources.mjs` serves
 and emits the editor stylesheet and dependency licenses under `assets/` and
 `assets/licenses/`. Integration tests build their exported modules separately
 under `test/.profiles/` or in memory. `electron-builder` creates the Electron distribution packages.
@@ -76,18 +76,18 @@ retaining the names `SessionClient` and `SessionLocal` respectively.
 Both builds use `src/study/index.html`. The shared application resource plugin generates the root
 `index.html` entry in memory and serves the same HTML during development.
 The production web build has separate JavaScript and CSS bundles for Study and
-Field, with one small shared JavaScript bundle and a separate croq-mirror bundle.
+Field, with one small shared JavaScript bundle and a separate opticm bundle.
 Both builds emit standalone execution hooks at `assets/injection.js`.
 The web session passes their URL to BrowserExporter, which fetches them on first
 execution and reuses successful results by URL;
 failed requests are reported and can be retried on the next execution.
 Execution pages still reference their own `lib/injection.js`. The
-output-pane worker, editor analysis worker, and execution Service Worker are
+output-pane worker, editor analysis workers, and execution Service Worker are
 separate JavaScript files. The Service Worker includes its filesystem helpers.
 The web build emits `url-provider-worker.js` at the deployment root beside
 `index.html`. Its `__croqujs_run__/` scope is relative to that root. The other
 JavaScript files are emitted under `assets/`.
-The editor stylesheet is `assets/croq-mirror.min.css`, and dependency licenses
+The editor stylesheet is `assets/opticm.min.css`, and dependency licenses
 are collected under `assets/licenses/`.
 The web build includes Study and Field. Run opens `field/#<sessionId>` once,
 waits for Field to acknowledge readiness, and replaces its iframe on each run.
@@ -154,11 +154,12 @@ in an isolated Chromium renderer without Electron IPC or a preload. Picker
 buttons use substituted picker functions in this test, with real OPFS directory
 and file handles; native OS picker interactions are not automated.
 
-The editor is provided by `github:takty/croq-mirror#main`. `yarn.lock` pins the
+The editor is provided by `github:takty/opticm#main`. `yarn.lock` pins the
 resolved commit. No sibling checkout or local editor build is required.
 
 Both builds use the committed editor bundle from the dependency's `dist/`
-directory. Vite emits it as a separate editor bundle and emits its analysis worker separately.
+directory. Vite emits it as a separate opticm bundle and emits its analysis workers
+and Java parser WebAssembly files separately. Workers use ES module output.
 
 After building, run `node test/run-study-integration.mjs` to check the Electron
 integration, and `node --test test/exporter.test.cjs` to check library exports.

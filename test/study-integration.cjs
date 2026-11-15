@@ -42,6 +42,8 @@ app.whenReady().then(async () => {
 		});
 		await allowPaste(window.webContents, HTML);
 		await window.loadFile(HTML, { hash: 'integration' });
+		window.webContents.debugger.attach('1.3');
+		await window.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', { enabled: true });
 		const checks = await window.webContents.executeJavaScript(`(async () => {
 			const checks = [];
 			const check = (condition, message) => {
@@ -54,7 +56,7 @@ app.whenReady().then(async () => {
 			const OutputPane = s._outputPane.constructor;
 			const styleUrls = () => [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => link.href);
 			const initialStyles = styleUrls();
-			check(initialStyles.filter(url => url.includes('/assets/') && !url.endsWith('/croq-mirror.min.css')).length === 1, 'Study and all UI components share one bundled stylesheet');
+			check(initialStyles.filter(url => url.includes('/assets/') && !url.endsWith('/opticm.min.css')).length === 1, 'Study and all UI components share one bundled stylesheet');
 			const output = document.querySelector('#output-pane');
 			s._outputPane.addError('Output error', 'err');
 			check(output.offsetHeight > 0, 'Output error opens the pane through the host callback');
@@ -223,7 +225,7 @@ app.whenReady().then(async () => {
 			check(!e.hasFocus(), 'Public API releases editor focus');
 			e.focus();
 			check(e.hasFocus(), 'Public API restores editor focus');
-			check(!!document.querySelector('.croq-mirror'), 'Croqujs mounts croq-mirror');
+			check(!!document.querySelector('.opticm .cm-editor'), 'Croqujs mounts opticm');
 			for (const font of ['16px Inconsolata', '400 16px LaMono', '700 16px LaMono']) {
 				const faces = await document.fonts.load(font);
 				check(faces.length > 0 && faces.every(face => face.status === 'loaded'), 'Host font loads: ' + font);
@@ -235,6 +237,11 @@ app.whenReady().then(async () => {
 			s.executeCommand('toggleLamono');
 			await new Promise(resolve => setTimeout(resolve, 20));
 			check(e.getSettings().fontFamily.startsWith('Inconsolata'), 'Host restores Inconsolata');
+			check(e.getSettings().easyLineSelection, 'Easy line selection is enabled');
+			s._config.setItem('functionLineNumber', true);
+			check(e.getSettings().functionLineNumbers && e.getSettings().functionScrollMarkers, 'Function line numbers enable scroll markers');
+			s._config.setItem('functionLineNumber', false);
+			check(!e.getSettings().functionLineNumbers && !e.getSettings().functionScrollMarkers, 'Disabling function line numbers also disables scroll markers');
 			check(!window.CodeMirror && !window.acorn && !window.tern, 'No legacy editor library globals');
 			check(e.getValue().includes('initial') && !s._isModified, 'Initial document is not marked modified');
 			e.replaceDocument('function edited() { return 2; }');
@@ -246,7 +253,7 @@ app.whenReady().then(async () => {
 			check(e.getSettings().fontSize === 22, 'Persistent config updates component');
 			e.setSettings({ fontSize: 20 });
 			check(s._config.getItem('fontSize') === 20, 'Editor zoom updates persistent config');
-			document.querySelector('#editor .CodeMirror').dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -1 }));
+			document.querySelector('#editor .cm-editor').dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -1 }));
 			check(e.getSettings().fontSize === 22 && s._config.getItem('fontSize') === 22, 'Wheel zoom preserves two-pixel steps and persists settings');
 			e.setSettings({ readOnly: true });
 			const confirmation = s._dialogBox.showConfirm('Confirm test', 'warning');
@@ -286,7 +293,7 @@ app.whenReady().then(async () => {
 				s._reflectClipboardState = text => reflectedClipboard.push(text);
 				e.execute('selectAll');
 				for (const type of ['copy', 'cut']) {
-					document.querySelector('#editor textarea').dispatchEvent(new ClipboardEvent(type, { bubbles: true, cancelable: true, clipboardData: new DataTransfer() }));
+					document.querySelector('#editor .cm-content').dispatchEvent(new ClipboardEvent(type, { bubbles: true, cancelable: true, clipboardData: new DataTransfer() }));
 				}
 			} finally {
 				s._reflectClipboardState = reflectClipboard;

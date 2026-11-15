@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { test } = require('node:test');
+const editorDriver = require('./editor-driver.cjs');
 
 async function checkApp() {
 	const { app, BrowserWindow } = require('electron');
@@ -9,7 +10,7 @@ async function checkApp() {
 	const session = new SessionServer('iwc-app');
 	// Keep the real application pages hidden while exercising their normal commands.
 	session._studyWin.show = () => {};
-	const read = code => session._studyWin.webContents.executeJavaScript(code, true);
+	const read = code => session._studyWin.webContents.executeJavaScript(editorDriver + code, true);
 	async function waitFor(readValue, expression) {
 		for (let i = 0; i < 200; i++) {
 			if (await readValue(expression)) return;
@@ -18,14 +19,14 @@ async function checkApp() {
 		throw new Error('Timed out: ' + expression);
 	}
 	try {
-		await waitFor(read, '!!document.querySelector(".CodeMirror")');
+		await waitFor(read, '!!document.querySelector(".cm-content")');
 		await waitFor(async () => session._studyWin.getTitle() !== 'Croqujs', 'Study initialization');
 		for (const value of [1, 2]) {
 			const label = '<em> &amp; "quoted"';
 			const output = 'iwc-output-' + value + ' ' + label;
 			const error = 'iwc-error-' + value + ' ' + label;
 			const source = 'console.log(' + JSON.stringify(output) + '); setTimeout(() => { throw new Error(' + JSON.stringify(error) + '); }, 0);';
-			await read(`document.querySelector('.CodeMirror').CodeMirror.setValue(${JSON.stringify(source)});
+			await read(`testEditor.setValue(${JSON.stringify(source)});
 				document.querySelector('[data-cmd=runWithoutWindow]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
 			await waitFor(read, `document.querySelector('#output-pane .type-string')?.textContent === ${JSON.stringify(output)} && document.querySelector('#output-pane').textContent.includes(${JSON.stringify(error)})`);
 			assert.equal(await read('!!document.querySelector("#output-pane em")'), false);
@@ -38,12 +39,12 @@ async function checkApp() {
 		const peer = new SessionServer('iwc-app-peer');
 		peer._studyWin.show = () => {};
 		const peerRead = code => peer._studyWin.webContents.executeJavaScript(code, true);
-		await waitFor(peerRead, '!!document.querySelector(".CodeMirror")');
+		await waitFor(peerRead, '!!document.querySelector(".cm-content")');
 		await waitFor(async () => peer._studyWin.getTitle() !== 'Croqujs', 'peer initialization');
-		const before = await peerRead('getComputedStyle(document.querySelector(".CodeMirror")).fontSize');
+		const before = await peerRead('getComputedStyle(document.querySelector(".cm-content")).fontSize');
 		await read('document.querySelector("[data-cmd=fontSizePlus]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true })); void 0;');
-		await waitFor(peerRead, `getComputedStyle(document.querySelector('.CodeMirror')).fontSize !== ${JSON.stringify(before)}`);
-		assert.equal(await read('getComputedStyle(document.querySelector(".CodeMirror")).fontSize'), await peerRead('getComputedStyle(document.querySelector(".CodeMirror")).fontSize'));
+		await waitFor(peerRead, `getComputedStyle(document.querySelector('.cm-content')).fontSize !== ${JSON.stringify(before)}`);
+		assert.equal(await read('getComputedStyle(document.querySelector(".cm-content")).fontSize'), await peerRead('getComputedStyle(document.querySelector(".cm-content")).fontSize'));
 		console.log(JSON.stringify({ passed: true, electron: process.versions.electron, checks: ['app output and errors from temporary file iframe', 'hidden execution', 'stop and rerun', 'settings synchronization between editors'] }));
 	} finally {
 		for (const window of BrowserWindow.getAllWindows()) window.destroy();

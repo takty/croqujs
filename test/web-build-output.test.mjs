@@ -21,7 +21,7 @@ test('web output resolves local assets and includes versioned resources without 
 	for (const file of ['electron/main.js', 'electron/preload.js', 'session/session-server.js', 'field/field.html', 'study/index.html']) {
 		await assert.rejects(access(new URL(file, root)), { code: 'ENOENT' });
 	}
-	await access(new URL('assets/croq-mirror.min.css', root));
+	await access(new URL('assets/opticm.min.css', root));
 	await access(new URL('assets/licenses/lean-qr-LICENSE', root));
 	await assert.rejects(access(new URL('lib/', root)), { code: 'ENOENT' });
 });
@@ -53,20 +53,25 @@ test('web pages keep their own scripts and styles with one shared helper bundle'
 		const relative = file.replaceAll('\\', '/');
 		assert.ok(relative === 'url-provider-worker.js' || relative.startsWith('assets/'), file);
 	}
-	assert.equal(files.filter(name => name.includes('worker')).length, 3);
+	assert.equal(files.filter(name => name.includes('worker')).length, 4);
 	await access(new URL('url-provider-worker.js', root));
 	await assert.rejects(access(new URL('assets/url-provider-worker.js', root)), { code: 'ENOENT' });
 });
 
-test('both builds keep croq-mirror in a separate editor bundle', async () => {
+test('both builds keep opticm in a separate editor bundle', async () => {
 	for (const directory of ['app', 'dist-web']) {
 		const assets = new URL('../' + directory + '/assets/', import.meta.url);
-		const maps = (await readdir(assets)).filter(name => name.endsWith('.js.map'));
-		const editorMaps = maps.filter(name => /^croq-mirror-/.test(name));
+		const files = await readdir(assets);
+		for (const pattern of [/^analysis-worker\.min-.*\.js$/, /^analysis-worker-java\.min-.*\.js$/,
+			/^web-tree-sitter-.*\.wasm$/, /^tree-sitter-java-.*\.wasm$/]) {
+			assert.ok(files.some(name => pattern.test(name)), directory + ': ' + pattern);
+		}
+		const maps = files.filter(name => name.endsWith('.js.map'));
+		const editorMaps = maps.filter(name => /^opticm-/.test(name));
 		assert.equal(editorMaps.length, 1, directory);
 		for (const name of maps.filter(name => !name.includes('worker'))) {
 			const map = JSON.parse(await readFile(new URL(name, assets), 'utf8'));
-			const hasEditor = map.sources.some(source => source.replaceAll('\\', '/').includes('/croq-mirror/'));
+			const hasEditor = map.sources.some(source => source.replaceAll('\\', '/').includes('/node_modules/opticm/'));
 			assert.equal(hasEditor, name === editorMaps[0], directory + '/' + name);
 		}
 	}

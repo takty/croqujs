@@ -26,11 +26,12 @@ export default defineConfig(({ mode }) => {
 			open: '/',
 			fs: { allow: [
 				root,
-				fileURLToPath(new URL('./', import.meta.resolve('croq-mirror'))),
+				fileURLToPath(new URL('./', import.meta.resolve('opticm'))),
 				fileURLToPath(new URL('./', import.meta.resolve('fs-nw/web'))),
 			] },
 		},
 		preview: { open: '/' },
+		worker: { format: 'es' },
 		plugins: [{
 			name: 'croqujs-study-links',
 			configResolved(config) { base = config.base; },
@@ -38,7 +39,7 @@ export default defineConfig(({ mode }) => {
 				order: 'post',
 				handler(_html, context) {
 					if (path.resolve(context.filename) !== path.join(root, 'index.html')) return;
-					const href = './assets/croq-mirror.min.css';
+					const href = './assets/opticm.min.css';
 					return [
 						{ tag: 'link', attrs: { rel: 'stylesheet', href }, injectTo: 'head' },
 						...(web ? [
@@ -63,7 +64,7 @@ export default defineConfig(({ mode }) => {
 				preserveEntrySignatures: 'strict',
 				output: {
 					codeSplitting: {
-						groups: [{ name: 'croq-mirror', test: /[/\\]node_modules[/\\]croq-mirror[/\\]/ }],
+						groups: [{ name: 'opticm', test: /[/\\]node_modules[/\\]opticm[/\\]/ }],
 					},
 					entryFileNames: 'assets/[name]-[hash].js',
 				},

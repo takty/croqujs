@@ -16,7 +16,7 @@ app.on('browser-window-created', (_event, window) => {
 	window.webContents.once('did-finish-load', async () => {
 		try {
 			for (let i = 0; i < 100; i++) {
-				const ready = await window.webContents.executeJavaScript('!!window.ipc && document.querySelector(".CodeMirror")?.CodeMirror.getValue().includes("Main process did not initialize the editor")');
+				const ready = await window.webContents.executeJavaScript('!!window.ipc && document.querySelector(".cm-content")?.textContent.includes("Main process did not initialize the editor")');
 				if (ready) {
 					console.log('PASS: ESM main entry initializes the editor through preload and IPC');
 					clearTimeout(timeout);
@@ -25,7 +25,7 @@ app.on('browser-window-created', (_event, window) => {
 				}
 				await new Promise(resolve => setTimeout(resolve, 50));
 			}
-			throw new Error('Editor did not finish initialization: ' + JSON.stringify(await window.webContents.executeJavaScript('({ url: location.href, ipc: !!window.ipc, editor: !!document.querySelector(".CodeMirror"), buttons: document.querySelectorAll("button").length })')) + ', visible=' + window.isVisible());
+			throw new Error('Editor did not finish initialization: ' + JSON.stringify(await window.webContents.executeJavaScript('({ url: location.href, ipc: !!window.ipc, editor: !!document.querySelector(".cm-content"), buttons: document.querySelectorAll("button").length })')) + ', visible=' + window.isVisible());
 		} catch (error) {
 			console.error(error);
 			app.exit(1);

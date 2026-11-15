@@ -3,6 +3,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { test } = require('node:test');
 const { gunzipSync } = require('node:zlib');
+const editorDriver = require('./editor-driver.cjs');
 
 async function checkRenderer() {
 	const { BrowserWindow } = require('electron');
@@ -12,10 +13,10 @@ async function checkRenderer() {
 	window.webContents.on('console-message', event => {
 		if (event.level === 'error') errors.push(event.message);
 	});
-	const evaluate = code => window.webContents.executeJavaScript(code, true);
+	const evaluate = code => window.webContents.executeJavaScript(editorDriver + code, true);
 	async function waitFor(code, contents = window.webContents) {
 		for (let i = 0; i < 200; i++) {
-			if (await contents.executeJavaScript(code)) return;
+			if (await contents.executeJavaScript(editorDriver + code)) return;
 			await new Promise(resolve => setTimeout(resolve, 50));
 		}
 		throw new Error('Timed out: ' + code + '\n' + errors.join('\n'));
@@ -25,9 +26,9 @@ async function checkRenderer() {
 		window.webContents.debugger.attach('1.3');
 		try {
 			await window.webContents.debugger.sendCommand('Emulation.setFocusEmulationEnabled', { enabled: true });
-			const before = await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()');
+			const before = await evaluate('testEditor.getValue()');
 			const point = await evaluate(`(() => {
-				const r = document.querySelector('.CodeMirror-lines').getBoundingClientRect();
+				const r = document.querySelector('.cm-content').getBoundingClientRect();
 				return { x: Math.round(r.x + 20), y: Math.round(r.y + 10) };
 			})()`);
 			window.webContents.sendInputEvent({ type: 'mouseDown', button: 'left', clickCount: 1, ...point });
@@ -36,40 +37,40 @@ async function checkRenderer() {
 			window.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'X' });
 			window.webContents.sendInputEvent({ type: 'char', keyCode: 'x' });
 			window.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'X' });
-			await waitFor(`document.querySelector('.CodeMirror').CodeMirror.getValue() !== ${JSON.stringify(before)}`);
-			await evaluate('document.querySelector(".CodeMirror").CodeMirror.undo()');
-			assert.equal(await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()'), before);
+			await waitFor(`testEditor.getValue() !== ${JSON.stringify(before)}`);
+			await evaluate('document.querySelector(".toolbar [data-cmd=undo]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
+			await waitFor(`testEditor.getValue() === ${JSON.stringify(before)}`);
 		} finally {
 			window.webContents.debugger.detach();
 		}
 	}
 	try {
 		await window.loadURL(process.env.CROQUJS_TEST_URL);
-		await waitFor('!!document.querySelector(".CodeMirror") && document.title.includes(" — Croqujs")');
+		await waitFor('!!document.querySelector(".cm-content") && document.title.includes(" — Croqujs")');
 		assert.equal(await evaluate('document.title.includes("(制限モード)") || document.title.includes("(Limited Mode)")'), false);
 		assert.equal(await evaluate('typeof window.ipc'), 'undefined');
-		assert.equal(await evaluate('[...document.styleSheets].some(sheet => sheet.href?.endsWith("/croq-mirror.min.css"))'), true);
+		assert.equal(await evaluate('[...document.styleSheets].some(sheet => sheet.href?.endsWith("/opticm.min.css"))'), true);
 		assert.equal(await evaluate('location.href'), process.env.CROQUJS_TEST_URL);
 		assert.equal(await evaluate('(async () => { const images = [...document.querySelectorAll("img")]; await Promise.all(images.map(image => image.decode())); return images.length > 0 && images.every(image => image.naturalWidth > 0); })()'), true);
 		assert.equal(await evaluate('[...document.querySelectorAll(".toolbar img, .side-menu img")].every(image => image.src.startsWith("data:image/svg+xml"))'), true);
 		assert.equal(await evaluate('getComputedStyle(document.querySelector(".toolbar")).height'), '40px');
 		assert.equal(await evaluate('document.querySelector("[data-cmd=showAbout]").textContent.includes("%VERSION")'), false);
 		assert.equal(await evaluate('(async () => (await document.fonts.load("16px Inconsolata")).some(font => font.status === "loaded"))()'), true);
-		await evaluate('document.querySelector(".CodeMirror textarea").focus()');
+		await evaluate('document.querySelector(".cm-content").focus()');
 		// Edit through the editor model because the test window is intentionally hidden.
-		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.replaceRange('const webExample = 42;', { line: 0, ch: 0 }, undefined, '+input')`);
-		await waitFor('document.querySelector(".CodeMirror-code").textContent.includes("webExample")');
+		await evaluate(`testEditor.replaceRange('const webExample = 42;', { line: 0, ch: 0 })`);
+		await waitFor('testEditor.getValue().includes("webExample")');
 		await evaluate('document.querySelector(".toolbar [data-cmd=save]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!!document.querySelector("dialog")');
 		assert.equal(await evaluate('document.querySelector("dialog [data-action=file]").disabled'), true);
 		await evaluate('document.querySelector("dialog [data-action=cancel]").click()');
 		await waitFor('!document.querySelector("dialog")');
-		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("webExample")'), true);
+		assert.equal(await evaluate('testEditor.getValue().includes("webExample")'), true);
 		await checkTextInput();
 		await evaluate('document.querySelector("[data-cmd=new]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!!document.querySelector(".swal2-confirm")');
 		await evaluate('document.querySelector(".swal2-confirm").click()');
-		await waitFor('!document.querySelector(".CodeMirror-code").textContent.includes("webExample")');
+		await waitFor('!testEditor.getValue().includes("webExample")');
 		// The first failed hook request must stop execution, then allow a retry.
 		await evaluate(`window.hookRequests = 0;
 			const originalFetch = window.fetch.bind(window);
@@ -86,7 +87,7 @@ async function checkRenderer() {
 		await evaluate('document.querySelector(".swal2-confirm").click()');
 		await waitFor('!document.querySelector(".swal2-confirm")');
 		const runHidden = async value => {
-			await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = ${value}; console.log("hidden-${value}");')`);
+			await evaluate(`testEditor.setValue('window.result = ${value}; console.log("hidden-${value}");')`);
 			await evaluate('document.querySelector("[data-cmd=runWithoutWindow]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 			await waitFor(`document.querySelector('iframe[data-croqujs-execution]')?.contentWindow?.result === ${value}`);
 			await waitFor(`document.querySelector('#output-pane').textContent.includes('hidden-${value}')`);
@@ -101,7 +102,7 @@ async function checkRenderer() {
 		assert.equal(await evaluate(`document.querySelector('iframe[data-croqujs-execution]').contentWindow.fetch(${JSON.stringify(hiddenUrl)}).then(response => response.status)`), 404);
 		const run = async (value, existingField = null) => {
 			const opened = existingField ?? new Promise(resolve => window.webContents.once('did-create-window', resolve));
-			await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = ${value}; console.log("run-${value}");')`);
+			await evaluate(`testEditor.setValue('window.result = ${value}; console.log("run-${value}");')`);
 			await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 			return opened;
 		};
@@ -136,7 +137,7 @@ async function checkRenderer() {
 		await waitFor('!document.querySelector("iframe[data-croqujs-execution]")');
 		field = await run(43, field);
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 43', field.webContents);
-		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('throw new Error("web-error");')`);
+		await evaluate(`testEditor.setValue('throw new Error("web-error");')`);
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('document.querySelector("#output-pane").textContent.includes("web-error")');
 		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
@@ -195,7 +196,7 @@ async function checkRenderer() {
 		await evaluate('fieldObserver.close()');
 		// Closing a looping tab may bypass its unload notification entirely.
 		const loopOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
-		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('localStorage.setItem("croqujs-loop-started", "yes"); while (true) { console.log("hoge"); }');
+		await evaluate(`testEditor.setValue('localStorage.setItem("croqujs-loop-started", "yes"); while (true) { console.log("hoge"); }');
 			document.querySelector('.toolbar [data-cmd=run]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
 		const loopingField = await loopOpened;
 		await waitFor('localStorage.getItem("croqujs-loop-started") === "yes"');
@@ -205,12 +206,12 @@ async function checkRenderer() {
 		// If a crashed Field cannot notify Study, its readiness timeout allows a fresh tab on retry.
 		await evaluate(`window.crashOriginalSetTimeout = window.setTimeout;
 			window.setTimeout = (callback, delay, ...args) => crashOriginalSetTimeout(callback, delay === 10000 ? 100 : delay, ...args);
-			document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = 46; console.log("recovered");');
+			testEditor.setValue('window.result = 46; console.log("recovered");');
 			document.querySelector('.toolbar [data-cmd=run]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
 		await waitFor('document.querySelector(".swal2-popup")?.textContent.includes("Execution window did not become ready")');
 		await evaluate('window.setTimeout = crashOriginalSetTimeout; document.querySelector(".swal2-confirm").click()');
 		const recoveredOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
-		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue('window.result = 46; console.log("recovered");');
+		await evaluate(`testEditor.setValue('window.result = 46; console.log("recovered");');
 			for (let i = 0; i < 3; i++) document.querySelector('.toolbar [data-cmd=run]').dispatchEvent(new MouseEvent('mouseup', { bubbles: true })); void 0;`);
 		const recoveredField = await recoveredOpened;
 		await waitFor('document.querySelector("iframe")?.contentWindow?.result === 46', recoveredField.webContents);
@@ -268,7 +269,7 @@ async function checkRenderer() {
 		assert.equal(await evaluate('!!document.querySelector(".swal2-popup")'), false);
 		await choose('cancel');
 		await waitFor('!document.querySelector("dialog")');
-		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("recovered")'), true);
+		assert.equal(await evaluate('testEditor.getValue().includes("recovered")'), true);
 		await openDialog();
 		await choose('root');
 		await waitFor('!document.querySelector("dialog [data-action=file]").disabled');
@@ -287,7 +288,7 @@ async function checkRenderer() {
 		await evaluate('(async () => (await projectRoots[0].getDirectoryHandle("test")).removeEntry("main.js"))()');
 		await choose('open');
 		await waitFor('!!document.querySelector("dialog [role=alert]").textContent');
-		assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("recovered")'), true);
+		assert.equal(await evaluate('testEditor.getValue().includes("recovered")'), true);
 		await evaluate(`(async () => {
 			const directory = await projectRoots[0].getDirectoryHandle('test');
 			projectScripts[0] = await directory.getFileHandle('main.js', { create: true });
@@ -501,11 +502,11 @@ async function checkRenderer() {
 			assert.equal(result[0], 'alert_error');
 			assert.match(result[1], /ブラウザ|browser controls/);
 			assert.equal(await evaluate('window.onbeforeunload === beforeCloseHandler'), true);
-			assert.equal(await evaluate('document.querySelector(".CodeMirror-code").textContent.includes("libraryReady")'), true);
+			assert.equal(await evaluate('testEditor.getValue().includes("libraryReady")'), true);
 			const childOpened = new Promise(resolve => window.webContents.once('did-create-window', resolve));
 			await evaluate('window.open(location.href, "closable-study"); void 0');
 			const childStudy = await childOpened;
-			await waitFor('!!document.querySelector(".CodeMirror") && document.title.includes(" — Croqujs")', childStudy.webContents);
+			await waitFor('!!document.querySelector(".cm-content") && document.title.includes(" — Croqujs")', childStudy.webContents);
 			const childClosed = new Promise(resolve => childStudy.once('closed', resolve));
 			await childStudy.webContents.executeJavaScript(`import('/session/session-local.js').then(({ SessionLocal }) => { new SessionLocal('close-test-child').doClose(); }); void 0`);
 			await childClosed;
@@ -515,20 +516,20 @@ async function checkRenderer() {
 		// Recovery must survive a navigation even when no beforeunload warning runs.
 		const draftKey = '$croqujs_draft:' + new URL('.', process.env.CROQUJS_TEST_URL).pathname;
 		const recoveryText = '// unsaved recovery\nconsole.log("recovered");';
-		await evaluate(`document.querySelector('.CodeMirror').CodeMirror.setValue(${JSON.stringify(recoveryText)}); void 0`);
+		await evaluate(`testEditor.setValue(${JSON.stringify(recoveryText)}); void 0`);
 		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), recoveryText);
 		await evaluate('window.onbeforeunload = null; void 0');
 		await window.loadURL(process.env.CROQUJS_TEST_URL);
-		await waitFor(`document.querySelector('.CodeMirror')?.CodeMirror.getValue() === ${JSON.stringify(recoveryText)} && document.title.startsWith('* ')`);
+		await waitFor(`!!document.querySelector('.cm-content') && testEditor.getValue() === ${JSON.stringify(recoveryText)} && document.title.startsWith('* ')`);
 		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), recoveryText);
 		await evaluate('document.querySelector("[data-cmd=new]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!!document.querySelector(".swal2-confirm")');
 		await evaluate('document.querySelector(".swal2-confirm").click()');
-		await waitFor('document.querySelector(".CodeMirror").CodeMirror.getValue() === ""');
+		await waitFor('testEditor.getValue() === ""');
 		assert.equal(await evaluate(`localStorage.getItem(${JSON.stringify(draftKey)})`), null);
 		const code = 'globalThis.sharedCodeRan = true;\n// 日本語 🎨';
 		await evaluate(`
-			document.querySelector('.CodeMirror').CodeMirror.setValue(${JSON.stringify(code)});
+			testEditor.setValue(${JSON.stringify(code)});
 			navigator.clipboard.write = async ([item]) => {
 				window.copiedShareLink = await (await item.getType('text/plain')).text();
 			};
@@ -566,7 +567,7 @@ async function checkRenderer() {
 		await evaluate('document.querySelector(".swal2-confirm").click()');
 		await waitFor('!document.querySelector(".swal2-popup")');
 		await evaluate(`
-			const editor = document.querySelector('.CodeMirror').CodeMirror;
+			const editor = testEditor;
 			editor.replaceRange(${JSON.stringify(previousDraft)}, { line: 0, ch: 0 }, { line: editor.lineCount(), ch: 0 }, '+input');
 			window.onbeforeunload = null;
 		`);
@@ -575,14 +576,14 @@ async function checkRenderer() {
 		await waitFor('!!document.querySelector(".swal2-cancel")');
 		await evaluate('document.querySelector(".swal2-cancel").click()');
 		await waitFor('!location.hash');
-		assert.equal(await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()'), previousDraft);
+		assert.equal(await evaluate('testEditor.getValue()'), previousDraft);
 		assert.equal(await evaluate('location.search'), '?keep=1');
 
 		await evaluate(`location.hash = ${JSON.stringify(shareUrl.hash)}; void 0`);
 		await waitFor('!!document.querySelector(".swal2-confirm")');
 		await evaluate('document.querySelector(".swal2-confirm").click()');
 		await waitFor('!location.hash');
-		assert.equal(await evaluate('document.querySelector(".CodeMirror").CodeMirror.getValue()'), code);
+		assert.equal(await evaluate('testEditor.getValue()'), code);
 		assert.equal(await evaluate('typeof sharedCodeRan'), 'undefined');
 		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), code);
 		await evaluate('location.hash = "#code=v1.bad"; void 0');
@@ -590,11 +591,11 @@ async function checkRenderer() {
 		assert.equal(await evaluate(`JSON.parse(localStorage.getItem(${JSON.stringify(draftKey)})).text`), code);
 		await evaluate('document.querySelector(".swal2-confirm").click(); window.onbeforeunload = null; void 0');
 		await window.loadURL(process.env.CROQUJS_TEST_URL);
-		await waitFor(`document.querySelector('.CodeMirror')?.CodeMirror.getValue() === ${JSON.stringify(code)}`);
+		await waitFor(`!!document.querySelector('.cm-content') && testEditor.getValue() === ${JSON.stringify(code)}`);
 		await evaluate('document.querySelector("[data-cmd=new]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!!document.querySelector(".swal2-confirm")');
 		await evaluate('document.querySelector(".swal2-confirm").click()');
-		await waitFor('document.querySelector(".CodeMirror").CodeMirror.getValue() === ""');
+		await waitFor('testEditor.getValue() === ""');
 		for (const [browserLanguage, language, label, untitled, message] of [
 			['ja-JP', 'ja', '制限モード', '名称未設定', 'この環境では、ローカルファイルの読み込み・保存は利用できません。'],
 			['fr-FR', 'en', 'Limited Mode', 'Untitled', 'Opening and saving local files is unavailable in this environment.'],
@@ -604,7 +605,7 @@ async function checkRenderer() {
 			contents.on('console-message', event => {
 				if (event.level === 'error') errors.push(event.message);
 			});
-			const read = code => contents.executeJavaScript(code, true);
+			const read = code => contents.executeJavaScript(editorDriver + code, true);
 			try {
 				await limited.loadURL('about:blank');
 				contents.debugger.attach('1.3');
@@ -629,7 +630,7 @@ async function checkRenderer() {
 					await read('document.querySelector("dialog [data-action=cancel]").click()');
 					await waitFor('!document.querySelector("dialog")', contents);
 				}
-				await read('document.querySelector(".CodeMirror").CodeMirror.replaceRange("// limited", { line: 0, ch: 0 }, undefined, "+input"); void 0');
+				await read('testEditor.replaceRange("// limited", { line: 0, ch: 0 }, undefined, "+input"); void 0');
 				const otherLanguage = language === 'ja' ? 'en-US' : 'ja-JP';
 				await read(`sessionStorage.setItem('test-browser-language', ${JSON.stringify(otherLanguage)})`);
 				await read('window.onbeforeunload = null; void 0');
@@ -665,7 +666,7 @@ async function checkRenderer() {
 		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('readyWaitCanceled');
 		await evaluate(`readyWaitCallback();
-			document.querySelector('.CodeMirror').CodeMirror.replaceRange('// after stop', { line: 0, ch: 0 }, undefined, '+input');
+			testEditor.replaceRange('// after stop', { line: 0, ch: 0 }, undefined, '+input');
 			window.setTimeout = originalSetTimeout;
 			window.clearTimeout = originalClearTimeout;
 			BroadcastChannel.prototype.postMessage = originalChannelPost;

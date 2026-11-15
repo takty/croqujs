@@ -3,10 +3,10 @@ import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 export function rendererResources({ web }) {
-	const editor = fileURLToPath(new URL('./', import.meta.resolve('croq-mirror')));
+	const editor = fileURLToPath(new URL('./', import.meta.resolve('opticm')));
 	const files = new Map([
-		['assets/croq-mirror.min.css', path.join(editor, 'croq-mirror.min.css')],
-		['assets/licenses/croq-mirror-LICENSE', path.join(editor, '../LICENSE')],
+		['assets/opticm.min.css', path.join(editor, 'opticm.min.css')],
+		['assets/licenses/opticm-LICENSE', path.join(editor, '../LICENSE')],
 		['assets/licenses/sweetalert2-LICENSE', fileURLToPath(new URL('../LICENSE', import.meta.resolve('sweetalert2')))],
 		['assets/licenses/jssha-LICENSE', fileURLToPath(new URL('../LICENSE', import.meta.resolve('jssha')))],
 	]);

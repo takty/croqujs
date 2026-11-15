@@ -10,9 +10,9 @@ test('Study bundles UI styles into one stylesheet separate from Field', async ()
 	const styles = async entry => {
 		const url = new URL(entry, app);
 		const html = await readFile(url, 'utf8');
-		if (entry === 'index.html') assert.match(html, /croq-mirror\.min\.css/);
+		if (entry === 'index.html') assert.match(html, /opticm\.min\.css/);
 		return [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)]
-			.map(([, href]) => new URL(href, url)).filter(url => url.pathname.includes('/assets/') && !url.pathname.endsWith('/croq-mirror.min.css'));
+			.map(([, href]) => new URL(href, url)).filter(url => url.pathname.includes('/assets/') && !url.pathname.endsWith('/opticm.min.css'));
 	};
 	const study = await styles('index.html');
 	const field = await styles('field/index.html');
@@ -30,7 +30,7 @@ test('both renderer HTML entries resolve to complete local Vite asset graphs', a
 		assert.equal(manifest[entry].isEntry, true);
 		const url = new URL(entry, app);
 		const html = await readFile(url, 'utf8');
-		if (entry === 'index.html') assert.match(html, /croq-mirror\.min\.css/);
+		if (entry === 'index.html') assert.match(html, /opticm\.min\.css/);
 		assert.match(html, /<script type="module"[^>]+src="(?:\.\.\/|\.\/)assets\//);
 		for (const [, relative] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
 			assert.equal(relative.startsWith('/'), false, relative);
@@ -52,7 +52,7 @@ test('main, preload, runtime injection, and bundled editor worker survive render
 	}
 	new vm.Script(await readFile(new URL('electron/preload.js', app), 'utf8'));
 	new vm.Script(await readFile(new URL('assets/injection.js', app), 'utf8'));
-	for (const file of ['assets/croq-mirror.min.css', 'assets/licenses/croq-mirror-LICENSE',
+	for (const file of ['assets/opticm.min.css', 'assets/licenses/opticm-LICENSE',
 		'assets/licenses/jssha-LICENSE']) {
 		await access(new URL(file, app));
 	}

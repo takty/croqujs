@@ -113,8 +113,8 @@
 	src        : url('res/LaMono-Bold.ttf') format('truetype');
 }
 
-#editor .croq-mirror {
-	--croq-mirror-font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
+#editor .opticm {
+	--opticm-font-console: Inconsolata, 'Hiragino Sans', "Yu Gothic UI", "Meiryo UI", monospace;
 }
 
 html, body {

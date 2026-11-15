@@ -18,7 +18,7 @@ import { DialogBox } from './ui/dialog-box.js';
 import { OutputPane } from './ui/output-pane.js';
 import { Splitter } from './ui/splitter.js';
 import { WebDraft } from './web-draft.js';
-import { createEditor } from 'croq-mirror';
+import { createEditor } from 'opticm';
 import './style.css';
 
 async function loadJSON(fileNames) {
@@ -280,6 +280,7 @@ export class Study {
 		this._editor = await createEditor(document.querySelector('#editor'), {
 			language  : this._lang,
 			fontFamily: this._res.fontSet,
+			easyLineSelection: true,
 		});
 		this._editor.on('change', (event) => {
 			this._clearErrorMarker();
@@ -366,6 +367,7 @@ export class Study {
 			lineHeight         : parseInt(cfg.lineHeight, 10),
 			fontSize           : parseInt(cfg.fontSize, 10),
 			functionLineNumbers: cfg.functionLineNumber,
+			functionScrollMarkers: cfg.functionLineNumber,
 			autoIndent         : cfg.autoIndent,
 		});
 
@@ -531,7 +533,7 @@ export class Study {
 	executeCommand(cmd, close = true) {
 		if (cmd === 'run' && this._session.prepareRun?.() === false) return;
 		if (close) this._sideMenu.close();
-		this._editor.setLineSelectionMode(false);
+		this._editor.setEasyLineSelectionMode(false);
 
 		if (import.meta.env.MODE === 'web' && (cmd === 'copyShareLink' || cmd === 'copyShareQr')) {
 			this._copyShare(cmd === 'copyShareQr');
