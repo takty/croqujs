@@ -23,6 +23,9 @@ test('web output resolves local assets and includes versioned resources without 
 	}
 	await access(new URL('assets/opticm.min.css', root));
 	await access(new URL('assets/licenses/lean-qr-LICENSE', root));
+	await access(new URL('assets/licenses/lws-LICENSE', root));
+	const workerMap = JSON.parse(await readFile(new URL('url-provider-worker.js.map', root), 'utf8'));
+	assert.ok(workerMap.sources.some(source => source.replaceAll('\\', '/').includes('/node_modules/lws/src/lws-sw.js')));
 	await assert.rejects(access(new URL('lib/', root)), { code: 'ENOENT' });
 });
 
@@ -93,6 +96,7 @@ test('renderer bundles select only the session implementation for their build ta
 		assert.ok(!sources.some(source => source.endsWith('/' + excluded)), directory);
 		assert.equal(sources.some(source => source.endsWith('/project-dialog.js')), directory === 'dist-web');
 		assert.equal(sources.some(source => source.replaceAll('\\', '/').includes('/lean-qr/')), directory === 'dist-web');
+		assert.equal(sources.some(source => source.replaceAll('\\', '/').includes('/node_modules/lws/src/lws.js')), directory === 'dist-web');
 	}
 });
 

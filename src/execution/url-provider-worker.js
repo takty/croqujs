@@ -1,3 +1,1 @@
-import { installLwsWorker } from '../lib/lws-sw.js';
-
-installLwsWorker({ namespace: 'croqujs-execution' });
+import 'lws/src/lws-sw.js';

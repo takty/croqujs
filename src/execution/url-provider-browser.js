@@ -5,7 +5,7 @@
  * @version 2026-11-06
  */
 
-import { Lws } from '../lib/lws.js';
+import { Lws } from 'lws/src/lws.js';
 
 export class LibraryError extends Error {}
 

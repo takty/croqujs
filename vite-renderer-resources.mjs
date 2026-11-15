@@ -12,6 +12,7 @@ export function rendererResources({ web }) {
 	]);
 	if (web) {
 		files.set('assets/licenses/lean-qr-LICENSE', fileURLToPath(new URL('./LICENSE', import.meta.resolve('lean-qr/nano'))));
+		files.set('assets/licenses/lws-LICENSE', fileURLToPath(new URL('../LICENSE', import.meta.resolve('lws/src/lws.js'))));
 	}
 	const ready = (async () => {
 		const directory = path.join(editor, 'licenses');

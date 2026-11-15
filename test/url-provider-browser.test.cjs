@@ -32,6 +32,7 @@ async function checkProvider() {
 	let execution = new BrowserWindow(options);
 	try {
 		await host.loadURL(`http://127.0.0.1:${server.address().port}/`);
+		const initialCaches = await host.webContents.executeJavaScript('caches.keys()');
 		const urls = await host.webContents.executeJavaScript(`(async () => {
 			const { BrowserUrlProvider } = await import('/app/execution/url-provider-browser.js');
 			const { BrowserExporter } = await import('/app/project/exporter-browser.js');
@@ -141,13 +142,10 @@ async function checkProvider() {
 		assert.equal(changed.raw, 'window.rawValue = 8;');
 		await host.webContents.executeJavaScript(`files.remove('project/new.txt')`);
 		assert.equal(await execution.webContents.executeJavaScript(`fetch('new.txt').then(response => response.status)`), 404);
-		const cached = await host.webContents.executeJavaScript(`(async () => {
-			const names = await caches.keys();
-			return (await Promise.all(names.map(async name => (await (await caches.open(name)).keys()).map(request => new URL(request.url).pathname.split('/').pop())))).flat().sort();
-		})()`);
-		assert.deepEqual(cached, ['helper.lib.js', 'index.html', 'index.html']);
+		const cached = await host.webContents.executeJavaScript(`caches.keys()`);
+		assert.deepEqual(cached.sort(), initialCaches.sort());
 
-		// Terminate the running worker; the next navigation must recover content from Cache Storage.
+		// The owner remains open while the worker is stopped and restarted.
 		execution.destroy();
 		host.webContents.debugger.attach('1.3');
 		await host.webContents.debugger.sendCommand('ServiceWorker.enable');
@@ -183,24 +181,30 @@ async function checkProvider() {
 			await second.dispose();
 			await first.dispose();
 			return { rejected, unchanged: JSON.stringify(before) === JSON.stringify(after), remaining: await caches.keys(), mappings: await new Promise((resolve, reject) => {
-				const request = indexedDB.open('croqujs-execution-v1', 1);
+				const request = indexedDB.open('lws-v2', 1);
 				request.onerror = () => reject(request.error);
 				request.onsuccess = () => {
 					const db = request.result;
 					const transaction = db.transaction('runs');
-					const count = transaction.objectStore('runs').count();
-					transaction.oncomplete = () => { db.close(); resolve(count.result); };
+					const entries = transaction.objectStore('runs').getAll();
+					transaction.oncomplete = () => { db.close(); resolve(entries.result.filter(run => run.namespace === 'croqujs-execution' && run.scope === new URL('/app/__croqujs_run__/', location.href).href).length); };
 				};
 			}) };
 		})()`);
 		assert.equal(failures.rejected, true);
 		assert.equal(failures.unchanged, true);
-		assert.deepEqual(failures.remaining, []);
+		assert.ok(!failures.remaining.some(name => name.startsWith('croqujs-execution-v1:')));
 		assert.equal(failures.mappings, 0);
+		assert.equal(await execution.webContents.executeJavaScript('fetch(location.href).then(response => response.status)'), 404);
+
+		const orphan = await host.webContents.executeJavaScript(`second.createUrl('window.result = 73;', null)`);
+		await execution.loadURL(orphan);
+		assert.equal(await execution.webContents.executeJavaScript('window.result'), 73);
+		host.destroy();
 		assert.equal(await execution.webContents.executeJavaScript('fetch(location.href).then(response => response.status)'), 404);
 	} finally {
 		if (!execution.isDestroyed()) execution.destroy();
-		host.destroy();
+		if (!host.isDestroyed()) host.destroy();
 		await new Promise(resolve => server.close(resolve));
 	}
 }

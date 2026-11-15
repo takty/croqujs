@@ -1146,6 +1146,7 @@ __metadata:
     fs-nw: "github:takty/fs-nw#main"
     jssha: "npm:^3.3.2"
     lean-qr: "npm:2.7.4"
+    lws: "github:takty/lws#main"
     opticm: "github:takty/opticm#main"
     sweetalert2: "npm:11.26.25"
     vite: "npm:^8.3.8"
@@ -2355,6 +2356,13 @@ __metadata:
   dependencies:
     yallist: "npm:^4.0.0"
   checksum: 10c0/cb53e582785c48187d7a188d3379c181b5ca2a9c78d2bce3e7dee36f32761d1c42983da3fe12b55cb74e1779fa94cdc2e5367c028a9b35317184ede0c07a30a9
+  languageName: node
+  linkType: hard
+
+"lws@github:takty/lws#main":
+  version: 1.0.0
+  resolution: "lws@https://github.com/takty/lws.git#commit=963d607c36941fb1215be1378e24a9960daf883b"
+  checksum: 10c0/eba854f3c1911ce22a215d512a52b8293cbaf3e3df65e58697e95f476f544bdea993f377038a6a5a65e38f0e3418cc8db40055120d551c6ebed6395da5d43b76
   languageName: node
   linkType: hard
 

@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => {
 				root,
 				fileURLToPath(new URL('./', import.meta.resolve('opticm'))),
 				fileURLToPath(new URL('./', import.meta.resolve('fs-nw/web'))),
+				fileURLToPath(new URL('./', import.meta.resolve('lws/src/lws.js'))),
 			] },
 		},
 		preview: { open: '/' },

@@ -24,6 +24,7 @@
 		"acorn-walk": "8.3.5",
 		"opticm": "github:takty/opticm#main",
 		"fs-nw": "github:takty/fs-nw#main",
+		"lws": "github:takty/lws#main",
 		"jssha": "^3.3.2",
 		"lean-qr": "2.7.4",
 		"sweetalert2": "11.26.25"

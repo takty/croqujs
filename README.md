@@ -231,11 +231,11 @@ cleanup behavior. Each provider defines and exports its own `LibraryError` class
 
 `BrowserUrlProvider` in `src/execution/url-provider-browser.js` generates execution
 content with BrowserExporter and publishes it through the local web server client
-in `src/lib/lws.js`. The client registers `url-provider-worker.js`, which installs
-the reusable worker from `src/lib/lws-sw.js` with Croqujs's namespace. The client
-returns a URL after the worker has stored the generated files in Cache Storage and
-the source mapping in IndexedDB. No generated files are saved through the supplied
-filesystem.
+from `github:takty/lws#main`, pinned in `yarn.lock`. The client registers
+`url-provider-worker.js`, which bundles the library's worker and uses Croqujs's
+namespace for execution metadata. Generated files and source mappings stay in the
+publishing Study page's memory; IndexedDB stores only execution ownership metadata.
+No generated files are saved through the supplied filesystem or Cache Storage.
 
 For any other request, the worker reads the file at request time from the supplied
 WebFileSystem root handle. Explicit `sources` mappings take precedence over
@@ -275,19 +275,20 @@ files take precedence over source files at the same URL.
 The worker controls execution pages, not the host editor. Use the returned URL
 for an iframe or window navigation; a fetch from an uncontrolled host page does
 not use this worker. The scope must not overlap a more specific worker intended
-to control these execution pages.
+to control these execution pages. Keep the publishing Study page open and responsive
+while its execution URLs are in use.
 
 Serve the built modules with JavaScript content types over HTTPS or localhost;
 `file:` URLs are not supported. See the
 [ServiceWorkerContainer.register documentation](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerContainer/register)
 for the registration and scope requirements. Bundle the browser modules and
 worker when using these source APIs independently. The web build includes the
-provider in Study and emits its worker under `assets/`.
+provider in Study and emits its worker at the deployment root.
 
 Await each operation on a provider before starting another. A successful
 replacement invalidates its previous URL; a failed generation or registration
 keeps that URL. Different providers use separate run IDs, even for the same
-session ID. `dispose()` removes that provider's cache and source mapping and is repeatable;
+session ID. `dispose()` removes that provider's execution and metadata and is repeatable;
 it leaves the shared worker registration in place. Missing or disposed generated
 resources return 404, and only GET/HEAD are supported. The same applies to static
 files after disposal: they cannot be reached through an expired execution URL.
@@ -297,15 +298,18 @@ parent navigation out of the execution URL directory is not mapped to source fil
 Permission-denied reads return 403; requesting renewed permission belongs to the
 host UI, not the worker.
 
-Cache Storage preserves generated content across worker stop/start cycles. This
-is execution storage, not an explicit user export or a guarantee against browser
-storage eviction. The caller must dispose sessions: after an abrupt host closure,
-cached runs and source mappings may remain. Directory handles and path mappings
-are retained in IndexedDB across worker restarts; static file contents are not.
-The WebFileSystem `getDirectoryHandle()` method exposes the root handle for
-this purpose. See the [File System API documentation](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API)
-for handle serialization. Automatic cleanup of abandoned sessions and restoration
-of the host's provider objects after reload are not implemented.
+The worker can restart while the publishing Study page remains open. Closing or
+reloading that page invalidates its execution URLs; the worker removes abandoned
+metadata when those URLs are requested. The WebFileSystem `getDirectoryHandle()`
+method exposes the root handle for file access. See the
+[File System API documentation](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API)
+for handle serialization.
+
+The new worker does not use or automatically delete the former
+`croqujs-execution-v1` IndexedDB database and Cache Storage entries. Existing
+execution URLs from the old worker cannot be transferred to the new worker; rerun
+them after updating. Old storage can be removed separately when no old executions
+need it.
 
 After `node build.mjs`, run:
 
@@ -324,5 +328,6 @@ The browser URL test opens the returned URLs in hidden Chromium windows, execute
 their generated scripts, stops the Service Worker and reloads, then verifies URL
 replacement, independent sessions, failed registration, and disposal. It also
 checks real OPFS data and images, changes/additions/deletions during execution,
-byte-range responses, source mappings after worker restart, and the absence of
-static files from Cache Storage. Native picker permission renewal is not covered.
+byte-range responses, source mappings after worker restart, owner-page closure,
+and the absence of generated files from Cache Storage. Native picker permission
+renewal is not covered.

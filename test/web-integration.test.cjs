@@ -140,10 +140,26 @@ async function checkRenderer() {
 		await evaluate(`testEditor.setValue('throw new Error("web-error");')`);
 		await evaluate('document.querySelector(".toolbar [data-cmd=run]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('document.querySelector("#output-pane").textContent.includes("web-error")');
+		const activeRuns = `(new Promise((resolve, reject) => {
+			const request = indexedDB.open('lws-v2');
+			request.onerror = () => reject(request.error);
+			request.onsuccess = () => {
+				const db = request.result;
+				const transaction = db.transaction('runs');
+				const runs = transaction.objectStore('runs').getAll();
+				transaction.oncomplete = () => {
+					db.close();
+					resolve(runs.result.filter(run => run.namespace === 'croqujs-execution' &&
+						run.scope === new URL('__croqujs_run__/', document.baseURI).href).length);
+				};
+				transaction.onabort = () => { db.close(); reject(transaction.error); };
+			};
+		}))`;
+		await waitFor(`${activeRuns}.then(count => count > 0)`);
 		await evaluate('document.querySelector("[data-cmd=stop]").dispatchEvent(new MouseEvent("mouseup", { bubbles: true }))');
 		await waitFor('!document.querySelector("iframe")', field.webContents);
 		assert.equal(field.isDestroyed(), false);
-		await waitFor('(async () => (await caches.keys()).filter(name => name.startsWith("croqujs-execution-v1:")).length === 0)()');
+		await waitFor(`${activeRuns}.then(count => count === 0)`);
 		await evaluate(`window.fieldClosed = false;
 			window.fieldObserver = new BroadcastChannel(${JSON.stringify('croqujs-iwc:#session_' + new URL(field.webContents.getURL()).hash.slice(1).split(',')[0])});
 			fieldObserver.onmessage = event => { if (JSON.parse(event.data.payload).type === 'closed') window.fieldClosed = true; }; void 0;`);
