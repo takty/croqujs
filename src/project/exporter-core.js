@@ -88,9 +88,9 @@ export class ExporterCore {
 	}
 
 	/** Generate library text without writing files. filePath supplies the dependency base directory. */
-	async createLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded = false) {
+	async createLibrary(codeText, filePath, nameSpace, isUseDecIncluded = false) {
 		let inc = '';
-		const exportedSymbols = codeStructure.fnNames.slice(0);
+		const { fnNames: exportedSymbols } = analyze(codeText);
 
 		if (isUseDecIncluded) {
 			const lines    = codeText.split('\n');

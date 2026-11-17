@@ -325,9 +325,9 @@ app.whenReady().then(async () => {
 			return checks;
 		})()`);
 		const exported = calls.find(call => call.method === 'doExportAsLibrary');
-		if (!exported || exported.args[0] !== JSON.parse(exported.args[3]).text) throw new Error('Export source and analysis are not matched');
-		if (!JSON.parse(exported.args[3]).fnNames.includes('exported')) throw new Error('Export did not use current analysis');
-		checks.push('Export uses the matching current source and analysis');
+		const exportArgs = ['function exported() { return 3; }', 'Example', false];
+		if (!exported || JSON.stringify(exported.args) !== JSON.stringify(exportArgs)) throw new Error('Export did not send the current source, name and option');
+		checks.push('Export sends the current source, name and option');
 		for (const method of ['doSave', 'doRun']) {
 			const call = calls.find(call => call.method === method);
 			if (!call || call.args[0] !== exported.args[0]) throw new Error(method + ' did not receive the current document');

@@ -36,7 +36,7 @@ export function analyze(code) {
 			},
 			VariableDeclaration: (node, state, c) => {  // const f = function () {...};
 				for (let d of node.declarations) {
-					if (d.init !== null && (d.init.type === FE || d.init.type === AFE || d.init.type === CE)) {
+					if (d.id.type === ID && d.init !== null && (d.init.type === FE || d.init.type === AFE || d.init.type === CE)) {
 						fnNames.push(d.id.name);
 					}
 				}

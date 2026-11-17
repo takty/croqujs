@@ -10,8 +10,8 @@ import { ExporterCore } from './exporter-core.js';
 /** Saves generated content through the supplied filesystem. */
 export class NodeExporter extends ExporterCore {
 
-	async exportAsLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded = false) {
-		const [success, content] = await this.createLibrary(codeText, filePath, nameSpace, codeStructure, isUseDecIncluded);
+	async exportAsLibrary(codeText, filePath, nameSpace, isUseDecIncluded = false) {
+		const [success, content] = await this.createLibrary(codeText, filePath, nameSpace, isUseDecIncluded);
 		if (!success) {
 			return [false, content];
 		}

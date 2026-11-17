@@ -1,6 +1,6 @@
 {
 	"passed": true,
-	"electron": "45.2.1",
+	"electron": "45.3.0",
 	"checks": [
 		"Study and all UI components share one bundled stylesheet",
 		"Output error opens the pane through the host callback",
@@ -51,6 +51,9 @@
 		"Host selects Inconsolata",
 		"Host switches to LaMono",
 		"Host restores Inconsolata",
+		"Easy line selection is enabled",
+		"Function line numbers enable scroll markers",
+		"Disabling function line numbers also disables scroll markers",
 		"No legacy editor library globals",
 		"Initial document is not marked modified",
 		"Editing marks document modified and enables undo",
@@ -72,8 +75,8 @@
 		"Out-of-range error line is clamped through public API",
 		"Public clipboard events update host state before cutting",
 		"Host clipboard commands reach component",
-		"SKIPPED: real paste check requires nonempty system clipboard text",
-		"Export uses the matching current source and analysis",
+		"Toolbar inserts actual system clipboard text through the original editor command",
+		"Export sends the current source, name and option",
 		"Save and run receive the component document"
 	]
 }

@@ -317,7 +317,7 @@ export class SessionLocal {
 		}
 	}
 
-	async doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
+	async doExportAsLibrary(text, libName, isUseDecIncluded) {
 		if (!this.#filePath) return this.#unsupported();
 		try {
 			await this.#requireWrite();
@@ -325,7 +325,7 @@ export class SessionLocal {
 			const name = libName.replace(/[ .+\/\\-]/g, '_');
 			const path = files.joinPath(files.directoryName(this.#filePath), name + '.lib.js');
 			const [success, content] = await new BrowserExporter(files).createLibrary(
-				text, this.#filePath, name.toUpperCase(), JSON.parse(jsonCodeStructure), isUseDecIncluded);
+				text, this.#filePath, name.toUpperCase(), isUseDecIncluded);
 			if (!success) throw new Error('Could not export: ' + content);
 			await files.writeText(path, content);
 			return ['success_export', 'exportedAsLibrary'];

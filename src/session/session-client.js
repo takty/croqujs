@@ -93,8 +93,8 @@ export class SessionClient {
 		return this.#invoke('doExportAsWebPage', text);
 	}
 
-	doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
-		return this.#invoke('doExportAsLibrary', text, libName, isUseDecIncluded, jsonCodeStructure);
+	doExportAsLibrary(text, libName, isUseDecIncluded) {
+		return this.#invoke('doExportAsLibrary', text, libName, isUseDecIncluded);
 	}
 
 	doRun(text) {

@@ -87,13 +87,14 @@ test('explicit content excludes runtime hooks and generates a usable library', a
 	assert.equal(success, true);
 	assert.equal(page.files.has('lib/injection.js'), false);
 	assert.doesNotMatch(page.files.get('index.html'), /injection/);
-	const structure = { fnNames: ['run'] };
-	const [ok, library] = await exporter.createLibrary(code, 'project/bundle.js', 'BUNDLE', structure, true);
+	const source = code + '\nconst arrow = () => 7;\nclass Example {}\nconst { name } = function internal() {};';
+	const [ok, library] = await exporter.createLibrary(source, 'project/bundle.js', 'BUNDLE', true);
 	assert.equal(ok, true);
-	assert.deepEqual(structure, { fnNames: ['run'] });
 	const context = {};
 	vm.runInNewContext(library, context);
+	assert.deepEqual(Object.keys(context.BUNDLE), ['run', 'arrow', 'Example', 'HELPERS']);
 	assert.equal(context.BUNDLE.run(), 6);
+	assert.equal(context.BUNDLE.arrow(), 7);
 	assert.equal(context.BUNDLE.HELPERS.twice(5), 10);
 });
 
@@ -117,7 +118,7 @@ test('missing dependencies and injection retain failure paths', async () => {
 	assert.deepEqual(await exporter.exportForExecution('', null), [false, 'lib/injection.js']);
 	assert.deepEqual(await exporter.createWebPage('// @need missing.js', 'main.js'), [false, 'missing.js']);
 	assert.deepEqual(await exporter.createWebPage('// @use missing.js', 'main.js'), [false, 'missing.js']);
-	assert.deepEqual(await exporter.createLibrary('// @use missing.js', 'bundle.js', 'BUNDLE', { fnNames: [] }, true), [false, 'missing.js']);
+	assert.deepEqual(await exporter.createLibrary('// @use missing.js', 'bundle.js', 'BUNDLE', true), [false, 'missing.js']);
 	assert.deepEqual(await exporter.createWebPage('// @need local.js', null), [false, 'local.js']);
 	assert.deepEqual(await exporter.createWebPage('// @use https://example.com/lib.js', 'main.js'), [false, 'https://example.com/lib.js']);
 	assert.equal((await exporter.createWebPage('// @import https://example.com/lib.js', null))[0], true);
@@ -149,7 +150,7 @@ test('Node saves the same content, separates runtime from export', async t => {
 	for (const [relative, text] of page.files) assert.equal(await files.readText('runtime/' + relative.slice('project/'.length)), text);
 	assert.deepEqual(await exporter.exportAsWebPage(code, 'project/main.js', 'saved'), [true, 'saved/index.html']);
 	assert.equal(await files.exists('saved/lib/injection.js'), false);
-	assert.deepEqual(await exporter.exportAsLibrary(code, 'project/bundle.js', 'BUNDLE', { fnNames: ['run'] }, true), [true, 'project/bundle.js']);
+	assert.deepEqual(await exporter.exportAsLibrary(code, 'project/bundle.js', 'BUNDLE', true), [true, 'project/bundle.js']);
 	const context = {};
 	vm.runInNewContext(await files.readText('project/bundle.js'), context);
 	assert.equal(context.BUNDLE.run(), 6);
@@ -169,7 +170,7 @@ test('filesystem write errors propagate to the caller', async () => {
 	files.writeText = async () => { throw failure; };
 	const exporter = new NodeExporter(files);
 	await assert.rejects(exporter.exportAsWebPage('', null, 'output'), error => error === failure);
-	await assert.rejects(exporter.exportAsLibrary('', 'output.js', 'OUT', { fnNames: [] }), error => error === failure);
+	await assert.rejects(exporter.exportAsLibrary('', 'output.js', 'OUT'), error => error === failure);
 });
 
 

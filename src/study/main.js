@@ -653,8 +653,7 @@ export class Study {
 		const { value: [libName, flag] } = await this._dialogBox.showPromptWithOption(this._res.msg.enterLibName, '', this._res.msg.libName, this._name, this._res.msg.includeUsedLibs);
 		if (libName) {
 			try {
-				const snapshot   = await this._editor.analyzeNow();
-				const [msg, arg] = await this._session.doExportAsLibrary(snapshot.text, libName, flag, JSON.stringify(snapshot));
+				const [msg, arg] = await this._session.doExportAsLibrary(this._editor.getValue(), libName, flag);
 				this._handleServerResponse(msg, arg);
 			} catch (error) {
 				await this._dialogBox.showAlert(this._res.msg.error + error.message, 'error');

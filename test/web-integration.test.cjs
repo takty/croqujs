@@ -382,7 +382,7 @@ async function checkRenderer() {
 				const web = await session.doExportAsWebPage('// @need ../support.js\\nfunction hello() {}');
 				const html = await files.readText('sample/main.export/index.html');
 				const support = await files.readText('sample/main.export/_/support.js');
-				const library = await session.doExportAsLibrary('function hello() {}', 'hello', false, JSON.stringify({ fnNames: ['hello'] }));
+				const library = await session.doExportAsLibrary('function hello() {}', 'hello', false);
 				const libraryText = await files.readText('sample/hello.lib.js');
 				const failed = await session.doExportAsWebPage('// @need missing.js');
 				const preserved = await files.readText('sample/main.export/index.html') === html;

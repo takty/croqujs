@@ -47,7 +47,7 @@ for (const [label, create] of [
 		const context = {};
 		vm.runInNewContext(await files.readText('output/helper.lib.js'), context);
 		assert.equal(context.HELPERS.twice(3), 6);
-		assert.deepEqual(await exporter.exportAsLibrary(code, 'bundle.js', 'BUNDLE', { fnNames: ['run'] }, true), [true, 'bundle.js']);
+		assert.deepEqual(await exporter.exportAsLibrary(code, 'bundle.js', 'BUNDLE', true), [true, 'bundle.js']);
 		const library = {};
 		vm.runInNewContext(await files.readText('bundle.js'), library);
 		assert.equal(library.BUNDLE.run(), 6);

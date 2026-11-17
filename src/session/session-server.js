@@ -291,13 +291,12 @@ export class SessionServer {
 
 	}
 
-	async doExportAsLibrary(text, libName, isUseDecIncluded, jsonCodeStructure) {
-		const codeStructure = JSON.parse(jsonCodeStructure);
+	async doExportAsLibrary(text, libName, isUseDecIncluded) {
 		const name = libName.replace(' ', '_').replace('-', '_').replace('+', '_').replace('/', '_').replace('.', '_');
 		const expDir = FS.joinPath(FS.directoryName(this._filePath), name + '.lib.js');
 
 		try {
-			await this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), codeStructure, isUseDecIncluded);
+			await this._exporter.exportAsLibrary(text, expDir, name.toUpperCase(), isUseDecIncluded);
 			return ['success_export', 'exportedAsLibrary'];
 		} catch (e) {
 			return this._returnAlertError(e, expDir);
