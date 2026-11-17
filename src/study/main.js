@@ -45,7 +45,7 @@ export class Study {
 			: null;
 		this._session = new Session(this._id);
 		this._isLimitedMode = import.meta.env.MODE === 'web' &&
-			['showDirectoryPicker', 'showOpenFilePicker', 'showSaveFilePicker'].some(method => typeof window[method] !== 'function');
+			['showDirectoryPicker', 'showOpenFilePicker'].some(method => typeof window[method] !== 'function');
 		this._webAppDisplayMode = import.meta.env.MODE === 'web'
 			? window.matchMedia('(display-mode: standalone), (display-mode: window-controls-overlay)')
 			: null;

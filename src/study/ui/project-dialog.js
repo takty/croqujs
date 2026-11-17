@@ -14,30 +14,32 @@ function showProjectDialog({ res, root = null, open, saving = false, title, sugg
 	const labels = {
 		...res.projectDialog,
 		title: title || (saving ? res.projectDialog.saveTitle : res.projectDialog.openTitle),
-		file: saving ? res.projectDialog.destination : res.projectDialog.file,
 		open: saving ? res.projectDialog.save : res.projectDialog.open,
 		cancel: res.btn.cancel,
 	};
 	const dialog = document.createElement('dialog');
 	dialog.className = 'project-dialog';
 	dialog.setAttribute('aria-labelledby', 'project-title');
+	const destination = saving
+		? '<p><label><span data-label="destination"></span><input type="text" data-action="file" spellcheck="false" autocomplete="off"></label></p>'
+		: '<p><button type="button" data-action="file"></button><output data-value="file"></output></p>';
 	dialog.innerHTML = '<h2 id="project-title"></h2>' +
 		'<p><button type="button" data-action="root"></button><output data-value="root"></output></p>' +
-		'<p><button type="button" data-action="file"></button><output data-value="file"></output></p>' +
-		'<p role="alert"></p><footer><button type="button" data-action="cancel"></button>' +
+		destination + '<p role="alert"></p><footer><button type="button" data-action="cancel"></button>' +
 		'<button type="button" data-action="open"></button></footer>';
 	const button = action => dialog.querySelector('[data-action="' + action + '"]');
-	for (const action of ['root', 'file', 'cancel', 'open']) button(action).textContent = labels[action];
+	for (const action of ['root', 'cancel', 'open']) button(action).textContent = labels[action];
+	const file = button('file');
 	dialog.querySelector('h2').textContent = labels.title;
 	const error = dialog.querySelector('[role="alert"]');
-	const supported = typeof window.showDirectoryPicker === 'function' && typeof window[saving ? 'showSaveFilePicker' : 'showOpenFilePicker'] === 'function';
+	const supported = typeof window.showDirectoryPicker === 'function' && (saving || typeof window.showOpenFilePicker === 'function');
 	let filePath = null, busy = false, result = null;
 	const update = () => {
 		button('root').disabled = busy || !supported;
-		button('file').disabled = busy || !supported || !root;
-		button('open').disabled = busy || !filePath;
+		file.disabled = busy || !supported || !root;
+		button('open').disabled = file.disabled || !(saving ? file.value.trim() : filePath);
 		dialog.querySelector('[data-value="root"]').textContent = root?.name ?? labels.empty;
-		dialog.querySelector('[data-value="file"]').textContent = filePath ?? droppedFile?.name ?? labels.empty;
+		if (!saving) dialog.querySelector('[data-value="file"]').textContent = filePath ?? droppedFile?.name ?? labels.empty;
 	};
 	const perform = async action => {
 		if (busy) return;
@@ -66,28 +68,36 @@ function showProjectDialog({ res, root = null, open, saving = false, title, sugg
 			splitPath(filePath, false);
 		}
 	});
-	button('file').onclick = () => perform(async () => {
-		const options = {
-			startIn: root, excludeAcceptAllOption: true,
-			types: [{ description: labels.fileType, accept: { 'text/javascript': ['.js'] } }],
+	if (saving) {
+		dialog.querySelector('[data-label="destination"]').textContent = labels.destination;
+		file.value = suggestedName;
+		file.oninput = () => {
+			error.textContent = '';
+			update();
 		};
-		const selected = saving
-			? await window.showSaveFilePicker({ ...options, suggestedName })
-			: (await window.showOpenFilePicker({ ...options, multiple: false }))[0];
-		const parts = await root.resolve(selected);
-		if (!dialog.open) return;
-		if (!parts?.length) throw new Error(labels.outside);
-		if (!selected.name.toLowerCase().endsWith('.js')) throw new Error(labels.script);
-		const relative = parts.join('/');
-		splitPath(relative, false);
-		filePath = relative;
-		droppedFile = null;
-	});
+	} else {
+		file.textContent = labels.file;
+		file.onclick = () => perform(async () => {
+			const [selected] = await window.showOpenFilePicker({
+				startIn: root, excludeAcceptAllOption: true, multiple: false,
+				types: [{ description: labels.fileType, accept: { 'text/javascript': ['.js'] } }],
+			});
+			const parts = await root.resolve(selected);
+			if (!dialog.open) return;
+			if (!parts?.length) throw new Error(labels.outside);
+			if (!selected.name.toLowerCase().endsWith('.js')) throw new Error(labels.script);
+			const relative = parts.join('/');
+			splitPath(relative, false);
+			filePath = relative;
+			droppedFile = null;
+		});
+	}
 	button('open').onclick = () => perform(async () => {
 		// Keep the modal open if reading or writing fails, so the selection can be corrected.
 		button('cancel').disabled = true;
 		try {
-			result = await open(root, filePath);
+			const path = saving ? getSavePath(file.value, labels) : filePath;
+			result = await open(root, path);
 			dialog.close();
 		} finally {
 			button('cancel').disabled = false;
@@ -115,4 +125,16 @@ function showProjectDialog({ res, root = null, open, saving = false, title, sugg
 		}, { once: true });
 		dialog.showModal();
 	});
+}
+
+function getSavePath(value, labels) {
+	let name;
+	try {
+		name = splitPath(value, false).at(-1);
+	} catch {
+		throw new Error(labels.invalidDestination);
+	}
+	if (!name.includes('.')) return value + '.js';
+	if (!name.toLowerCase().endsWith('.js')) throw new Error(labels.script);
+	return value;
 }

@@ -398,26 +398,35 @@ async function checkRenderer() {
 				root.requestPermission = originalPermission;
 				const text = await files.readText('sample/main.js');
 				const originalDirectoryPicker = window.showDirectoryPicker;
-				const originalSavePicker = window.showSaveFilePicker;
+				const originalConfirm = window.confirm;
 				window.showDirectoryPicker = async () => root;
-				let destination = await root.getFileHandle('first.js', { create: true });
-				window.showSaveFilePicker = async () => destination;
 				const button = action => document.querySelector('dialog [data-action="' + action + '"]');
+				const enterPath = path => {
+					button('file').value = path;
+					button('file').dispatchEvent(new Event('input'));
+				};
 				const fresh = makeSession('untitled-test');
 				let pending = fresh.doSave('first');
 				await button('root').onclick();
-				await button('file').onclick();
+				enterPath('cancelled.js');
+				const existsBeforeCancel = await files.exists('cancelled.js');
+				button('cancel').click();
+				await pending;
+				const existsAfterCancel = await files.exists('cancelled.js');
+				pending = fresh.doSave('first');
+				await button('root').onclick();
+				enterPath('first');
+				const existsBeforeSave = await files.exists('first.js');
 				await button('open').onclick();
 				if (document.querySelector('dialog')?.open) throw new Error(document.querySelector('dialog [role=alert]').textContent || 'Save did not complete');
 				const untitled = await pending;
 				const secondRoot = await (await navigator.storage.getDirectory()).getDirectoryHandle('saving-second', { create: true });
 				const secondFiles = new WebFileSystem(secondRoot);
 				window.showDirectoryPicker = async () => secondRoot;
-				destination = await secondRoot.getFileHandle('copy.js', { create: true });
 				pending = fresh.doSaveCopy('copied');
 				const fixedRoot = button('root').disabled;
 				await button('root').onclick();
-				await button('file').onclick();
+				enterPath('copy.js');
 				await button('open').onclick();
 				if (document.querySelector('dialog')?.open) throw new Error(document.querySelector('dialog [role=alert]').textContent || 'Save did not complete');
 				const copy = await pending;
@@ -425,22 +434,32 @@ async function checkRenderer() {
 				const originalText = await files.readText('first.js');
 				const copyText = await secondFiles.readText('copy.js');
 				pending = fresh.doSaveAs('renamed');
-				destination = await (await navigator.storage.getDirectory()).getFileHandle('outside-save.js', { create: true });
-				await button('file').onclick();
-				const outsideRejected = !!document.querySelector('dialog [role=alert]').textContent && button('open').disabled;
-				window.showSaveFilePicker = async () => { throw new DOMException('Cancelled', 'AbortError'); };
-				await button('file').onclick();
+				enterPath('../outside-save.js');
+				await button('open').onclick();
+				const outsideRejected = !!document.querySelector('dialog [role=alert]').textContent;
+				let overwritePrompts = 0;
+				window.confirm = () => { overwritePrompts++; return false; };
+				enterPath('first.js');
+				await button('open').onclick();
 				button('cancel').click();
 				const cancelled = await pending;
-				window.showSaveFilePicker = async () => secondRoot.getFileHandle('renamed.js', { create: true });
+				const afterDeclinedOverwrite = await files.readText('first.js');
+				window.confirm = () => { overwritePrompts++; return true; };
+				pending = fresh.doSaveCopy('confirmed overwrite');
+				enterPath('first.js');
+				await button('open').onclick();
+				if (document.querySelector('dialog')?.open) throw new Error(document.querySelector('dialog [role=alert]').textContent || 'Overwrite did not complete');
+				await pending;
+				const afterConfirmedOverwrite = await files.readText('first.js');
 				pending = fresh.doSaveAs('renamed');
 				await button('root').onclick();
-				await button('file').onclick();
+				await secondFiles.makeDirectory('sample');
+				enterPath('sample/renamed.js');
 				await button('open').onclick();
 				if (document.querySelector('dialog')?.open) throw new Error(document.querySelector('dialog [role=alert]').textContent || 'Save did not complete');
 				const renamed = await pending;
 				await fresh.doSave('updated renamed');
-				const renamedText = await secondFiles.readText('renamed.js');
+				const renamedText = await secondFiles.readText('sample/renamed.js');
 				const dropped = makeSession('drop-test');
 				const firstHandle = await root.getFileHandle('first.js');
 				let captured = false;
@@ -459,7 +478,8 @@ async function checkRenderer() {
 				await button('open').onclick();
 				const firstDrop = await pending;
 				const directDrop = await dropped.doFileDropped(Promise.resolve(firstHandle));
-				pending = dropped.doFileDropped(Promise.resolve(await secondRoot.getFileHandle('renamed.js')));
+				const renamedHandle = await (await secondRoot.getDirectoryHandle('sample')).getFileHandle('renamed.js');
+				pending = dropped.doFileDropped(Promise.resolve(renamedHandle));
 				await waitDialog();
 				button('cancel').click();
 				await pending;
@@ -468,14 +488,14 @@ async function checkRenderer() {
 				await waitDialog();
 				const folderRoot = document.querySelector('dialog [data-value=root]').textContent;
 				const oldOpenPicker = window.showOpenFilePicker;
-				window.showOpenFilePicker = async () => [await secondRoot.getFileHandle('renamed.js')];
+				window.showOpenFilePicker = async () => [renamedHandle];
 				await button('file').onclick();
 				await button('open').onclick();
 				const folderDrop = await pending;
 				window.showOpenFilePicker = oldOpenPicker;
 				window.showDirectoryPicker = originalDirectoryPicker;
-				window.showSaveFilePicker = originalSavePicker;
-				return { save, backup, web, html, support, library, libraryText, failed, preserved, logs, denied, text, untitled, run, backups, fixedRoot, copy, originalText, copyText, outsideRejected, cancelled, renamed, renamedText, captured, droppedName, wrongDropRoot, firstDrop, directDrop, afterDropCancel, folderRoot, folderDrop };
+				window.confirm = originalConfirm;
+				return { save, backup, web, html, support, library, libraryText, failed, preserved, logs, denied, text, untitled, run, backups, fixedRoot, copy, originalText, copyText, outsideRejected, cancelled, renamed, renamedText, captured, droppedName, wrongDropRoot, firstDrop, directDrop, afterDropCancel, folderRoot, folderDrop, existsBeforeCancel, existsAfterCancel, existsBeforeSave, overwritePrompts, afterDeclinedOverwrite, afterConfirmedOverwrite };
 			})()`);
 			assert.equal(saved.save[0], 'path');
 			assert.equal(saved.save[1][0], 'sample/main.js');
@@ -500,7 +520,13 @@ async function checkRenderer() {
 			assert.equal(saved.copyText, 'copied');
 			assert.equal(saved.outsideRejected, true);
 			assert.equal(saved.cancelled[0], 'nop');
-			assert.equal(saved.renamed[1][0], 'renamed.js');
+			assert.equal(saved.renamed[1][0], 'sample/renamed.js');
+			assert.equal(saved.existsBeforeCancel, false);
+			assert.equal(saved.existsAfterCancel, false);
+			assert.equal(saved.existsBeforeSave, false);
+			assert.equal(saved.overwritePrompts, 2);
+			assert.equal(saved.afterDeclinedOverwrite, 'updated original');
+			assert.equal(saved.afterConfirmedOverwrite, 'confirmed overwrite');
 			assert.equal(saved.renamedText, 'updated renamed');
 			assert.equal(saved.captured, true);
 			assert.equal(saved.droppedName, 'first.js');
@@ -509,7 +535,7 @@ async function checkRenderer() {
 			assert.equal(saved.directDrop[1][0], 'first.js');
 			assert.equal(saved.afterDropCancel[1][0], 'first.js');
 			assert.equal(saved.folderRoot, 'saving-second');
-			assert.equal(saved.folderDrop[1][0], 'renamed.js');
+			assert.equal(saved.folderDrop[1][0], 'sample/renamed.js');
 			const result = await evaluate(`(async () => {
 				const { SessionLocal } = await import('/session/session-local.js');
 				window.beforeCloseHandler = window.onbeforeunload;
@@ -627,7 +653,7 @@ async function checkRenderer() {
 				contents.debugger.attach('1.3');
 				await contents.debugger.sendCommand('Page.enable');
 				await contents.debugger.sendCommand('Page.addScriptToEvaluateOnNewDocument', { source: `
-					for (const name of ['showDirectoryPicker', 'showOpenFilePicker', 'showSaveFilePicker']) {
+					for (const name of ['showDirectoryPicker', 'showOpenFilePicker']) {
 						Object.defineProperty(window, name, { configurable: true, value: undefined });
 					}
 					Object.defineProperty(navigator, 'language', {

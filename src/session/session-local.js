@@ -8,7 +8,7 @@
 import { Backup } from '../project/backup.js';
 import { BrowserExporter } from '../project/exporter-browser.js';
 import { BrowserUrlProvider } from '../execution/url-provider-browser.js';
-import { FileSystemBase } from 'fs-nw/base';
+import { FileSystemBase, isMissing } from 'fs-nw/base';
 import { WebFileSystem } from 'fs-nw/web';
 import { Iwc } from '../lib/iwc.js';
 import { showOpenProjectDialog, showSaveProjectDialog } from '../study/ui/project-dialog.js';
@@ -266,6 +266,13 @@ export class SessionLocal {
 			save: async (root, path) => {
 				await this.#requireWrite(root);
 				const files = new WebFileSystem(root);
+				const exists = await files.isFile(path).catch(error => {
+					if (isMissing(error)) return false;
+					throw error;
+				});
+				if (exists && !window.confirm(this.#res.projectDialog.overwrite.replace('%s', () => path))) {
+					throw new DOMException('Save cancelled', 'AbortError');
+				}
 				const definitions = copy ? null : await new BrowserExporter(files).loadDefJsons(text, path);
 				const backup = new Backup(files);
 				backup.setFilePath(path);

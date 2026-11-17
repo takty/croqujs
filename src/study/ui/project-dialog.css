@@ -80,6 +80,21 @@
 	overflow-wrap: anywhere;
 }
 
+.project-dialog input {
+	box-sizing   : border-box;
+	display      : block;
+	width        : 100%;
+	margin-top   : 0.5rem;
+	padding      : 0.5rem 0.75rem;
+	border       : 1px solid currentColor;
+	border-radius: var(--dialog-box-button-radius);
+	font         : inherit;
+	font-family  : var(--dialog-box-font-console);
+	color        : inherit;
+	background   : transparent;
+	&:disabled { opacity: 0.4; }
+}
+
 .project-dialog [role="alert"] {
 	color        : var(--dialog-box-error);
 	overflow-wrap: anywhere;

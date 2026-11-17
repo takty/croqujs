@@ -132,9 +132,10 @@ The shared backup implementation preserves overwritten content in `.<script>.bac
 Edited code at execution or the Close command, and execution error logs, are backed
 up only when root write permission is already granted; automatic backups never
 prompt for permission. Browser tab closure does not guarantee a backup.
-Open and Save share the same project dialog. Untitled Save, Save As, and Save Copy
-choose a root only when none is available, then use the browser's native save picker.
-Destinations must stay inside that root. Save As changes the document path; Save Copy
+Open and Save share the same project dialog. For Untitled Save, Save As, and Save Copy,
+enter a file name or a path relative to the selected root and click Save. The file is
+created at confirmation. An existing file requires overwrite confirmation.
+Save As changes the document path; Save Copy
 keeps the current path and modified state. Both dialogs allow selecting a different
 root; saving a copy in another root leaves the current document's root unchanged.
 Dropped scripts inside the current root open directly. Otherwise, the project dialog
